@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DEMO HMS — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+   <link rel="shortcut icon" href="hiraya.png" type="image/x-icon">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --red:    #C0272D;
+      --red-dk: #961E23;
+      --dark:   #0F0F11;
+      --panel:  #17171A;
+      --border: #252528;
+      --muted:  #4A4A52;
+      --text:   #E8E8EC;
+      --sub:    #8888A0;
+    }
+
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      background: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(192,39,45,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(192,39,45,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .login-wrap {
+      position: relative; z-index: 1;
+      width: 400px; max-width: 96vw;
+    }
+
+    /* Brand header */
+    .login-brand {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 36px; justify-content: center;
+    }
+    .login-emblem {
+      width: 46px; height: 46px;
+      background: var(--red); border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 28px rgba(192,39,45,.45);
+      flex-shrink: 0;
+    }
+    .login-brand-text { line-height: 1; }
+    .login-brand-name {
+      font-family: 'Cinzel', serif; font-size: 22px;
+      font-weight: 700; letter-spacing: .1em; color: var(--text);
+    }
+    .login-brand-sub {
+      font-size: 9px; font-weight: 600; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--muted); margin-top: 4px;
+    }
+
+    /* Card */
+    .login-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .login-card-accent {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+    }
+    .login-card-body { padding: 32px; }
+
+    .login-title {
+      font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--sub);
+      margin-bottom: 24px; text-align: center;
+    }
+
+    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .flbl {
+      font-size: 10px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .finp {
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 4px; padding: 11px 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+      outline: none; width: 100%;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .finp::placeholder { color: var(--muted); }
+    .finp:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(192,39,45,.12);
+    }
+
+    .login-err {
+      background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.25);
+      border-radius: 3px; padding: 9px 12px;
+      font-size: 12px; color: #e74c3c; margin-bottom: 14px;
+      display: none;
+    }
+    .login-err.show { display: block; }
+
+    .login-btn {
+      width: 100%; padding: 13px;
+      background: var(--red); color: #fff; border: none; border-radius: 4px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: background .15s, transform .1s;
+      margin-top: 8px;
+    }
+    .login-btn:hover { background: var(--red-dk); }
+    .login-btn:active { transform: translateY(1px); }
+    .login-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Role badges shown after success */
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 2px;
+      font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .role-superadmin { background: rgba(155,89,182,.15); color: #9b59b6; border: 1px solid rgba(155,89,182,.3); }
+    .role-admin      { background: rgba(52,152,219,.12); color: #3498db; border: 1px solid rgba(52,152,219,.3); }
+    .role-fo         { background: rgba(46,204,113,.12); color: #2ecc71; border: 1px solid rgba(46,204,113,.3); }
+
+    .login-footer {
+      padding: 14px 32px 22px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-brand">
+    <div class="login-emblem">
+      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+        <rect x="4" y="4" width="5" height="20" fill="white"/>
+        <rect x="4" y="11" width="20" height="6" fill="white"/>
+        <rect x="19" y="4" width="5" height="20" fill="white"/>
+      </svg>
+    </div>
+    <div class="login-brand-text">
+      <div class="login-brand-name">HIRAYA</div>
+      <div class="login-brand-sub">Hotel Management System</div>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-card-accent"></div>
+    <div class="login-card-body">
+      <div class="login-title">Staff Sign In</div>
+
+      <div class="login-err" id="loginErr">⛔ Incorrect username or password.</div>
+
+      <div class="fg">
+        <label class="flbl">Username</label>
+        <input class="finp" type="text" id="loginUser" placeholder="Enter username…" autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Password</label>
+        <input class="finp" type="password" id="loginPass" placeholder="Enter password…" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+
+      <button class="login-btn" onclick="doLogin()" id="loginBtn">Sign In</button>
+    </div>
+    <div class="login-footer">
+      Hiraya HMS · Secure Staff Portal
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   HIRAYA HMS — AUTH ENGINE
+   Accounts are stored in localStorage under hiraya_accounts_v1.
+   On first load, default accounts are seeded.
+════════════════════════════════════════════════════════ */
+const ACCOUNTS_KEY = 'hiraya_accounts_v1';
+
+const DEFAULT_ACCOUNTS = [
+  {
+    id: 'sa-001',
+    username: 'superadmin',
+    password: 'hiraya2026',          // plain text — simple staff system
+    role: 'superadmin',
+    name: 'Super Administrator',
+    active: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'ad-001',
+    username: 'admin',
+    password: 'hiraya2026',
+    role: 'admin',
+    name: 'Hotel Administrator',
+    active: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'fo-001',
+    username: 'frontoffice',
+    password: 'hiraya2026',
+    role: 'fo',
+    name: 'Front Office Staff',
+    active: true,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+function loadAccounts() {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  // Seed defaults
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(DEFAULT_ACCOUNTS));
+  return DEFAULT_ACCOUNTS;
+}
+
+function doLogin() {
+  const username = document.getElementById('loginUser').value.trim().toLowerCase();
+  const password = document.getElementById('loginPass').value;
+  const errEl    = document.getElementById('loginErr');
+  const btn      = document.getElementById('loginBtn');
+
+  errEl.classList.remove('show');
+
+  if (!username || !password) {
+    errEl.textContent = '⛔ Please enter both username and password.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const accounts = loadAccounts();
+  const account  = accounts.find(a =>
+    a.username.toLowerCase() === username &&
+    a.password === password &&
+    a.active !== false
+  );
+
+  if (!account) {
+    errEl.textContent = '⛔ Incorrect username or password.';
+    errEl.classList.add('show');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+    return;
+  }
+
+  // Store session
+  sessionStorage.setItem('hiraya_auth', '1');
+  sessionStorage.setItem('hiraya_role', account.role);
+  sessionStorage.setItem('hiraya_user', JSON.stringify({
+    id: account.id, username: account.username, name: account.name, role: account.role
+  }));
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  // Redirect based on role
+  const dest = {
+    superadmin: 'index.html',
+    admin:      'index.html',
+    fo:         'index.html',
+  }[account.role] || 'index.html';
+
+  setTimeout(() => { window.location.replace(dest); }, 400);
+}
+
+// Auto-focus
+document.getElementById('loginUser').focus();
+</script>
+</body>
+</html>

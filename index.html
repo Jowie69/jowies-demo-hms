@@ -1,0 +1,1945 @@
+<!-- index.html — Hiraya HMS · Property Overview -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DEMO HMS — Property Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+   <link rel="shortcut icon" href="hiraya.png" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── STAT CARDS ──────────────────────────────────────── */
+    .stat-card {
+      background: var(--h-panel); border: 1px solid var(--h-border);
+      border-radius: 4px; padding: 20px 22px; position: relative; overflow: hidden;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.28s;
+    }
+    .stat-card:hover { border-color: rgba(192,39,45,0.4); transform: translateY(-2px); box-shadow: var(--h-card-hover); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent,var(--h-border)); }
+    .stat-value { font-family:'Cinzel',serif; font-size:28px; font-weight:700; color:var(--h-text); line-height:1; margin-bottom:4px; }
+    .stat-label { font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); }
+    .stat-code  { font-size:9px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:var(--accent, var(--h-muted)); opacity:.7; margin-top:2px; }
+    .stat-icon  { position:absolute; right:18px; top:50%; transform:translateY(-50%); opacity:.08; pointer-events:none; }
+
+    .section-hd {
+      font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+      letter-spacing:.14em; text-transform:uppercase; color:var(--h-sub);
+      margin-bottom:14px; display:flex; align-items:center; gap:10px;
+    }
+    .section-hd::after { content:''; flex:1; height:1px; background:var(--h-border); }
+
+    /* ── LEGEND ──────────────────────────────────────────── */
+    .legend-panel { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:14px 18px; margin-bottom:20px; }
+    .legend-grid  { display:flex; flex-wrap:wrap; gap:8px 18px; }
+    .legend-item  { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--h-sub); font-weight:500; }
+    .legend-dot   { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+    .legend-code  { font-size:9px; font-weight:800; letter-spacing:.1em; font-family:'Cinzel',serif; opacity:.75; }
+    .legend-desc  { font-size:10px; color:var(--h-muted); }
+
+    /* ── ROOM GRID ───────────────────────────────────────── */
+    .room-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+    .room-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:16px 14px; cursor:pointer; position:relative; overflow:hidden;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.28s;
+    }
+    .room-card:hover { border-color:rgba(192,39,45,0.4); transform:translateY(-2px); box-shadow:var(--h-card-hover); }
+    .room-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--sc,var(--h-border)); }
+    .room-num   { font-family:'Cinzel',serif; font-size:18px; font-weight:700; color:var(--h-text); margin-bottom:2px; }
+    .room-type  { font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-bottom:10px; }
+    .room-badge { display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:3px 8px; border-radius:2px; background:var(--sbg); color:var(--sc); }
+    .room-dot   { width:5px; height:5px; border-radius:50%; background:var(--sc); }
+    .room-badge-code { font-size:8px; font-weight:900; letter-spacing:.12em; font-family:'Cinzel',serif; opacity:.85; margin-left:2px; }
+    .room-guest { font-size:11px; color:var(--h-sub); margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .room-notes { font-size:10px; color:var(--h-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .live-badge { position:absolute; top:6px; right:6px; font-size:7px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:2px 5px; border-radius:2px; background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.2); }
+
+    /* ── EVENTS ──────────────────────────────────────────── */
+    .ev-strip    { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:0 16px; }
+    .ev-row      { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--h-border); font-size:12px; }
+    .ev-row:last-child { border-bottom:none; }
+    .ev-row-dot  { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+    .ev-row-date { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:var(--h-text); min-width:38px; }
+    .ev-row-name { color:var(--h-text); font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ev-row-meta { color:var(--h-muted); font-size:10px; white-space:nowrap; }
+
+    /* ── SYNC DOT ────────────────────────────────────────── */
+    .sync-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#2ecc71; box-shadow:0 0 5px rgba(46,204,113,.6); animation:pulse 2s ease-in-out infinite; margin-right:6px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── BREAKFAST DASHBOARD WIDGET ──────────────────────── */
+    .bfst-widget {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      overflow:hidden; position:relative;
+    }
+    .bfst-widget::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,#e67e22,#f39c12,#e67e22); }
+    .bfst-widget-hd {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:11px 14px 9px; border-bottom:1px solid var(--h-border);
+    }
+    .bfst-widget-title {
+      font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--h-sub); display:flex; align-items:center; gap:7px;
+    }
+    .bfst-widget-counters { display:flex; gap:6px; }
+    .bfst-wc {
+      display:flex; align-items:center; gap:4px;
+      padding:2px 7px; border-radius:2px; font-size:10px; font-weight:700;
+    }
+    .bfst-wc-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .bfst-wc-pending { background:rgba(243,156,18,.12); color:#f39c12; }
+    .bfst-wc-serving { background:rgba(52,152,219,.12); color:#3498db; }
+    .bfst-wc-done    { background:rgba(46,204,113,.12); color:#2ecc71; }
+    .bfst-widget-list { padding:4px 0; min-height:40px; max-height:240px; overflow-y:auto; }
+    .bfst-widget-row {
+      display:flex; align-items:center; gap:8px; padding:6px 14px;
+      border-bottom:1px solid var(--h-border); font-size:11px; transition:background .1s; cursor:default;
+    }
+    .bfst-widget-row:last-child { border-bottom:none; }
+    .bfst-widget-row:hover { background:var(--h-hover-bg); }
+    .bfst-widget-room {
+      font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--h-text); min-width:32px;
+    }
+    .bfst-widget-meal { flex:1; color:var(--h-sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; }
+    .bfst-widget-qty { font-size:9px; color:var(--h-muted); white-space:nowrap; }
+    .bfst-widget-badge {
+      font-size:8px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+      padding:2px 6px; border-radius:2px; white-space:nowrap;
+    }
+    .bfst-wb-pending { background:rgba(243,156,18,.14); color:#f39c12; }
+    .bfst-wb-serving { background:rgba(52,152,219,.14); color:#3498db; }
+    .bfst-wb-done    { background:rgba(46,204,113,.14); color:#2ecc71; }
+    .bfst-widget-empty { padding:16px 14px; font-size:11px; color:var(--h-muted); text-align:center; font-style:italic; }
+    .bfst-widget-footer {
+      padding:7px 14px; border-top:1px solid var(--h-border); background:var(--h-panel2);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .bfst-widget-time { font-size:10px; color:var(--h-muted); }
+    .bfst-widget-link {
+      font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+      color:var(--h-red); cursor:pointer; border:none; background:none; padding:0;
+      font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:4px;
+    }
+    .bfst-widget-link:hover { text-decoration:underline; }
+
+    /* ══════════════════════════════════════════════════════
+       LOG & ENDORSEMENT
+    ══════════════════════════════════════════════════════ */
+    .log-panel {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      overflow:hidden; margin-bottom:20px;
+    }
+    .log-toolbar {
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      padding:10px 16px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .log-filter-btn {
+      padding:4px 10px; border-radius:2px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-muted);
+      font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .12s;
+    }
+    .log-filter-btn:hover, .log-filter-btn.active { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .log-filter-btn.active-urgent { background:#e74c3c; color:#fff; border-color:#e74c3c; }
+
+    .log-table { width:100%; border-collapse:collapse; }
+    .log-table thead th {
+      font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--h-muted); padding:8px 12px; text-align:left;
+      border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+      white-space:nowrap;
+    }
+    .log-table tbody tr { border-bottom:1px solid var(--h-border); transition:background .1s; }
+    .log-table tbody tr:last-child { border-bottom:none; }
+    .log-table tbody tr:hover td { background:var(--h-hover-bg); }
+    .log-table tbody td { padding:10px 12px; font-size:12px; color:var(--h-text); vertical-align:top; }
+    .log-table .td-date { white-space:nowrap; font-size:11px; color:var(--h-muted); min-width:90px; }
+    .log-table .td-author { white-space:nowrap; min-width:80px; }
+    .log-table .td-msg { max-width:500px; line-height:1.5; }
+    .log-table .td-ack  { white-space:nowrap; min-width:120px; }
+    .log-table .td-act  { white-space:nowrap; text-align:right; padding-right:14px; }
+
+    .log-badge {
+      display:inline-block; padding:2px 7px; border-radius:2px;
+      font-size:8px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    }
+    .log-badge-normal  { background:rgba(52,152,219,.12);  color:#3498db; }
+    .log-badge-urgent  { background:rgba(231,76,60,.18);   color:#e74c3c; border:1px solid rgba(231,76,60,.3); }
+    .log-badge-info    { background:rgba(46,204,113,.12);  color:#2ecc71; }
+    .log-badge-policy  { background:rgba(155,89,182,.13);  color:#9b59b6; }
+
+    .log-row-urgent td { background:rgba(231,76,60,.05) !important; }
+    .log-row-urgent:hover td { background:rgba(231,76,60,.09) !important; }
+
+    .ack-chip {
+      display:inline-flex; align-items:center; gap:3px;
+      padding:2px 7px; border-radius:2px; font-size:9px; font-weight:700;
+      border:1px solid var(--h-border); background:var(--h-input-bg); color:var(--h-muted);
+      cursor:pointer; transition:all .12s; user-select:none; margin:1px;
+    }
+    .ack-chip.acked  { background:rgba(46,204,113,.14); color:#2ecc71; border-color:rgba(46,204,113,.3); }
+    .ack-chip:hover  { border-color:var(--h-text); color:var(--h-text); }
+
+    .log-compose {
+      padding:14px 16px; border-top:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .log-compose-row { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+    .log-compose textarea {
+      flex:1; min-width:240px; min-height:62px; resize:vertical;
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:8px 10px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text);
+      outline:none; line-height:1.5;
+    }
+    .log-compose textarea:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .log-compose textarea::placeholder { color:var(--h-muted); }
+    .log-compose-meta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:6px; }
+    .csel {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:5px 8px; font-family:'DM Sans',sans-serif; font-size:11px; color:var(--h-text);
+      outline:none; cursor:pointer;
+    }
+    .csel:focus { border-color:var(--h-red); }
+    .log-post-btn {
+      padding:10px 18px; background:var(--h-red); color:#fff; border:none; border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; letter-spacing:.06em;
+      cursor:pointer; white-space:nowrap; transition:background .15s; height:fit-content;
+    }
+    .log-post-btn:hover { background:var(--h-red-dk); }
+    .log-empty { padding:28px 16px; text-align:center; font-size:12px; color:var(--h-muted); }
+
+    /* ══════════════════════════════════════════════════════
+       BREAKFAST MEAL REQUEST
+    ══════════════════════════════════════════════════════ */
+    .bfst-panel {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      overflow:hidden; margin-bottom:20px;
+    }
+    .bfst-toolbar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      padding:10px 16px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .bfst-date-label {
+      font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--h-text); letter-spacing:.06em;
+    }
+    .bfst-nav {
+      width:26px; height:26px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:16px; line-height:1;
+      transition:background .12s, color .12s;
+    }
+    .bfst-nav:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+
+    .bfst-form {
+      padding:14px 16px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .bfst-form-row { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+    .bfst-fg { display:flex; flex-direction:column; gap:4px; }
+    .bfst-lbl {
+      font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted);
+    }
+    .bfst-ctl {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:7px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--h-text);
+      outline:none; appearance:none;
+    }
+    .bfst-ctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .bfst-ctl::placeholder { color:var(--h-muted); }
+    .bfst-add-btn {
+      padding:8px 16px; background:var(--h-red); color:#fff; border:none; border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:.06em;
+      cursor:pointer; white-space:nowrap; transition:background .15s; align-self:flex-end;
+    }
+    .bfst-add-btn:hover { background:var(--h-red-dk); }
+
+    .bfst-table { width:100%; border-collapse:collapse; }
+    .bfst-table thead th {
+      font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--h-muted); padding:8px 12px; text-align:left;
+      border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+      white-space:nowrap;
+    }
+    .bfst-table tbody tr { border-bottom:1px solid var(--h-border); transition:background .1s; }
+    .bfst-table tbody tr:last-child { border-bottom:none; }
+    .bfst-table tbody tr:hover td { background:var(--h-hover-bg); }
+    .bfst-table tbody td { padding:9px 12px; font-size:12px; color:var(--h-text); vertical-align:middle; }
+
+    .bfst-room-num { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text); }
+    .bfst-meal-tag {
+      display:inline-flex; align-items:center; gap:3px;
+      background:rgba(230,126,34,.1); color:#e67e22; border:1px solid rgba(230,126,34,.25);
+      border-radius:2px; padding:2px 8px; font-size:10px; font-weight:700;
+      letter-spacing:.04em; margin:1px;
+    }
+    .bfst-meal-tag-custom { background:rgba(155,89,182,.1); color:#9b59b6; border-color:rgba(155,89,182,.25); }
+    .bfst-qty-badge {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:2px;
+      font-size:9px; font-weight:800; font-family:'Cinzel',serif; padding:1px 5px; color:var(--h-text);
+    }
+    .bfst-status-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 8px; border-radius:2px; font-size:9px; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:all .12s; border:none;
+    }
+    .bfst-status-pending  { background:rgba(243,156,18,.12); color:#f39c12; border:1px solid rgba(243,156,18,.3); }
+    .bfst-status-serving  { background:rgba(52,152,219,.12); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .bfst-status-done     { background:rgba(46,204,113,.12); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .bfst-status-pending:hover { background:rgba(52,152,219,.18); color:#3498db; border-color:rgba(52,152,219,.4); }
+    .bfst-status-serving:hover { background:rgba(46,204,113,.18); color:#2ecc71; border-color:rgba(46,204,113,.4); }
+    .bfst-status-done:hover    { background:rgba(243,156,18,.18); color:#f39c12; border-color:rgba(243,156,18,.4); }
+    .bfst-del-btn {
+      background:none; border:1px solid var(--h-border); color:var(--h-muted);
+      padding:3px 8px; border-radius:2px; font-size:10px; cursor:pointer;
+      font-family:'DM Sans',sans-serif; transition:all .12s;
+    }
+    .bfst-del-btn:hover { background:rgba(231,76,60,.1); color:#e74c3c; border-color:rgba(231,76,60,.3); }
+
+    .bfst-summary {
+      display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+      padding:9px 16px; border-top:1px solid var(--h-border); background:var(--h-panel2);
+      font-size:11px;
+    }
+    .bfst-sum-item { display:flex; align-items:center; gap:5px; }
+    .bfst-sum-dot { width:7px; height:7px; border-radius:50%; }
+    .bfst-export-btn {
+      padding:5px 12px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:background .12s;
+    }
+    .bfst-export-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .bfst-print-btn {
+      padding:5px 12px; border:1px solid rgba(230,126,34,.4);
+      background:rgba(230,126,34,.1); color:#e67e22; border-radius:3px;
+      font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .12s;
+      display:flex; align-items:center; gap:5px;
+    }
+    .bfst-print-btn:hover { background:#e67e22; color:#fff; border-color:#e67e22; }
+
+    /* ══════════════════════════════════════════════════════
+       BACKUP / RESTORE PANEL
+    ══════════════════════════════════════════════════════ */
+    .backup-panel {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:16px 18px; margin-bottom:20px;
+    }
+    .backup-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .backup-info { font-size:11px; color:var(--h-muted); line-height:1.6; margin-top:8px; }
+    .bkp-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700;
+      cursor:pointer; transition:background .15s; white-space:nowrap;
+    }
+    .bkp-export { background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .bkp-export:hover { background:rgba(46,204,113,.28); }
+    .bkp-import { background:rgba(52,152,219,.14); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .bkp-import:hover { background:rgba(52,152,219,.26); }
+    .bkp-clear  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); }
+    .bkp-clear:hover { background:rgba(231,76,60,.2); }
+    #restoreFileInput { display:none; }
+    .bkp-status { font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; }
+    .bkp-ok   { background:rgba(46,204,113,.12); color:#2ecc71; }
+    .bkp-err  { background:rgba(231,76,60,.12); color:#e74c3c; }
+
+    /* ── ROOM MODAL ──────────────────────────────────────── */
+    #room-modal, #log-modal {
+      position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px);
+      z-index:500; display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #room-modal.open, #log-modal.open { opacity:1; pointer-events:all; }
+    .modal-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:400px; max-width:95vw; overflow:hidden;
+      transform:scale(.95) translateY(8px);
+      transition:transform .2s cubic-bezier(.16,1,.3,1); box-shadow:var(--h-shadow);
+    }
+    .modal-card-lg { width:600px; }
+    #room-modal.open .modal-card, #log-modal.open .modal-card { transform:scale(1) translateY(0); }
+    .modal-accent { height:3px; background:linear-gradient(90deg,transparent,var(--h-red),transparent); }
+    .modal-hd  { padding:18px 22px 14px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; }
+    .modal-ttl { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); }
+    .modal-sub { font-size:11px; color:var(--h-muted); letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
+    .modal-body{ padding:18px 22px; }
+    .modal-ft  { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; }
+    .btn-sm    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-ghost { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-ghost:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-red   { background:#C0272D; color:#fff; }
+    .btn-red:hover { background:#961E23; }
+    .btn-del-sm { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del-sm:hover { background:rgba(231,76,60,.22); }
+    .flabel { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-bottom:5px; display:block; }
+    .fctl {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border);
+      border-radius:3px; padding:9px 12px; font-family:'DM Sans',sans-serif;
+      font-size:13px; color:var(--h-text); outline:none; margin-bottom:12px; appearance:none;
+    }
+    .fctl:focus { border-color:#C0272D; box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .fctl::placeholder { color:var(--h-muted); }
+    .info-box {
+      background:rgba(192,39,45,.06); border:1px solid rgba(192,39,45,.18);
+      border-radius:3px; padding:9px 12px; margin-bottom:14px;
+      font-size:11px; color:var(--h-sub); line-height:1.5;
+    }
+    .status-preview {
+      display:flex; align-items:center; gap:8px; padding:8px 12px;
+      background:var(--h-input-bg); border:1px solid var(--h-border);
+      border-radius:3px; margin-bottom:12px; transition:all .2s;
+    }
+    .status-preview-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; transition:background .2s; }
+    .status-preview-code { font-family:'Cinzel',serif; font-size:13px; font-weight:700; transition:color .2s; }
+    .status-preview-name { font-size:11px; color:var(--h-muted); }
+
+    /* Toast */
+    #hms-toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+      background:#1a1a1a; color:#fff; border-radius:4px;
+      padding:10px 20px; font-size:12px; font-weight:600; letter-spacing:.04em;
+      opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:99999;
+    }
+    #hms-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ══════════════════════════════════════════════════════
+       KITCHEN PRINT STYLES
+       Completely isolated — only active during window.print()
+    ══════════════════════════════════════════════════════ */
+    @media print {
+      /* Hide everything on the page */
+      body > *:not(#kitchen-print-frame) { display: none !important; }
+      #kitchen-print-frame { display: block !important; }
+
+      @page {
+        size: A4 portrait;
+        margin: 16mm 14mm 14mm 14mm;
+      }
+    }
+
+    /* Kitchen print frame — hidden on screen, shown on print */
+    #kitchen-print-frame {
+      display: none;
+      font-family: 'Courier New', Courier, monospace;
+      color: #000;
+      background: #fff;
+    }
+
+    /* ── Kitchen ticket styles (scoped inside #kitchen-print-frame) ── */
+    #kitchen-print-frame .kp-page {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    #kitchen-print-frame .kp-header {
+      text-align: center;
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    #kitchen-print-frame .kp-hotel {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #000;
+    }
+    #kitchen-print-frame .kp-doc-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      color: #000;
+    }
+    #kitchen-print-frame .kp-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      font-size: 11px;
+      gap: 16px;
+    }
+    #kitchen-print-frame .kp-meta-block {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    #kitchen-print-frame .kp-meta-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      font-weight: 700;
+    }
+    #kitchen-print-frame .kp-meta-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: 1px;
+    }
+    #kitchen-print-frame .kp-divider {
+      border: none;
+      border-top: 1.5px solid #000;
+      margin: 12px 0;
+    }
+    #kitchen-print-frame .kp-divider-dashed {
+      border: none;
+      border-top: 1px dashed #aaa;
+      margin: 8px 0;
+    }
+    #kitchen-print-frame .kp-summary-bar {
+      display: flex;
+      gap: 24px;
+      background: #f3f3f3;
+      border: 1px solid #ccc;
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    #kitchen-print-frame .kp-summary-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #kitchen-print-frame .kp-summary-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    /* Orders table */
+    #kitchen-print-frame .kp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    #kitchen-print-frame .kp-table thead tr {
+      background: #000;
+      color: #fff;
+    }
+    #kitchen-print-frame .kp-table thead th {
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    #kitchen-print-frame .kp-table thead th.th-center {
+      text-align: center;
+    }
+    #kitchen-print-frame .kp-table tbody tr {
+      border-bottom: 1px solid #ddd;
+    }
+    #kitchen-print-frame .kp-table tbody tr:last-child {
+      border-bottom: 2px solid #000;
+    }
+    #kitchen-print-frame .kp-table tbody tr.kp-row-done {
+      background: #f9f9f9;
+      color: #888;
+    }
+    #kitchen-print-frame .kp-table tbody tr.kp-row-serving {
+      background: #fffbf0;
+    }
+    #kitchen-print-frame .kp-table tbody tr.kp-row-pending {
+      background: #fff;
+    }
+    #kitchen-print-frame .kp-table td {
+      padding: 9px 10px;
+      vertical-align: middle;
+      color: inherit;
+    }
+    #kitchen-print-frame .kp-td-seq {
+      font-size: 10px;
+      color: #999;
+      text-align: center;
+      width: 28px;
+      font-weight: 700;
+    }
+    #kitchen-print-frame .kp-td-room {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #000;
+      width: 55px;
+    }
+    #kitchen-print-frame .kp-td-meal {
+      font-size: 13px;
+      font-weight: 700;
+      color: #000;
+    }
+    #kitchen-print-frame .kp-td-custom-tag {
+      font-size: 9px;
+      background: #eee;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #555;
+      margin-left: 6px;
+    }
+    #kitchen-print-frame .kp-td-qty {
+      font-size: 15px;
+      font-weight: 900;
+      text-align: center;
+      width: 40px;
+      color: #000;
+    }
+    #kitchen-print-frame .kp-td-notes {
+      font-size: 11px;
+      color: #333;
+      font-style: italic;
+    }
+    #kitchen-print-frame .kp-td-notes-none {
+      color: #bbb;
+      font-style: normal;
+    }
+    #kitchen-print-frame .kp-td-status {
+      text-align: center;
+      width: 72px;
+    }
+    #kitchen-print-frame .kp-status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1.5px solid #000;
+      color: #000;
+    }
+    #kitchen-print-frame .kp-status-pending { border-color: #000; background: #fff; }
+    #kitchen-print-frame .kp-status-serving { border-color: #000; background: #ddd; }
+    #kitchen-print-frame .kp-status-done    { border-color: #aaa; background: #f0f0f0; color: #999; }
+    /* Checkbox column */
+    #kitchen-print-frame .kp-td-check {
+      text-align: center;
+      width: 32px;
+    }
+    #kitchen-print-frame .kp-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #555;
+      display: inline-block;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+    /* Footer */
+    #kitchen-print-frame .kp-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    #kitchen-print-frame .kp-sig-block {
+      flex: 1;
+      border-top: 1px solid #000;
+      padding-top: 5px;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #555;
+      text-align: center;
+    }
+    #kitchen-print-frame .kp-printed-note {
+      text-align: center;
+      font-size: 9px;
+      color: #aaa;
+      letter-spacing: 1px;
+      margin-top: 18px;
+      border-top: 1px dashed #ddd;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="hms-content">
+
+    <!-- Sync row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <span style="font-size:11px;color:var(--h-muted);display:flex;align-items:center;">
+        <span class="sync-dot"></span>Live — synced with Reservations &amp; Events
+      </span>
+      <span style="font-size:11px;color:var(--h-muted);" id="lastSync">—</span>
+    </div>
+
+    <!-- Stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="stat-card" style="--accent:#2ecc71;">
+        <div class="stat-value" id="sv-vc">0</div>
+        <div class="stat-label">Vacant Clean</div>
+        <div class="stat-code">VC</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="#2ecc71"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#27ae60;">
+        <div class="stat-value" id="sv-vci">0</div>
+        <div class="stat-label">VC Inspected</div>
+        <div class="stat-code">VCI</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11l2 2 4-4"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#e67e22;">
+        <div class="stat-value" id="sv-vd">0</div>
+        <div class="stat-label">Vacant Dirty</div>
+        <div class="stat-code">VD</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#C0272D;">
+        <div class="stat-value" id="sv-occ">0</div>
+        <div class="stat-label">Occupied</div>
+        <div class="stat-code">OCC</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C0272D" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#f39c12;">
+        <div class="stat-value" id="sv-reserved">0</div>
+        <div class="stat-label">Reserved</div>
+        <div class="stat-code">RES</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#3498db;">
+        <div class="stat-value" id="sv-od">0</div>
+        <div class="stat-label">Occupied Dirty</div>
+        <div class="stat-code">OD</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="1.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#9b59b6;">
+        <div class="stat-value" id="sv-hu">0</div>
+        <div class="stat-label">House Use</div>
+        <div class="stat-code">HU</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#e74c3c;">
+        <div class="stat-value" id="sv-ooo">0</div>
+        <div class="stat-label">Out of Order</div>
+        <div class="stat-code">OOO</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      </div>
+      <div class="stat-card" style="--accent:#e67e22;cursor:pointer;" onclick="scrollToBfst()" title="Click to manage breakfast orders">
+        <div class="stat-value" id="sv-bfst-pending">0</div>
+        <div class="stat-label">Bfast Pending</div>
+        <div class="stat-code">BFST</div>
+        <div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-panel">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--h-muted);margin-bottom:10px;">Room Status Legend — Hotel Industry Codes</div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-dot" style="background:#2ecc71;"></div><span class="legend-code" style="color:#2ecc71;">VC</span>Vacant Clean <span class="legend-desc">— Ready for check-in</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60;border:1px solid #2ecc71;"></div><span class="legend-code" style="color:#27ae60;">VCI</span>Vacant Clean Inspected <span class="legend-desc">— Supervisor-approved</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e67e22;"></div><span class="legend-code" style="color:#e67e22;">VD</span>Vacant Dirty <span class="legend-desc">— Needs housekeeping</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C0272D;"></div><span class="legend-code" style="color:#C0272D;">OCC</span>Occupied <span class="legend-desc">— Guest currently checked in</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c0392b;"></div><span class="legend-code" style="color:#c0392b;">OD</span>Occupied Dirty <span class="legend-desc">— Guest in-house, needs service</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f39c12;"></div><span class="legend-code" style="color:#f39c12;">RES</span>Reserved <span class="legend-desc">— Confirmed future booking</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9b59b6;"></div><span class="legend-code" style="color:#9b59b6;">HU</span>House Use <span class="legend-desc">— Used by hotel staff/management</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div><span class="legend-code" style="color:#e74c3c;">OOO</span>Out of Order <span class="legend-desc">— Blocked, under repair</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#95a5a6;"></div><span class="legend-code" style="color:#95a5a6;">OOS</span>Out of Service <span class="legend-desc">— Temp. unavailable, not broken</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3498db;"></div><span class="legend-code" style="color:#3498db;">DND</span>Do Not Disturb <span class="legend-desc">— Guest requested no service</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#16a085;"></div><span class="legend-code" style="color:#16a085;">CO</span>Checked Out <span class="legend-desc">— Guest departed, pending clean</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d35400;"></div><span class="legend-code" style="color:#d35400;">NS</span>No Show <span class="legend-desc">— Reservation, guest did not arrive</span></div>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--h-border);font-size:10px;color:var(--h-muted);font-style:italic;">
+        ℹ Room status auto-syncs from today's active bookings. <strong style="color:var(--h-sub);">VD · OD · VCI · HU · OOO · OOS · DND</strong> are manual-only overrides set by front desk or housekeeping.
+      </div>
+    </div>
+
+    <!-- Two-column: room grid + right sidebar -->
+    <div style="display:grid;grid-template-columns:1fr 272px;gap:20px;align-items:start;margin-bottom:28px;">
+      <div>
+        <div class="section-hd">Room Grid — 201 to 215</div>
+        <div class="room-grid" id="roomGrid"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div class="section-hd">Upcoming Events</div>
+          <div id="upcomingEvents" class="ev-strip"></div>
+          <a href="events.html" style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--h-red);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;margin-top:10px;">
+            View Full Calendar
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- Breakfast widget -->
+        <div>
+          <div class="section-hd">Today's Breakfast</div>
+          <div class="bfst-widget" id="bfstWidget">
+            <div class="bfst-widget-hd">
+              <div class="bfst-widget-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                Meal Orders
+              </div>
+              <div class="bfst-widget-counters">
+                <span class="bfst-wc bfst-wc-pending"><span class="bfst-wc-dot" style="background:#f39c12;"></span><span id="bw-pending">0</span></span>
+                <span class="bfst-wc bfst-wc-serving"><span class="bfst-wc-dot" style="background:#3498db;"></span><span id="bw-serving">0</span></span>
+                <span class="bfst-wc bfst-wc-done"><span class="bfst-wc-dot" style="background:#2ecc71;"></span><span id="bw-done">0</span></span>
+              </div>
+            </div>
+            <div class="bfst-widget-list" id="bfstWidgetList">
+              <div class="bfst-widget-empty">No orders today</div>
+            </div>
+            <div class="bfst-widget-footer">
+              <span class="bfst-widget-time" id="bfstWidgetTime">—</span>
+              <button class="bfst-widget-link" onclick="scrollToBfst()">
+                Manage Orders
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG & ENDORSEMENT SECTION -->
+    <div class="section-hd" style="margin-bottom:12px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      M's Log &amp; Endorsement
+    </div>
+
+    <div class="log-panel">
+      <div class="log-toolbar">
+        <button class="log-filter-btn active" id="lf-all"    onclick="setLogFilter('all',this)">All</button>
+        <button class="log-filter-btn" id="lf-normal"  onclick="setLogFilter('normal',this)">Normal</button>
+        <button class="log-filter-btn" id="lf-info"    onclick="setLogFilter('info',this)">Info</button>
+        <button class="log-filter-btn" id="lf-policy"  onclick="setLogFilter('policy',this)">Policy</button>
+        <button class="log-filter-btn" id="lf-urgent"  onclick="setLogFilter('urgent',this)" style="color:#e74c3c;">🚨 Urgent</button>
+        <div style="flex:1;"></div>
+        <input type="text" id="logSearch" placeholder="Search logs…"
+          style="background:var(--h-input-bg);border:1px solid var(--h-border);border-radius:3px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--h-text);outline:none;width:170px;"
+          oninput="renderLog()"/>
+        <button onclick="openLogModal(null)" style="display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--h-red);color:#fff;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Log
+        </button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="log-table" id="logTable">
+          <thead>
+            <tr>
+              <th style="width:95px;">Date</th>
+              <th style="width:70px;">Priority</th>
+              <th>Message / Endorsement</th>
+              <th style="width:130px;">Acknowledged By</th>
+              <th style="width:70px;text-align:right;padding-right:14px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+      <div class="log-compose">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--h-muted);margin-bottom:8px;">Quick Log Entry</div>
+        <div class="log-compose-meta">
+          <select class="csel" id="qlogPriority">
+            <option value="normal">Normal</option>
+            <option value="info">Info</option>
+            <option value="policy">Policy</option>
+            <option value="urgent">🚨 Urgent</option>
+          </select>
+          <input type="text" id="qlogAuthor" placeholder="Your name" class="csel" style="width:130px;"/>
+          <span style="font-size:10px;color:var(--h-muted);margin-left:4px;">Press Ctrl+Enter to post</span>
+        </div>
+        <div class="log-compose-row">
+          <textarea id="qlogMsg" placeholder="Write your log or endorsement here… (supports multiple lines)"></textarea>
+          <button class="log-post-btn" onclick="quickPostLog()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-bottom:-2px;margin-right:3px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Post Log
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- BREAKFAST MEAL REQUEST                           -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div class="section-hd" style="margin-bottom:12px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Breakfast Meal Requests
+    </div>
+
+    <div class="bfst-panel" id="bfstPanel">
+
+      <!-- Toolbar: date nav + count -->
+      <div class="bfst-toolbar">
+        <button class="bfst-nav" id="bfstPrev">&#8249;</button>
+        <span class="bfst-date-label" id="bfstDateLabel">—</span>
+        <button class="bfst-nav" id="bfstNext">&#8250;</button>
+        <button onclick="bfstGoToday()" style="padding:4px 10px;background:var(--h-input-bg);border:1px solid var(--h-border);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--h-muted);cursor:pointer;transition:all .12s;" onmouseover="this.style.background='var(--h-red)';this.style.color='#fff';" onmouseout="this.style.background='';this.style.color='';">Today</button>
+        <div style="flex:1;"></div>
+        <span style="font-size:10px;color:var(--h-muted);" id="bfstOrderCount">0 orders</span>
+      </div>
+
+      <!-- Order entry form -->
+      <div class="bfst-form">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--h-muted);margin-bottom:10px;">Add Breakfast Order</div>
+        <div class="bfst-form-row">
+          <div class="bfst-fg">
+            <span class="bfst-lbl">Room</span>
+            <select class="bfst-ctl" id="bfstRoom" style="width:90px;"></select>
+          </div>
+          <div class="bfst-fg" style="min-width:230px;">
+            <span class="bfst-lbl">Meal</span>
+            <select class="bfst-ctl" id="bfstMealSelect" style="width:100%;" onchange="bfstOnMealChange(this.value)">
+              <option value="">— Select meal —</option>
+              <optgroup label="🇵🇭 Filipino">
+                <option value="Tocilog">Tocilog</option>
+                <option value="Bangsilog">Bangsilog</option>
+                <option value="Tapsilog">Tapsilog</option>
+                <option value="Longsilog">Longsilog</option>
+                <option value="Filipino Vegan Breakfast">Filipino Vegan Breakfast</option>
+              </optgroup>
+              <optgroup label="🍳 Western">
+                <option value="English Breakfast">English Breakfast</option>
+                <option value="American Breakfast Combo 1">American Breakfast Combo 1</option>
+                <option value="American Breakfast Combo 2">American Breakfast Combo 2</option>
+                <option value="American Breakfast Combo 3">American Breakfast Combo 3</option>
+              </optgroup>
+              <optgroup label="🥐 Continental">
+                <option value="Continental Breakfast (Butter Toast 1)">Continental — Butter Toast 1</option>
+                <option value="Continental Breakfast (Butter Toast 2)">Continental — Butter Toast 2</option>
+                <option value="Continental Breakfast (French Toast)">Continental — French Toast</option>
+              </optgroup>
+              <optgroup label="✏ Other">
+                <option value="__custom__">Custom / Not on menu…</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="bfst-fg" id="bfstCustomWrap" style="min-width:180px;display:none;">
+            <span class="bfst-lbl">Custom Meal Name</span>
+            <input type="text" class="bfst-ctl" id="bfstCustomMeal" placeholder="Type meal name…" style="width:100%;" autocomplete="off"/>
+          </div>
+          <div class="bfst-fg">
+            <span class="bfst-lbl">Qty</span>
+            <input type="number" class="bfst-ctl" id="bfstQty" value="1" min="1" max="20" style="width:60px;"/>
+          </div>
+          <div class="bfst-fg" style="flex:1;min-width:150px;">
+            <span class="bfst-lbl">Special Instructions</span>
+            <input type="text" class="bfst-ctl" id="bfstNotes" placeholder="e.g. No onion, extra rice, no egg…" style="width:100%;"/>
+          </div>
+          <div class="bfst-fg" style="justify-content:flex-end;">
+            <span class="bfst-lbl" style="opacity:0;">_</span>
+            <div style="display:flex;gap:6px;">
+              <button class="bfst-add-btn" onclick="bfstAddOrder()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-bottom:-2px;margin-right:3px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Order
+              </button>
+              <button onclick="bfstClearForm()" style="padding:8px 10px;background:var(--h-input-bg);border:1px solid var(--h-border);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--h-muted);cursor:pointer;" title="Clear form">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders table -->
+      <div style="overflow-x:auto;">
+        <table class="bfst-table">
+          <thead>
+            <tr>
+              <th style="width:70px;">Time</th>
+              <th style="width:55px;">Room</th>
+              <th>Meal Order</th>
+              <th style="width:46px;text-align:center;">Qty</th>
+              <th style="min-width:150px;">Instructions</th>
+              <th style="width:120px;">Status <span style="font-weight:400;opacity:.6;">(click to advance)</span></th>
+              <th style="width:50px;text-align:right;padding-right:14px;">Del</th>
+            </tr>
+          </thead>
+          <tbody id="bfstOrderBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Summary bar — with Print Kitchen Ticket button -->
+      <div class="bfst-summary" id="bfstSummary">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Summary:</span>
+        <span class="bfst-sum-item"><span class="bfst-sum-dot" style="background:#f39c12;"></span><span id="bsum-pending" style="font-size:11px;color:var(--h-sub);">0 Pending</span></span>
+        <span class="bfst-sum-item"><span class="bfst-sum-dot" style="background:#3498db;"></span><span id="bsum-serving" style="font-size:11px;color:var(--h-sub);">0 Serving</span></span>
+        <span class="bfst-sum-item"><span class="bfst-sum-dot" style="background:#2ecc71;"></span><span id="bsum-done" style="font-size:11px;color:var(--h-sub);">0 Done</span></span>
+        <!-- ── PRINT KITCHEN TICKET BUTTON ── -->
+        <button class="bfst-print-btn" onclick="bfstPrintKitchen()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Kitchen Ticket
+        </button>
+        <button class="bfst-export-btn" onclick="bfstExportCSV()">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+
+    </div><!-- /bfst-panel -->
+
+    <!-- BACKUP & RESTORE -->
+    <div class="section-hd" style="margin-bottom:12px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Data Backup &amp; Restore
+    </div>
+
+    <div class="backup-panel">
+      <div class="backup-row">
+        <button class="bkp-btn bkp-export" onclick="exportBackup()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Backup (.json)
+        </button>
+        <button class="bkp-btn bkp-import" onclick="document.getElementById('restoreFileInput').click()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Restore from Backup
+        </button>
+        <input type="file" id="restoreFileInput" accept=".json" onchange="importBackup(event)"/>
+        <button class="bkp-btn bkp-clear" onclick="clearAllData()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Clear All Data
+        </button>
+        <span id="bkpStatus"></span>
+      </div>
+      <div class="backup-info">
+        <strong style="color:var(--h-sub);">Export</strong> saves all HMS data (rooms, bookings, events, staff schedules, logs) as a <code style="font-size:10px;background:var(--h-input-bg);padding:1px 4px;border-radius:2px;">.json</code> file you can store anywhere.
+        <strong style="color:var(--h-sub);">Restore</strong> loads a previously exported file back into the system.
+        Data is stored locally in your browser — export regularly to avoid loss.
+        <span id="bkpLastExport" style="margin-left:8px;color:var(--h-muted);"></span>
+      </div>
+    </div>
+
+  </div><!-- /hms-content -->
+</div><!-- /hms-main -->
+
+<!-- ══ KITCHEN PRINT FRAME (hidden on screen, shown during print) ══ -->
+<div id="kitchen-print-frame"></div>
+
+<!-- ROOM MODAL -->
+<div id="room-modal">
+  <div class="modal-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="m-room-ttl">Room 201</div>
+        <div class="modal-sub" id="m-room-sub">Standard Room</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box">Manual override. The Reservations Dashboard auto-sets status from active bookings. <strong>VD · OD · VCI · HU · OOO · OOS · DND</strong> are housekeeping/FD codes set here.</div>
+      <div class="status-preview" id="statusPreview">
+        <div class="status-preview-dot" id="statusPreviewDot"></div>
+        <div class="status-preview-code" id="statusPreviewCode"></div>
+        <div class="status-preview-name" id="statusPreviewName"></div>
+      </div>
+      <label class="flabel">Status</label>
+      <select class="fctl" id="m-status" onchange="updateStatusPreview(this.value)">
+        <optgroup label="── Vacant">
+          <option value="vc">🟢 VC — Vacant Clean</option>
+          <option value="vci">✅ VCI — Vacant Clean Inspected</option>
+          <option value="vd">🟠 VD — Vacant Dirty</option>
+        </optgroup>
+        <optgroup label="── Occupied">
+          <option value="occ">🔴 OCC — Occupied (Clean)</option>
+          <option value="od">🔵 OD — Occupied Dirty</option>
+          <option value="dnd">🔕 DND — Do Not Disturb</option>
+          <option value="co">🚪 CO — Checked Out</option>
+        </optgroup>
+        <optgroup label="── Reserved / Special">
+          <option value="reserved">🟡 RES — Reserved</option>
+          <option value="hu">🏠 HU — House Use</option>
+          <option value="ns">⚠️ NS — No Show</option>
+        </optgroup>
+        <optgroup label="── Blocked">
+          <option value="ooo">🚫 OOO — Out of Order</option>
+          <option value="oos">⛔ OOS — Out of Service</option>
+        </optgroup>
+      </select>
+      <label class="flabel">Guest Name</label>
+      <input class="fctl" type="text" id="m-guest" placeholder="e.g. Juan dela Cruz" maxlength="120"/>
+      <label class="flabel">Notes / Concerns</label>
+      <input class="fctl" type="text" id="m-notes" placeholder="e.g. Busted light, extra bed…" maxlength="200"/>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-sm btn-red" onclick="saveRoom()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div id="log-modal">
+  <div class="modal-card modal-card-lg">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="lm-ttl">New Log Entry</div>
+        <div class="modal-sub" id="lm-sub">M's Log &amp; Endorsement</div>
+      </div>
+      <button onclick="closeLogModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="display:flex;flex-direction:column;gap:4px;"><label class="flabel">Date *</label><input class="fctl" type="date" id="lm-date" style="margin-bottom:0;"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><label class="flabel">Author / Name *</label><input class="fctl" type="text" id="lm-author" placeholder="e.g. Maria, Reynan…" style="margin-bottom:0;"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><label class="flabel">Priority</label><select class="fctl" id="lm-priority" style="margin-bottom:0;"><option value="normal">Normal</option><option value="info">Info / Update</option><option value="policy">Policy</option><option value="urgent">🚨 Urgent / For Compliance</option></select></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><label class="flabel">Acknowledged By (comma-separated)</label><input class="fctl" type="text" id="lm-ack" placeholder="e.g. Mhaan, Reynan, Gemma, Tin" style="margin-bottom:0;"/></div>
+      <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px;"><label class="flabel">Message / Endorsement *</label><textarea class="fctl" id="lm-msg" rows="5" placeholder="Write the log entry or endorsement here…" style="margin-bottom:0;resize:vertical;line-height:1.6;"></textarea></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm btn-del-sm" id="lm-del-btn" style="display:none;" onclick="deleteLog()">Delete</button>
+      <button class="btn-sm btn-ghost" onclick="closeLogModal()">Cancel</button>
+      <button class="btn-sm btn-red" onclick="saveLog()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<div id="hms-toast"></div>
+
+<script>window.HIRAYA_PAGE='index';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script src="activity-log.js"></script>
+<script>
+if (typeof hirayaRenderTopbar === 'function')
+  hirayaRenderTopbar('Property Overview', 'Front Desk Hub');
+
+/* ══════════════════════════════════════════════════════
+   HOTEL INDUSTRY STATUS DEFINITIONS
+══════════════════════════════════════════════════════ */
+const HMS_STATUS = {
+  vc:       { code:'VC',  label:'Vacant Clean',           color:'#2ecc71', bg:'rgba(46,204,113,.12)',  stat:'vc' },
+  vci:      { code:'VCI', label:'Vacant Clean Inspected', color:'#27ae60', bg:'rgba(39,174,96,.12)',   stat:'vci' },
+  vd:       { code:'VD',  label:'Vacant Dirty',           color:'#e67e22', bg:'rgba(230,126,34,.12)',  stat:'vd' },
+  occ:      { code:'OCC', label:'Occupied',               color:'#C0272D', bg:'rgba(192,39,45,.12)',   stat:'occ' },
+  od:       { code:'OD',  label:'Occupied Dirty',         color:'#3498db', bg:'rgba(52,152,219,.12)',  stat:'od' },
+  dnd:      { code:'DND', label:'Do Not Disturb',         color:'#3498db', bg:'rgba(52,152,219,.1)',   stat:'od' },
+  co:       { code:'CO',  label:'Checked Out',            color:'#16a085', bg:'rgba(22,160,133,.12)',  stat:'vd' },
+  reserved: { code:'RES', label:'Reserved',               color:'#f39c12', bg:'rgba(243,156,18,.12)',  stat:'reserved' },
+  hu:       { code:'HU',  label:'House Use',              color:'#9b59b6', bg:'rgba(155,89,182,.12)',  stat:'hu' },
+  ns:       { code:'NS',  label:'No Show',                color:'#d35400', bg:'rgba(211,84,0,.12)',    stat:'reserved' },
+  ooo:      { code:'OOO', label:'Out of Order',           color:'#e74c3c', bg:'rgba(231,76,60,.12)',   stat:'ooo' },
+  oos:      { code:'OOS', label:'Out of Service',         color:'#95a5a6', bg:'rgba(149,165,166,.12)', stat:'ooo' },
+};
+const LEGACY_MAP = { vacant:'vc', occupied:'occ', cleaning:'vd', maintenance:'ooo', reserved:'reserved' };
+
+function resolveStatus(rawStatus) {
+  if (!rawStatus) return 'vc';
+  if (HMS_STATUS[rawStatus] && HMS_STATUS[rawStatus] !== null) return rawStatus;
+  if (LEGACY_MAP[rawStatus]) return LEGACY_MAP[rawStatus];
+  return 'vc';
+}
+function getStatusMeta(rawStatus) {
+  return HMS_STATUS[resolveStatus(rawStatus)] || HMS_STATUS.vc;
+}
+
+/* ══════════════════════════════════════════════════════
+   STORAGE KEYS & HELPERS
+══════════════════════════════════════════════════════ */
+const LOG_KEY     = 'hiraya_log_entries';
+const ROOMS_KEY   = 'hiraya_rooms';
+const BKP_KEY     = 'hiraya_last_export';
+const BFST_KEY    = 'hiraya_breakfast_orders';
+
+const ALL_HMS_KEYS = [
+  'hiraya_rooms','hiraya_bookings','hiraya_events',
+  'hiraya_staff_directory','hiraya_weekly_schedules',
+  'hiraya_positions','hiraya_signatories','hiraya_revenue',
+  LOG_KEY, BFST_KEY
+];
+
+function lsGet(k, def) {
+  try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(def)); }
+  catch(e) { return def; }
+}
+function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function uid() { return 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function fmtDateLong(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-PH',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+let _toastT;
+function showToast(msg, type='ok') {
+  const el = document.getElementById('hms-toast');
+  el.textContent = msg;
+  el.style.background = type === 'err' ? '#8b1a1a' : '#1a1a1a';
+  el.classList.add('show');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ══════════════════════════════════════════════════════
+   STATUS PREVIEW IN MODAL
+══════════════════════════════════════════════════════ */
+function updateStatusPreview(rawVal) {
+  const meta = getStatusMeta(rawVal);
+  const dot  = document.getElementById('statusPreviewDot');
+  const code = document.getElementById('statusPreviewCode');
+  const name = document.getElementById('statusPreviewName');
+  if (dot)  dot.style.background = meta.color;
+  if (code) { code.textContent = meta.code; code.style.color = meta.color; }
+  if (name) name.textContent = meta.label;
+}
+
+/* ══════════════════════════════════════════════════════
+   STAT COUNTERS
+══════════════════════════════════════════════════════ */
+function resetStatCounters() {
+  ['vc','vci','vd','occ','reserved','od','hu','ooo'].forEach(id => {
+    const el = document.getElementById('sv-' + id);
+    if (el) el.textContent = '0';
+  });
+}
+function bumpStat(resolvedStatus) {
+  const statMap = {vc:'vc',vci:'vci',vd:'vd',co:'vd',occ:'occ',od:'od',dnd:'od',reserved:'reserved',ns:'reserved',hu:'hu',ooo:'ooo',oos:'ooo'};
+  const bucket = statMap[resolvedStatus] || 'vc';
+  const el = document.getElementById('sv-' + bucket);
+  if (el) el.textContent = parseInt(el.textContent || '0', 10) + 1;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROOM GRID
+══════════════════════════════════════════════════════ */
+const DEFAULT_ROOM_NUMBERS = [201,202,203,204,205,206,207,208,209,210,211,212,213,214,215];
+const DEFAULT_ROOM_META = {201:'Standard',202:'Standard',203:'Standard',204:'Standard',205:'Standard',206:'Deluxe',207:'Deluxe',208:'Deluxe',209:'Deluxe',210:'Deluxe',211:'Suite',212:'Suite',213:'Suite',214:'Suite',215:'Suite'};
+
+function getRoomNumbers() {
+  if (typeof window.HirayaDB !== 'undefined') return window.HirayaDB.ROOM_NUMBERS;
+  return DEFAULT_ROOM_NUMBERS;
+}
+function getRoomType(num) {
+  if (typeof window.HirayaDB !== 'undefined') return window.HirayaDB.ROOM_META?.[num]?.type || '';
+  return DEFAULT_ROOM_META[num] || '';
+}
+
+function buildRoomStates() {
+  let synced = {};
+  if (typeof window.HirayaDB !== 'undefined') {
+    try { synced = window.HirayaDB.syncRoomsFromBookings() || {}; } catch(e) {}
+  }
+  const saved = getRoomsData();
+  const result = {};
+  getRoomNumbers().forEach(r => {
+    const base     = synced[r] || { status: 'vc', guest: '', notes: '' };
+    const override = saved[r];
+    if (override) {
+      result[r] = Object.assign({}, base, override);
+      if (base._source === 'booking' && !override._source) {
+        if (!saved[r]?.status) result[r].status = base.status;
+      }
+    } else {
+      result[r] = base;
+    }
+  });
+  return result;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('roomGrid');
+  if (!grid) return;
+  const states = buildRoomStates();
+  resetStatCounters();
+  grid.innerHTML = '';
+  getRoomNumbers().forEach(r => {
+    const s        = states[r] || { status: 'vc' };
+    const resolved = resolveStatus(s.status);
+    const meta     = getStatusMeta(resolved);
+    bumpStat(resolved);
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.style.setProperty('--sc',  meta.color);
+    card.style.setProperty('--sbg', meta.bg);
+    card.innerHTML = `
+      <div class="room-num">${r}</div>
+      <div class="room-type">${esc(getRoomType(r))}</div>
+      <div class="room-badge">
+        <div class="room-dot"></div>
+        ${esc(meta.label)}
+        <span class="room-badge-code">${esc(meta.code)}</span>
+      </div>
+      ${s.guest ? `<div class="room-guest">${esc(s.guest)}</div>` : ''}
+      ${s.notes ? `<div class="room-notes">⚠ ${esc(s.notes)}</div>` : ''}
+      ${s._source === 'booking' ? '<div class="live-badge">LIVE</div>' : ''}
+    `;
+    card.addEventListener('click', () => openModal(r, s));
+    grid.appendChild(card);
+  });
+  document.getElementById('lastSync').textContent =
+    'Synced ' + new Date().toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function renderUpcoming() {
+  if (typeof window.HirayaDB === 'undefined') return;
+  const DB = window.HirayaDB;
+  const todayStr = DB.fmtDate(new Date());
+  const upcoming = DB.getEvents()
+    .filter(e => e.date >= todayStr && e.status !== 'cancelled')
+    .sort((a,b) => a.date.localeCompare(b.date) || (a.timeStart||'').localeCompare(b.timeStart||''))
+    .slice(0, 7);
+  const strip = document.getElementById('upcomingEvents');
+  if (!upcoming.length) { strip.innerHTML = '<div style="padding:14px 0;color:var(--h-muted);font-size:12px;">No upcoming events.</div>'; return; }
+  strip.innerHTML = upcoming.map(ev => {
+    const d   = DB.parseDate(ev.date);
+    const lbl = d ? d.toLocaleDateString('en-PH',{month:'short',day:'numeric'}) : ev.date;
+    const color = ev.color || DB.EVENT_TYPES[ev.type]?.color || '#888';
+    return `<div class="ev-row"><div class="ev-row-dot" style="background:${esc(color)};"></div><div class="ev-row-date">${esc(lbl)}</div><div class="ev-row-name">${esc(ev.title)}</div><div class="ev-row-meta">${esc(ev.venue||'')}</div></div>`;
+  }).join('');
+}
+
+let activeRoom = null;
+function openModal(num, roomState) {
+  activeRoom = num;
+  const freshStates = buildRoomStates();
+  const s = freshStates[num] || roomState || { status: 'vc', guest: '', notes: '' };
+  document.getElementById('m-room-ttl').textContent = 'Room ' + num;
+  document.getElementById('m-room-sub').textContent = getRoomType(num);
+  const resolved = resolveStatus(s.status);
+  document.getElementById('m-status').value = resolved;
+  document.getElementById('m-guest').value  = s.guest || '';
+  document.getElementById('m-notes').value  = s.notes || '';
+  updateStatusPreview(resolved);
+  document.getElementById('room-modal').classList.add('open');
+  setTimeout(() => document.getElementById('m-status').focus(), 80);
+}
+function closeModal() { document.getElementById('room-modal').classList.remove('open'); activeRoom = null; }
+
+function getRoomsData() {
+  try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function setRoomData(num, patch) {
+  const all = getRoomsData();
+  all[num] = Object.assign({}, all[num] || {}, patch);
+  localStorage.setItem(ROOMS_KEY, JSON.stringify(all));
+  if (typeof window.HirayaDB !== 'undefined' && typeof window.HirayaDB.setRoom === 'function') {
+    try { window.HirayaDB.setRoom(num, patch); } catch(e) {}
+  }
+  return all[num];
+}
+function saveRoom() {
+  if (!activeRoom) return;
+  const newStatus = document.getElementById('m-status').value;
+  const guest     = document.getElementById('m-guest').value.trim().slice(0, 120);
+  const notes     = document.getElementById('m-notes').value.trim().slice(0, 200);
+  const meta      = getStatusMeta(newStatus);
+  setRoomData(activeRoom, { status: newStatus, guest, notes });
+  closeModal();
+  renderGrid();
+  showToast(`Room ${activeRoom} → ${meta.code} · ${meta.label} ✓`);
+}
+document.getElementById('room-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+/* ══════════════════════════════════════════════════════
+   LOG & ENDORSEMENT
+══════════════════════════════════════════════════════ */
+const ACK_NAMES = ['Mhaan', 'Reynan', 'Gemma', 'Tin'];
+let logFilter = 'all';
+let editLogId = null;
+
+function loadLogs() { return lsGet(LOG_KEY, []); }
+function saveLogs(d) { lsSet(LOG_KEY, d); }
+
+function setLogFilter(f, btn) {
+  logFilter = f;
+  document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active','active-urgent'));
+  if (f === 'urgent') btn.classList.add('active-urgent');
+  else btn.classList.add('active');
+  renderLog();
+}
+
+const PRIORITY_META = {
+  normal:{ label:'Normal', cls:'log-badge-normal' },
+  info:  { label:'Info',   cls:'log-badge-info' },
+  policy:{ label:'Policy', cls:'log-badge-policy' },
+  urgent:{ label:'Urgent', cls:'log-badge-urgent' },
+};
+
+function renderLog() {
+  const logs   = loadLogs();
+  const search = document.getElementById('logSearch').value.toLowerCase();
+  let filtered = logs.filter(l => {
+    if (logFilter !== 'all' && l.priority !== logFilter) return false;
+    if (search && !l.message.toLowerCase().includes(search) && !l.author.toLowerCase().includes(search) && !(l.date||'').includes(search)) return false;
+    return true;
+  });
+  filtered.sort((a,b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  const tbody = document.getElementById('logBody');
+  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="5"><div class="log-empty">No log entries found.</div></td></tr>`; return; }
+  tbody.innerHTML = filtered.map(l => {
+    const pm    = PRIORITY_META[l.priority] || PRIORITY_META.normal;
+    const isUrg = l.priority === 'urgent';
+    const ackArr = l.acks || [];
+    const dateDisp = l.date ? new Date(l.date+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    const ackChips = ACK_NAMES.map(name => {
+      const done = ackArr.includes(name);
+      return `<span class="ack-chip ${done?'acked':''}" onclick="toggleAck('${l.id}','${name}')">${done?'✓':'·'} ${esc(name)}</span>`;
+    }).join('');
+    return `<tr class="${isUrg?'log-row-urgent':''}">
+      <td class="td-date"><div>${esc(dateDisp)}</div><div style="font-size:9px;color:var(--h-muted);margin-top:1px;">${esc(l.author||'—')}</div></td>
+      <td><span class="log-badge ${pm.cls}">${pm.label}</span></td>
+      <td class="td-msg"><div style="line-height:1.55;white-space:pre-wrap;">${esc(l.message)}</div></td>
+      <td class="td-ack">${ackChips}</td>
+      <td class="td-act"><button onclick="openLogModal('${l.id}')" style="background:none;border:1px solid var(--h-border);border-radius:2px;padding:3px 8px;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--h-muted);cursor:pointer;">Edit</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleAck(logId, name) {
+  const logs = loadLogs();
+  const l = logs.find(x => x.id === logId);
+  if (!l) return;
+  if (!l.acks) l.acks = [];
+  const idx = l.acks.indexOf(name);
+  if (idx === -1) l.acks.push(name); else l.acks.splice(idx, 1);
+  saveLogs(logs); renderLog();
+}
+
+function quickPostLog() {
+  const msg    = document.getElementById('qlogMsg').value.trim();
+  const author = document.getElementById('qlogAuthor').value.trim();
+  const prio   = document.getElementById('qlogPriority').value;
+  if (!msg) { showToast('Please write a message.', 'err'); return; }
+  const logs = loadLogs();
+  logs.push({ id:uid(), date:todayISO(), author:author||'Staff', priority:prio, message:msg, acks:[], createdAt:new Date().toISOString() });
+  saveLogs(logs);
+  document.getElementById('qlogMsg').value = '';
+  renderLog();
+  showToast('Log posted ✓');
+}
+document.getElementById('qlogMsg').addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); quickPostLog(); }
+});
+
+function openLogModal(logId) {
+  editLogId = logId || null;
+  const logs = loadLogs();
+  const l    = logId ? logs.find(x => x.id === logId) : null;
+  document.getElementById('lm-ttl').textContent     = l ? 'Edit Log Entry' : 'New Log Entry';
+  document.getElementById('lm-sub').textContent     = l ? `Posted by ${l.author||'Staff'}` : 'M\'s Log & Endorsement';
+  document.getElementById('lm-date').value          = l ? l.date : todayISO();
+  document.getElementById('lm-author').value        = l ? l.author : (document.getElementById('qlogAuthor').value || '');
+  document.getElementById('lm-priority').value      = l ? l.priority : 'normal';
+  document.getElementById('lm-msg').value           = l ? l.message : '';
+  document.getElementById('lm-ack').value           = l ? (l.acks||[]).join(', ') : '';
+  document.getElementById('lm-del-btn').style.display = l ? 'block' : 'none';
+  document.getElementById('log-modal').classList.add('open');
+  setTimeout(() => document.getElementById('lm-msg').focus(), 100);
+}
+function closeLogModal() { document.getElementById('log-modal').classList.remove('open'); editLogId = null; }
+
+function saveLog() {
+  const date   = document.getElementById('lm-date').value;
+  const author = document.getElementById('lm-author').value.trim();
+  const prio   = document.getElementById('lm-priority').value;
+  const msg    = document.getElementById('lm-msg').value.trim();
+  const ackRaw = document.getElementById('lm-ack').value;
+  const acks   = ackRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!date || !msg) { showToast('Date and message are required.', 'err'); return; }
+  const logs = loadLogs();
+  if (editLogId) {
+    const idx = logs.findIndex(x => x.id === editLogId);
+    if (idx !== -1) logs[idx] = { ...logs[idx], date, author:author||'Staff', priority:prio, message:msg, acks, updatedAt:new Date().toISOString() };
+    showToast('Log updated ✓');
+  } else {
+    logs.push({ id:uid(), date, author:author||'Staff', priority:prio, message:msg, acks, createdAt:new Date().toISOString() });
+    showToast('Log saved ✓');
+  }
+  saveLogs(logs); closeLogModal(); renderLog();
+}
+function deleteLog() {
+  if (!editLogId) return;
+  if (!confirm('Delete this log entry?')) return;
+  saveLogs(loadLogs().filter(l => l.id !== editLogId));
+  closeLogModal(); renderLog();
+  showToast('Log deleted');
+}
+document.getElementById('log-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('log-modal')) closeLogModal();
+});
+
+/* ══════════════════════════════════════════════════════
+   BREAKFAST MEAL REQUEST ENGINE
+══════════════════════════════════════════════════════ */
+const BFST_STATUS_CYCLE  = ['pending','serving','done'];
+const BFST_STATUS_LABELS = { pending:'⏳ Pending', serving:'🔄 Serving', done:'✅ Done' };
+const BFST_STATUS_CLASS  = { pending:'bfst-status-pending', serving:'bfst-status-serving', done:'bfst-status-done' };
+const BFST_WIDGET_CLASS  = { pending:'bfst-wb-pending', serving:'bfst-wb-serving', done:'bfst-wb-done' };
+
+let bfstDate = todayISO();
+
+function loadBfstOrders()             { return lsGet(BFST_KEY, {}); }
+function saveBfstOrders(d)            { lsSet(BFST_KEY, d); }
+function getOrdersForDate(d)          { return [...(loadBfstOrders()[d] || [])]; }
+function saveOrdersForDate(d, orders) { const a=loadBfstOrders(); a[d]=orders; saveBfstOrders(a); }
+
+function bfstShiftDate(delta) {
+  const d = new Date(bfstDate + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  bfstDate = d.toISOString().slice(0,10);
+  renderBfst();
+}
+function bfstGoToday() { bfstDate = todayISO(); renderBfst(); }
+document.getElementById('bfstPrev').addEventListener('click', () => bfstShiftDate(-1));
+document.getElementById('bfstNext').addEventListener('click', () => bfstShiftDate(+1));
+
+function scrollToBfst() {
+  document.getElementById('bfstPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function populateBfstRooms() {
+  const sel = document.getElementById('bfstRoom');
+  if (!sel) return;
+  sel.innerHTML = getRoomNumbers().map(n => `<option value="${n}">${n}</option>`).join('');
+}
+
+function bfstOnMealChange(val) {
+  const wrap = document.getElementById('bfstCustomWrap');
+  if (val === '__custom__') {
+    wrap.style.display = 'flex';
+    document.getElementById('bfstCustomMeal').focus();
+  } else {
+    wrap.style.display = 'none';
+    document.getElementById('bfstCustomMeal').value = '';
+  }
+}
+
+function bfstClearForm() {
+  document.getElementById('bfstMealSelect').value = '';
+  document.getElementById('bfstCustomMeal').value = '';
+  document.getElementById('bfstCustomWrap').style.display = 'none';
+  document.getElementById('bfstQty').value   = '1';
+  document.getElementById('bfstNotes').value = '';
+}
+
+function bfstAddOrder() {
+  const room     = document.getElementById('bfstRoom').value;
+  const sel      = document.getElementById('bfstMealSelect').value;
+  const custom   = document.getElementById('bfstCustomMeal').value.trim();
+  const meal     = (sel === '__custom__') ? custom : sel;
+  const isCustom = (sel === '__custom__');
+  const qty      = Math.max(1, parseInt(document.getElementById('bfstQty').value) || 1);
+  const notes    = document.getElementById('bfstNotes').value.trim();
+
+  if (!room) { showToast('Select a room number.', 'err'); return; }
+  if (!meal) {
+    if (sel === '__custom__') showToast('Type the custom meal name.', 'err');
+    else showToast('Select a meal from the dropdown.', 'err');
+    return;
+  }
+
+  const orders = getOrdersForDate(bfstDate);
+  orders.push({
+    id:        uid(),
+    room:      parseInt(room),
+    meal,
+    isCustom,
+    qty,
+    notes,
+    status:    'pending',
+    time:      new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}),
+    createdAt: new Date().toISOString(),
+  });
+  saveOrdersForDate(bfstDate, orders);
+  bfstClearForm();
+  renderBfstOrders();
+  renderBfstWidget();
+  showToast(`Room ${room} — ${meal} ×${qty} added ✓`);
+}
+
+document.getElementById('bfstNotes').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); bfstAddOrder(); }
+});
+document.getElementById('bfstCustomMeal').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('bfstQty').focus(); }
+});
+
+function bfstCycleStatus(orderId) {
+  const orders = getOrdersForDate(bfstDate);
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  const cur = BFST_STATUS_CYCLE.indexOf(o.status);
+  o.status = BFST_STATUS_CYCLE[(cur + 1) % BFST_STATUS_CYCLE.length];
+  saveOrdersForDate(bfstDate, orders);
+  renderBfstOrders();
+  if (bfstDate === todayISO()) renderBfstWidget();
+}
+
+function bfstDeleteOrder(orderId) {
+  if (!confirm('Remove this order?')) return;
+  saveOrdersForDate(bfstDate, getOrdersForDate(bfstDate).filter(o => o.id !== orderId));
+  renderBfstOrders();
+  if (bfstDate === todayISO()) renderBfstWidget();
+  showToast('Order removed');
+}
+
+function renderBfstOrders() {
+  const orders = getOrdersForDate(bfstDate);
+  const tbody  = document.getElementById('bfstOrderBody');
+  if (!tbody) return;
+
+  const STATUS_ORDER = { pending:0, serving:1, done:2 };
+  const sorted = [...orders].sort((a,b) => {
+    const sd = (STATUS_ORDER[a.status]||0) - (STATUS_ORDER[b.status]||0);
+    return sd || a.room - b.room || (a.createdAt||'').localeCompare(b.createdAt||'');
+  });
+
+  document.getElementById('bfstOrderCount').textContent =
+    sorted.length + ' order' + (sorted.length !== 1 ? 's' : '');
+
+  const pending = sorted.filter(o=>o.status==='pending').length;
+  const serving = sorted.filter(o=>o.status==='serving').length;
+  const done    = sorted.filter(o=>o.status==='done').length;
+  document.getElementById('bsum-pending').textContent = pending + ' Pending';
+  document.getElementById('bsum-serving').textContent = serving + ' Serving';
+  document.getElementById('bsum-done').textContent    = done    + ' Done';
+
+  if (!sorted.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px 12px;color:var(--h-muted);font-size:12px;font-style:italic;">No breakfast orders for this date. Add one above ↑</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(o => {
+    const mealCls = o.isCustom ? 'bfst-meal-tag bfst-meal-tag-custom' : 'bfst-meal-tag';
+    const statCls = BFST_STATUS_CLASS[o.status] || 'bfst-status-pending';
+    const statLbl = BFST_STATUS_LABELS[o.status] || '⏳ Pending';
+    return `<tr style="${o.status==='done'?'opacity:.55;':''}">
+      <td style="font-size:11px;color:var(--h-muted);white-space:nowrap;">${esc(o.time||'—')}</td>
+      <td><span class="bfst-room-num">${esc(String(o.room))}</span></td>
+      <td>
+        <span class="${mealCls}">${esc(o.meal)}</span>
+        ${o.isCustom ? '<span style="font-size:9px;color:var(--h-muted);margin-left:4px;font-style:italic;">custom</span>' : ''}
+      </td>
+      <td style="text-align:center;"><span class="bfst-qty-badge">×${esc(String(o.qty))}</span></td>
+      <td style="font-size:11px;color:var(--h-sub);">${o.notes ? esc(o.notes) : '<span style="color:var(--h-muted);">—</span>'}</td>
+      <td>
+        <button class="bfst-status-chip ${statCls}" onclick="bfstCycleStatus('${o.id}')" title="Click to advance">
+          ${statLbl}
+        </button>
+      </td>
+      <td style="text-align:right;padding-right:12px;">
+        <button class="bfst-del-btn" onclick="bfstDeleteOrder('${o.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBfstWidget() {
+  const orders  = getOrdersForDate(todayISO());
+  const pending = orders.filter(o=>o.status==='pending').length;
+  const serving = orders.filter(o=>o.status==='serving').length;
+  const done    = orders.filter(o=>o.status==='done').length;
+
+  const svBfst = document.getElementById('sv-bfst-pending');
+  if (svBfst) svBfst.textContent = pending + serving;
+
+  const bwP = document.getElementById('bw-pending');
+  const bwS = document.getElementById('bw-serving');
+  const bwD = document.getElementById('bw-done');
+  if (bwP) bwP.textContent = pending;
+  if (bwS) bwS.textContent = serving;
+  if (bwD) bwD.textContent = done;
+
+  const list = document.getElementById('bfstWidgetList');
+  if (!list) return;
+
+  const active = orders
+    .filter(o => o.status !== 'done')
+    .sort((a,b) => a.room - b.room || (a.createdAt||'').localeCompare(b.createdAt||''));
+
+  if (!orders.length) {
+    list.innerHTML = `<div class="bfst-widget-empty">No breakfast orders today</div>`;
+  } else if (!active.length) {
+    list.innerHTML = `<div class="bfst-widget-empty" style="color:#2ecc71;">✓ All ${done} order${done!==1?'s':''} done!</div>`;
+  } else {
+    list.innerHTML = active.map(o => {
+      const wbCls = BFST_WIDGET_CLASS[o.status] || 'bfst-wb-pending';
+      const lbl   = o.status === 'serving' ? 'Serving' : 'Pending';
+      return `<div class="bfst-widget-row">
+        <span class="bfst-widget-room">${esc(String(o.room))}</span>
+        <span class="bfst-widget-meal" title="${esc(o.meal)}">${esc(o.meal)}</span>
+        <span class="bfst-widget-qty">×${o.qty}</span>
+        <span class="bfst-widget-badge ${wbCls}">${lbl}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const timeEl = document.getElementById('bfstWidgetTime');
+  if (timeEl) timeEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderBfst() {
+  document.getElementById('bfstDateLabel').textContent = fmtDateLong(bfstDate);
+  renderBfstOrders();
+  renderBfstWidget();
+}
+
+function bfstExportCSV() {
+  const orders = getOrdersForDate(bfstDate);
+  if (!orders.length) { showToast('No orders to export.', 'err'); return; }
+  const rows = [
+    ['Date','Time','Room','Meal','Qty','Instructions','Status','Custom?'],
+    ...orders.sort((a,b)=>a.room-b.room||a.createdAt.localeCompare(b.createdAt)).map(o => [
+      bfstDate, o.time||'', o.room, o.meal, o.qty, o.notes||'', o.status, o.isCustom?'Yes':'No'
+    ])
+  ];
+  const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a   = document.createElement('a');
+  a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `hiraya-breakfast-${bfstDate}.csv`;
+  a.click();
+  showToast('CSV exported ✓');
+}
+
+/* ══════════════════════════════════════════════════════
+   PRINT KITCHEN TICKET
+══════════════════════════════════════════════════════ */
+function bfstPrintKitchen() {
+  const orders = getOrdersForDate(bfstDate);
+  if (!orders.length) { showToast('No orders to print for this date.', 'err'); return; }
+
+  // Sort: pending first, then serving, then done — then by room
+  const STATUS_ORDER = { pending:0, serving:1, done:2 };
+  const sorted = [...orders].sort((a,b) =>
+    (STATUS_ORDER[a.status]||0) - (STATUS_ORDER[b.status]||0) ||
+    a.room - b.room ||
+    (a.createdAt||'').localeCompare(b.createdAt||'')
+  );
+
+  const pending = sorted.filter(o => o.status === 'pending').length;
+  const serving = sorted.filter(o => o.status === 'serving').length;
+  const done    = sorted.filter(o => o.status === 'done').length;
+  const total   = sorted.length;
+
+  const printedAt = new Date().toLocaleString('en-PH', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true
+  });
+
+  const dateDisplay = fmtDateLong(bfstDate);
+
+  // Build rows
+  const rowsHtml = sorted.map((o, i) => {
+    const rowCls = o.status === 'done'
+      ? 'kp-row-done'
+      : o.status === 'serving'
+      ? 'kp-row-serving'
+      : 'kp-row-pending';
+
+    const statusLabel = { pending:'PENDING', serving:'IN PROGRESS', done:'DONE' }[o.status] || o.status.toUpperCase();
+    const statusCls   = `kp-status-${o.status}`;
+    const notesCell   = o.notes
+      ? `<strong>★</strong> ${o.notes}`
+      : `<span class="kp-td-notes-none">—</span>`;
+    const customTag   = o.isCustom ? `<span class="kp-td-custom-tag">CUSTOM</span>` : '';
+
+    return `
+      <tr class="${rowCls}">
+        <td class="kp-td-seq">${i + 1}</td>
+        <td class="kp-td-room">${o.room}</td>
+        <td class="kp-td-meal">${o.meal}${customTag}</td>
+        <td class="kp-td-qty">${o.qty}</td>
+        <td class="kp-td-notes">${notesCell}</td>
+        <td class="kp-td-status"><span class="kp-status-badge ${statusCls}">${statusLabel}</span></td>
+        <td class="kp-td-check"><span class="kp-checkbox"></span></td>
+      </tr>`;
+  }).join('');
+
+  // Inject HTML into the print frame
+  document.getElementById('kitchen-print-frame').innerHTML = `
+    <div class="kp-page">
+
+      <!-- Header -->
+      <div class="kp-header">
+        <div class="kp-hotel">HIRAYA</div>
+        <div class="kp-doc-title">Kitchen Breakfast Order Ticket</div>
+      </div>
+
+      <!-- Meta row -->
+      <div class="kp-meta">
+        <div class="kp-meta-block">
+          <div class="kp-meta-label">Service Date</div>
+          <div class="kp-meta-value">${dateDisplay}</div>
+        </div>
+        <div class="kp-meta-block" style="text-align:right;">
+          <div class="kp-meta-label">Printed</div>
+          <div class="kp-meta-value" style="font-size:11px;">${printedAt}</div>
+        </div>
+      </div>
+
+      <hr class="kp-divider"/>
+
+      <!-- Summary bar -->
+      <div class="kp-summary-bar">
+        <div class="kp-summary-item">
+          <span class="kp-summary-dot" style="background:#000;"></span>
+          <strong>TOTAL: ${total} ORDER${total !== 1 ? 'S' : ''}</strong>
+        </div>
+        <div class="kp-summary-item">
+          <span class="kp-summary-dot" style="background:#888;border:1.5px solid #555;"></span>
+          ${pending} Pending
+        </div>
+        <div class="kp-summary-item">
+          <span class="kp-summary-dot" style="background:#555;"></span>
+          ${serving} In Progress
+        </div>
+        <div class="kp-summary-item">
+          <span class="kp-summary-dot" style="background:#bbb;"></span>
+          ${done} Done
+        </div>
+      </div>
+
+      <!-- Orders table -->
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th style="width:28px;">#</th>
+            <th style="width:55px;">ROOM</th>
+            <th>MEAL / DISH</th>
+            <th class="th-center" style="width:40px;">QTY</th>
+            <th>SPECIAL INSTRUCTIONS</th>
+            <th class="th-center" style="width:80px;">STATUS</th>
+            <th class="th-center" style="width:32px;">✓</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+
+      <!-- Signature footer -->
+      <div class="kp-footer">
+        <div class="kp-sig-block">Prepared by (Kitchen)</div>
+        <div class="kp-sig-block">Checked by (Supervisor)</div>
+        <div class="kp-sig-block">Received by (Service)</div>
+      </div>
+
+      <!-- Printed note -->
+      <div class="kp-printed-note">
+        HIRAYA HMS — This document is for internal kitchen use only.
+        Generated on ${printedAt}
+      </div>
+
+    </div>`;
+
+  // Trigger print dialog
+  window.print();
+}
+
+/* ══════════════════════════════════════════════════════
+   BACKUP & RESTORE
+══════════════════════════════════════════════════════ */
+function exportBackup() {
+  const data = {};
+  ALL_HMS_KEYS.forEach(k => {
+    try { const raw = localStorage.getItem(k); if (raw !== null) data[k] = JSON.parse(raw); } catch(e) {}
+  });
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('hiraya_') && !(k in data)) {
+      try { data[k] = JSON.parse(localStorage.getItem(k)); } catch(e) {}
+    }
+  }
+  const backup = { _meta:{ system:'Hiraya HMS', version:'1.0', exportedAt:new Date().toISOString(), exportedBy:'Property Overview' }, data };
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `hiraya-hms-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  localStorage.setItem(BKP_KEY, new Date().toLocaleString('en-PH'));
+  updateBkpStatus('ok', `Backup exported (${Object.keys(data).length} keys)`);
+  updateLastExport();
+  showToast('Backup exported successfully ✓');
+}
+
+function importBackup(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.data || typeof backup.data !== 'object') throw new Error('Invalid backup format');
+      const keyCount = Object.keys(backup.data).length;
+      const meta     = backup._meta || {};
+      const expDate  = meta.exportedAt ? new Date(meta.exportedAt).toLocaleString('en-PH') : 'unknown date';
+      if (!confirm(`Restore backup from ${expDate}?\n\nThis will overwrite ${keyCount} data keys.\n\nProceed?`)) { event.target.value=''; return; }
+      let restored = 0;
+      Object.entries(backup.data).forEach(([k,v]) => {
+        try { localStorage.setItem(k, JSON.stringify(v)); restored++; } catch(err) {}
+      });
+      updateBkpStatus('ok', `Restored ${restored} keys from backup`);
+      showToast(`Backup restored! (${restored} keys) — Refreshing…`);
+      setTimeout(() => { renderGrid(); renderUpcoming(); renderLog(); renderBfst(); }, 400);
+    } catch(err) { updateBkpStatus('err', 'Restore failed: '+err.message); showToast('Restore failed: '+err.message,'err'); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ This will DELETE all HMS data.\n\nAre you absolutely sure?')) return;
+  if (!confirm('Second confirmation: ALL DATA will be erased. Cannot be undone without a backup.')) return;
+  ALL_HMS_KEYS.forEach(k => localStorage.removeItem(k));
+  const toRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i); if (k && k.startsWith('hiraya_')) toRemove.push(k);
+  }
+  toRemove.forEach(k => localStorage.removeItem(k));
+  updateBkpStatus('err', 'All data cleared');
+  showToast('All HMS data cleared', 'err');
+  setTimeout(() => location.reload(), 600);
+}
+
+function updateBkpStatus(type, msg) {
+  const el = document.getElementById('bkpStatus');
+  el.className = 'bkp-status ' + (type==='ok'?'bkp-ok':'bkp-err');
+  el.textContent = msg;
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 5000);
+}
+function updateLastExport() {
+  const last = localStorage.getItem(BKP_KEY);
+  const el   = document.getElementById('bkpLastExport');
+  if (el && last) el.textContent = `Last export: ${last}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   KEYBOARD & INIT
+══════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeLogModal(); }
+});
+
+if (typeof window.HirayaDB !== 'undefined') {
+  window.HirayaDB.onUpdate(key => {
+    if (key === window.HirayaDB.KEY?.bookings || key === window.HirayaDB.KEY?.rooms) renderGrid();
+    if (key === window.HirayaDB.KEY?.events) renderUpcoming();
+  });
+}
+
+window.addEventListener('storage', e => {
+  if (e.key === ROOMS_KEY) renderGrid();
+  if (e.key === LOG_KEY)   renderLog();
+  if (e.key === BFST_KEY)  { renderBfstOrders(); renderBfstWidget(); }
+});
+
+window.HIRAYA_STATUS         = HMS_STATUS;
+window.HIRAYA_RESOLVE_STATUS = resolveStatus;
+window.HIRAYA_STATUS_META    = getStatusMeta;
+
+renderGrid();
+renderUpcoming();
+renderLog();
+populateBfstRooms();
+renderBfst();
+updateLastExport();
+setInterval(() => { renderBfstWidget(); }, 60000);
+</script>
+<script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2026/04/04/11/20260404111502-YE029S7H.js" defer></script>
+</body>
+</html>

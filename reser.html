@@ -1,0 +1,1938 @@
+<!-- reservations.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Reservations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Full-height non-scrolling shell ── */
+    html, body { height:100%; overflow:hidden; }
+    #hms-main  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .res-wrap  { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      display:flex; align-items:center; gap:0; flex-shrink:0; overflow-x:auto;
+      border-bottom:1px solid var(--h-border); background:var(--h-panel); padding:0 20px;
+    }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      display:flex; align-items:center; gap:6px; white-space:nowrap;
+      padding:12px 16px; font-size:11px; font-weight:600;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted);
+      border:none; background:none; cursor:pointer;
+      border-bottom:2px solid transparent; margin-bottom:-1px;
+      transition:color .15s, border-color .15s; flex-shrink:0;
+    }
+    .tab-btn:hover  { color:var(--h-text); }
+    .tab-btn.active { color:var(--h-text); border-bottom-color:var(--h-red); }
+    .tab-notif { background:var(--h-red); color:#fff; font-size:9px; font-weight:800; padding:1px 5px; border-radius:10px; }
+
+    /* ── Controls bar ── */
+    .ctrl-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+      padding:9px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .ctrl-grp  { display:flex; align-items:center; gap:6px; }
+    .ctrl-lbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .ctrl-sel, .ctrl-inp {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      color:var(--h-text); outline:none; cursor:pointer;
+    }
+    .ctrl-sel:focus,.ctrl-inp:focus { border-color:var(--h-red); }
+    .ctrl-btn {
+      display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:.05em;
+      cursor:pointer; white-space:nowrap; transition:background .15s, transform .1s;
+    }
+    .ctrl-btn:active { transform:translateY(1px); }
+    .btn-primary { background:var(--h-red); color:#fff; }
+    .btn-primary:hover { background:var(--h-red-dk); }
+    .btn-outline { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-outline:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-blue   { background:rgba(52,152,219,.15); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .btn-blue:hover { background:rgba(52,152,219,.25); }
+    .btn-purple { background:rgba(155,89,182,.15); color:#9b59b6; border:1px solid rgba(155,89,182,.3); }
+    .btn-purple:hover { background:rgba(155,89,182,.25); }
+    .ctrl-sep  { width:1px; height:20px; background:var(--h-border); flex-shrink:0; }
+    .ctrl-fill { flex:1; min-width:8px; }
+    .nav-btn {
+      width:28px; height:28px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    }
+    .nav-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .month-lbl {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; min-width:148px; text-align:center;
+    }
+
+    /* ── Legend strip ── */
+    .legend-strip {
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex-shrink:0;
+      padding:7px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .lgd-lbl   { font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); margin-right:2px; }
+    .lgd-chip  { display:flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .lgd-sw    { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+
+    /* ── Stats strip ── */
+    .stats-strip { display:flex; flex-shrink:0; border-bottom:1px solid var(--h-border); background:var(--h-panel); }
+    .stat-cell { flex:1; padding:7px 12px; border-right:1px solid var(--h-border); text-align:center; }
+    .stat-cell:last-child { border-right:none; }
+    .stat-v { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); line-height:1; }
+    .stat-l { font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-top:2px; }
+
+    /* ═══ GANTT TABLE ═══════════════════════════════════════════ */
+    .gantt-wrap { flex:1; overflow:auto; min-height:0; }
+    .gantt-tbl  { border-collapse:collapse; table-layout:fixed; }
+    .c-catg { width:36px; } .c-room { width:46px; }
+    .gantt-tbl thead tr.hdr-mo th {
+      background:var(--h-red); color:#fff;
+      font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; text-align:center; padding:6px 0;
+      position:sticky; z-index:30; border:1px solid rgba(255,255,255,.15);
+    }
+    .gantt-tbl thead tr.hdr-dow th {
+      background:var(--h-panel2); color:var(--h-sub);
+      font-size:9px; font-weight:700; text-align:center; padding:4px 0;
+      position:sticky; z-index:29; border:1px solid var(--h-border);
+    }
+    .gantt-tbl thead tr.hdr-dow th.col-today  { background:rgba(192,39,45,.18); color:var(--h-red); }
+    .gantt-tbl thead tr.hdr-dow th.col-wknd   { background:var(--h-dark); }
+    .dow-sub { font-size:8px; font-weight:500; color:var(--h-muted); display:block; letter-spacing:.04em; }
+    .hdr-sticky-0  { position:sticky; left:0;   z-index:31 !important; }
+    .hdr-sticky-36 { position:sticky; left:36px; z-index:31 !important; }
+    .gantt-tbl tbody tr { height:34px; }
+    .gantt-tbl tbody tr:hover { background:rgba(192,39,45,.04); }
+    .gantt-tbl tbody tr.row-div { border-top:2px solid var(--h-border); }
+    .cell-catg { background:var(--h-panel2); font-size:8px; font-weight:700; letter-spacing:.1em; text-align:center; color:var(--h-muted); text-transform:uppercase; border:1px solid var(--h-border); position:sticky; left:0; z-index:20; }
+    .cell-room { background:var(--h-panel); font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--h-text); text-align:center; border:1px solid var(--h-border); position:sticky; left:36px; z-index:20; }
+    .cell-day { border:1px solid var(--h-border); padding:0; position:relative; vertical-align:middle; cursor:pointer; }
+    .cell-day.col-wknd { background:rgba(255,255,255,.012); }
+    [data-theme="light"] .cell-day.col-wknd { background:rgba(0,0,0,.018); }
+    .cell-day.col-today { background:rgba(192,39,45,.055); }
+    .cell-day:hover { background:rgba(192,39,45,.1) !important; }
+    .today-line { position:absolute; top:0; bottom:0; left:50%; width:2px; background:var(--h-red); opacity:.4; pointer-events:none; z-index:4; }
+    .bk-bar {
+      position:absolute; top:3px; bottom:3px; border-radius:2px;
+      display:flex; align-items:center; padding:0 6px; font-size:9px; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      cursor:pointer; z-index:5; box-shadow:0 1px 4px rgba(0,0,0,.28);
+      transition:filter .12s, transform .1s; gap:5px;
+    }
+    .bk-bar:hover { filter:brightness(1.15); transform:scaleY(1.06); z-index:10; }
+    .bk-bar.bk-cancelled { opacity:.6; text-decoration:line-through; }
+    /* FO initials badge on bar */
+    .bk-bar-fo {
+      display:inline-flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.28); border-radius:2px; padding:0 4px;
+      font-size:8px; font-weight:800; letter-spacing:.03em; color:rgba(255,255,255,.95);
+      flex-shrink:0; height:14px; white-space:nowrap;
+    }
+    .gantt-tbl tfoot tr { height:24px; }
+    .cell-ft-lbl  { background:var(--h-panel2); font-size:8px; font-weight:700; letter-spacing:.1em; text-align:center; color:var(--h-muted); text-transform:uppercase; border:1px solid var(--h-border); position:sticky; left:0; z-index:20; }
+    .cell-ft-lbl2 { background:var(--h-panel2); font-size:8px; font-weight:700; color:var(--h-sub); text-align:center; border:1px solid var(--h-border); position:sticky; left:36px; z-index:20; }
+    .cell-ft { border:1px solid var(--h-border); font-size:9px; font-weight:600; text-align:center; color:var(--h-muted); padding:0 2px; }
+    .cell-ft.fv  { color:var(--h-sub); }
+    .cell-ft.rev { color:#2ecc71; font-weight:700; font-size:8px; }
+    .cell-ft.pax { color:#3498db; }
+    .cell-ft.rmn { color:var(--h-text); }
+    .gantt-wrap::-webkit-scrollbar { width:6px; height:6px; }
+    .gantt-wrap::-webkit-scrollbar-track { background:var(--h-dark); }
+    .gantt-wrap::-webkit-scrollbar-thumb { background:var(--h-border); border-radius:3px; }
+    .gantt-wrap::-webkit-scrollbar-thumb:hover { background:var(--h-muted); }
+
+    /* ── TOOLTIP ── */
+    #bkTip { position:fixed; z-index:9990; background:var(--h-panel); border:1px solid var(--h-border); border-radius:3px; padding:10px 14px; box-shadow:0 8px 28px rgba(0,0,0,.45); pointer-events:none; opacity:0; transition:opacity .12s; min-width:210px; max-width:280px; }
+    #bkTip.show { opacity:1; }
+    .tt-name { font-weight:700; font-size:13px; margin-bottom:5px; color:var(--h-text); }
+    .tt-row  { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .tt-val  { color:var(--h-sub); font-weight:600; text-align:right; }
+    .tt-hint { margin-top:7px; font-size:9px; color:var(--h-muted); letter-spacing:.06em; text-transform:uppercase; }
+    /* FO chip in tooltip */
+    .tt-fo-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      background:rgba(155,89,182,.15); border:1px solid rgba(155,89,182,.3);
+      color:#9b59b6; border-radius:3px; padding:2px 7px;
+      font-size:10px; font-weight:700; letter-spacing:.04em;
+    }
+
+    /* ═══ GUEST PROFILES TAB ══════════════════════════════════ */
+    .gp-shell { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+    .gp-scroll { flex:1; overflow-y:auto; padding:18px 22px 40px; }
+
+    .gp-alert-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; margin-bottom:18px; }
+    .gp-alert-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:12px 16px; display:flex; align-items:flex-start; gap:12px;
+      cursor:pointer; transition:border-color .15s;
+    }
+    .gp-alert-card:hover { border-color:var(--h-red); }
+    .gp-alert-icon { font-size:22px; flex-shrink:0; line-height:1; margin-top:2px; }
+    .gp-alert-body { flex:1; min-width:0; }
+    .gp-alert-name { font-weight:700; font-size:13px; color:var(--h-text); }
+    .gp-alert-detail { font-size:11px; color:var(--h-muted); margin-top:2px; line-height:1.4; }
+    .gp-alert-badge { display:inline-block; padding:2px 7px; border-radius:10px; font-size:9px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; margin-top:4px; }
+    .badge-bday { background:rgba(255,152,0,.15); color:#ff9800; border:1px solid rgba(255,152,0,.3); }
+    .badge-today-bday { background:rgba(231,76,60,.15); color:#e74c3c; border:1px solid rgba(231,76,60,.4); }
+    .badge-anniv { background:rgba(155,89,182,.15); color:#9b59b6; border:1px solid rgba(155,89,182,.3); }
+    .badge-today-anniv { background:rgba(155,89,182,.25); color:#9b59b6; border:1px solid rgba(155,89,182,.5); }
+    .badge-checkin-soon { background:rgba(52,152,219,.12); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .badge-staying  { background:rgba(46,204,113,.12); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .gp-no-alerts { text-align:center; padding:28px; color:var(--h-muted); font-size:12px; }
+
+    .gp-card { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; overflow:hidden; }
+    .gp-hd   { padding:12px 18px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; background:var(--h-panel2); }
+    .gp-ttl  { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-sub); }
+    .gp-tbl-wrap { overflow-x:auto; }
+    .gp-table { width:100%; border-collapse:collapse; }
+    .gp-table thead th { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); padding:9px 12px; text-align:left; border-bottom:1px solid var(--h-border); background:var(--h-panel2); white-space:nowrap; position:sticky; top:0; }
+    .gp-table tbody td { padding:9px 12px; font-size:12px; color:var(--h-sub); border-bottom:1px solid var(--h-border); }
+    .gp-table tbody tr { transition:background .1s; cursor:pointer; }
+    .gp-table tbody tr:hover td { background:var(--h-hover-bg); }
+    .gp-td-name { font-weight:700; color:var(--h-text) !important; }
+    .gp-stays-chip { display:inline-flex; align-items:center; gap:3px; background:rgba(52,152,219,.12); color:#3498db; border-radius:2px; padding:1px 6px; font-size:9px; font-weight:700; }
+    .gp-action-btns { display:flex; gap:4px; }
+    .gp-btn { background:none; border:1px solid var(--h-border); border-radius:2px; padding:3px 8px; font-size:10px; font-family:'DM Sans',sans-serif; color:var(--h-muted); cursor:pointer; transition:all .12s; }
+    .gp-btn:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .gp-btn-del:hover { background:rgba(231,76,60,.1); color:#e74c3c; border-color:rgba(231,76,60,.3); }
+    .gp-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:18px; }
+    .gp-kpi { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:12px 16px; position:relative; overflow:hidden; }
+    .gp-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--kc,var(--h-border)); }
+    .gp-kpi-val { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:var(--h-text); line-height:1; margin-bottom:3px; }
+    .gp-kpi-lbl { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); }
+
+    .section-lbl { font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--h-muted); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--h-border); }
+
+    /* ── BOOKING MODAL ── */
+    #bkModal,#gpModal,#confirmModal,#backupModal,#foModal {
+      position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.62);
+      backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #bkModal.open,#gpModal.open,#confirmModal.open,#backupModal.open,#foModal.open { opacity:1; pointer-events:all; }
+
+    .bk-card,.gp-modal-card,.confirm-card,.bk-modal-card,.fo-modal-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      box-shadow:var(--h-shadow);
+      transform:scale(.95) translateY(10px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+      overflow:hidden; max-height:94vh; display:flex; flex-direction:column;
+    }
+    #bkModal.open .bk-card,
+    #gpModal.open .gp-modal-card,
+    #confirmModal.open .confirm-card,
+    #backupModal.open .bk-modal-card,
+    #foModal.open .fo-modal-card { transform:scale(1) translateY(0); }
+
+    .bk-card       { width:520px; max-width:96vw; }
+    .gp-modal-card { width:580px; max-width:96vw; }
+    .confirm-card  { width:380px; max-width:96vw; }
+    .bk-modal-card { width:520px; max-width:96vw; }
+    .fo-modal-card { width:440px; max-width:96vw; }
+
+    .modal-accent  { height:3px; background:linear-gradient(90deg,transparent,var(--h-red),transparent); flex-shrink:0; }
+    .modal-accent-blue   { height:3px; background:linear-gradient(90deg,transparent,#3498db,transparent); flex-shrink:0; }
+    .modal-accent-purple { height:3px; background:linear-gradient(90deg,transparent,#9b59b6,transparent); flex-shrink:0; }
+    .modal-hd  { padding:15px 22px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .modal-ttl { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .modal-sub { font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .modal-body { padding:18px 22px; overflow-y:auto; }
+    .modal-body.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .modal-full { grid-column:1/-1; }
+    .modal-ft { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+    .modal-section-lbl { grid-column:1/-1; font-size:9px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--h-muted); padding-bottom:6px; border-bottom:1px solid var(--h-border); margin-top:4px; }
+
+    .fg    { display:flex; flex-direction:column; gap:4px; }
+    .flbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .fctl  { background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px; padding:8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text); outline:none; width:100%; appearance:none; }
+    .fctl::placeholder { color:var(--h-muted); }
+    .fctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    /* FO select highlight */
+    .fctl-fo:focus { border-color:#9b59b6; box-shadow:0 0 0 3px rgba(155,89,182,.12); }
+
+    .btn-m    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-save { background:var(--h-red); color:#fff; }
+    .btn-save:hover { background:var(--h-red-dk); }
+    .btn-cncl { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-cncl:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-del  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del:hover { background:rgba(231,76,60,.22); }
+
+    .bk-alert { grid-column:1/-1; padding:9px 12px; border-radius:3px; font-size:12px; line-height:1.5; display:none; }
+    .bk-alert.error   { background:rgba(231,76,60,.1);  border:1px solid rgba(231,76,60,.25);  color:#e74c3c; display:block; }
+    .bk-alert.warning { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.25); color:#f39c12; display:block; }
+    .avail-hint { grid-column:1/-1; font-size:11px; color:var(--h-muted); padding:4px 0; display:none; }
+    .avail-hint.show { display:block; }
+    .avail-hint.ok   { color:#2ecc71; }
+    .avail-hint.busy { color:#e74c3c; }
+
+    /* FO select wrapper with manage button */
+    .fo-field-wrap { display:flex; gap:6px; align-items:stretch; }
+    .fo-field-wrap .fctl { flex:1; }
+    .fo-manage-btn {
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(155,89,182,.12); border:1px solid rgba(155,89,182,.3);
+      color:#9b59b6; border-radius:3px; padding:0 10px; cursor:pointer;
+      font-size:13px; transition:background .15s; flex-shrink:0; white-space:nowrap;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600;
+    }
+    .fo-manage-btn:hover { background:rgba(155,89,182,.22); }
+
+    /* FO Officer Management Modal */
+    .fo-officer-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+    .fo-officer-row {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; background:var(--h-panel2); border:1px solid var(--h-border);
+      border-radius:3px;
+    }
+    .fo-officer-row.fo-default { border-left:3px solid #9b59b6; }
+    .fo-officer-avatar {
+      width:28px; height:28px; border-radius:50%; background:rgba(155,89,182,.2);
+      border:1px solid rgba(155,89,182,.4); display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:800; color:#9b59b6; flex-shrink:0; font-family:'DM Sans',sans-serif;
+    }
+    .fo-officer-name { flex:1; font-size:13px; font-weight:600; color:var(--h-text); }
+    .fo-officer-tag  { font-size:9px; color:var(--h-muted); letter-spacing:.06em; text-transform:uppercase; }
+    .fo-del-btn {
+      background:none; border:none; color:var(--h-muted); cursor:pointer; font-size:14px;
+      padding:2px 6px; border-radius:2px; transition:all .12s; line-height:1;
+    }
+    .fo-del-btn:hover { background:rgba(231,76,60,.1); color:#e74c3c; }
+    .fo-del-btn:disabled { opacity:.3; cursor:not-allowed; }
+    .fo-add-row { display:flex; gap:8px; }
+    .fo-add-inp {
+      flex:1; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text);
+      outline:none;
+    }
+    .fo-add-inp:focus { border-color:#9b59b6; box-shadow:0 0 0 3px rgba(155,89,182,.12); }
+    .fo-add-btn {
+      background:#9b59b6; color:#fff; border:none; border-radius:3px;
+      padding:8px 14px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600;
+      cursor:pointer; transition:background .15s; white-space:nowrap;
+    }
+    .fo-add-btn:hover { background:#8e44ad; }
+
+    /* FO stats in guest panel */
+    .fo-stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; margin-bottom:18px; }
+    .fo-stat-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:12px 14px; display:flex; align-items:center; gap:10px;
+    }
+    .fo-stat-avatar {
+      width:36px; height:36px; border-radius:50%; background:rgba(155,89,182,.15);
+      border:2px solid rgba(155,89,182,.3); display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:800; color:#9b59b6; flex-shrink:0;
+    }
+    .fo-stat-val { font-family:'Cinzel',serif; font-size:16px; font-weight:700; color:var(--h-text); line-height:1; }
+    .fo-stat-lbl { font-size:9px; color:var(--h-muted); font-weight:600; letter-spacing:.06em; text-transform:uppercase; margin-top:1px; }
+
+    /* Backup modal specific */
+    .bk-section { border:1px solid var(--h-border); border-radius:3px; overflow:hidden; margin-bottom:12px; }
+    .bk-section-hd { padding:10px 14px; background:var(--h-panel2); border-bottom:1px solid var(--h-border); display:flex; align-items:center; gap:8px; }
+    .bk-section-lbl { font-size:11px; font-weight:700; color:var(--h-text); }
+    .bk-section-desc { font-size:10px; color:var(--h-muted); margin-top:1px; }
+    .bk-section-body { padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+    .bk-info { font-size:11px; color:var(--h-sub); line-height:1.5; padding:8px 10px; background:rgba(52,152,219,.07); border:1px solid rgba(52,152,219,.2); border-radius:3px; margin-bottom:10px; }
+    .bk-drop-zone { border:2px dashed var(--h-border); border-radius:3px; padding:20px; text-align:center; cursor:pointer; transition:all .15s; background:var(--h-input-bg); }
+    .bk-drop-zone:hover,.bk-drop-zone.drag-over { border-color:#3498db; background:rgba(52,152,219,.07); }
+    .bk-drop-lbl { font-size:12px; color:var(--h-muted); }
+    .bk-file-status { font-size:11px; padding:6px 10px; border-radius:3px; display:none; }
+    .bk-file-status.ok  { background:rgba(46,204,113,.1); color:#2ecc71; border:1px solid rgba(46,204,113,.3); display:block; }
+    .bk-file-status.err { background:rgba(231,76,60,.1);  color:#e74c3c; border:1px solid rgba(231,76,60,.3);  display:block; }
+    .bk-last-saved { font-size:10px; color:var(--h-muted); text-align:center; padding:8px 14px; border-top:1px solid var(--h-border); }
+
+    /* Toast */
+    #res-toast { position:fixed; bottom:22px; right:22px; z-index:9999; background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:10px 16px; font-size:12px; color:var(--h-text); font-family:'DM Sans',sans-serif; box-shadow:0 4px 20px rgba(0,0,0,.3); transform:translateY(20px); opacity:0; pointer-events:none; transition:all .25s; min-width:220px; }
+    #res-toast.show { transform:translateY(0); opacity:1; }
+    #res-toast.success { border-color:rgba(46,204,113,.4); color:#2ecc71; }
+    #res-toast.error   { border-color:rgba(231,76,60,.4);  color:#e74c3c; }
+    #res-toast.info    { border-color:rgba(52,152,219,.4); color:#3498db; }
+
+    /* Panels */
+    #panel-gantt  { display:flex; flex-direction:column; flex:1; min-height:0; }
+    #panel-guests { display:none; flex-direction:column; flex:1; min-height:0; }
+
+    @media(max-width:900px){ .modal-body.grid2 { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="res-wrap">
+
+    <!-- ══ TAB BAR ══ -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-gantt"  onclick="switchTab('gantt')">📅 Reservations</button>
+      <button class="tab-btn"        id="tab-guests" onclick="switchTab('guests')">
+        👤 Guest Profiles
+        <span class="tab-notif" id="guest-notif-badge" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- ══════════════════ GANTT PANEL ══════════════════ -->
+    <div id="panel-gantt">
+
+      <!-- Controls -->
+      <div class="ctrl-bar">
+        <div class="ctrl-grp">
+          <button class="nav-btn" id="prevMo">&#8249;</button>
+          <span class="month-lbl" id="monthLbl">—</span>
+          <button class="nav-btn" id="nextMo">&#8250;</button>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-grp">
+          <span class="ctrl-lbl">Type</span>
+          <select class="ctrl-sel" id="fType">
+            <option value="all">All Types</option>
+            <option value="bk-confirmed">Confirmed</option>
+            <option value="bk-reserved">Reserved</option>
+            <option value="bk-blocked">Blocked</option>
+            <option value="bk-walkin">Walk-in</option>
+            <option value="bk-comp">Complimentary</option>
+            <option value="bk-cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="ctrl-grp">
+          <span class="ctrl-lbl">Officer</span>
+          <select class="ctrl-sel" id="fOfficer">
+            <option value="all">All Officers</option>
+          </select>
+        </div>
+        <div class="ctrl-grp">
+          <span class="ctrl-lbl">Search</span>
+          <input class="ctrl-inp" id="fSearch" type="text" placeholder="Guest name…" style="width:140px;" maxlength="80"/>
+        </div>
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-purple" onclick="openFOModal()">👮 Manage Officers</button>
+        <button class="ctrl-btn btn-blue" onclick="openBackupModal()">💾 Backup</button>
+        <button class="ctrl-btn btn-outline" id="todayBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Today
+        </button>
+        <button class="ctrl-btn btn-primary" id="newBkBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Booking
+        </button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend-strip">
+        <span class="lgd-lbl">Booking Type:</span>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#27ae60;"></div>Confirmed</div>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;"></div>Reserved</div>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#2980b9;"></div>Blocked</div>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#8e44ad;"></div>Walk-in</div>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#16a085;"></div>Comp</div>
+        <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;"></div>Cancelled</div>
+        <div class="lgd-chip" style="margin-left:6px;"><div class="lgd-sw" style="background:rgba(192,39,45,.35);border:1px solid var(--h-red);"></div>Today</div>
+        <span style="flex:1;"></span>
+        <span style="font-size:9px;color:var(--h-muted);font-style:italic;">Click empty cell → new booking &nbsp;|&nbsp; Click bar → edit &nbsp;|&nbsp; <span style="color:#9b59b6;">■</span> initials = FO officer</span>
+      </div>
+
+      <!-- Stats strip -->
+      <div class="stats-strip">
+        <div class="stat-cell"><div class="stat-v" id="s-bk">0</div><div class="stat-l">Bookings</div></div>
+        <div class="stat-cell"><div class="stat-v" id="s-rn">0</div><div class="stat-l">Room-Nights</div></div>
+        <div class="stat-cell"><div class="stat-v" id="s-px">0</div><div class="stat-l">PAX</div></div>
+        <div class="stat-cell"><div class="stat-v" style="color:#2ecc71;" id="s-rv">₱0</div><div class="stat-l">Revenue</div></div>
+        <div class="stat-cell"><div class="stat-v" id="s-oc">0%</div><div class="stat-l">Occupancy</div></div>
+        <div class="stat-cell"><div class="stat-v" style="color:#9b59b6;" id="s-fo">—</div><div class="stat-l">Top Officer</div></div>
+      </div>
+
+      <!-- Gantt -->
+      <div class="gantt-wrap" id="ganttWrap">
+        <table class="gantt-tbl" id="ganttTbl">
+          <thead id="ganttHead"></thead>
+          <tbody id="ganttBody"></tbody>
+          <tfoot id="ganttFoot"></tfoot>
+        </table>
+      </div>
+
+    </div><!-- /panel-gantt -->
+
+    <!-- ══════════════════ GUEST PROFILES PANEL ══════════════════ -->
+    <div id="panel-guests">
+
+      <!-- Ctrl bar -->
+      <div class="ctrl-bar">
+        <div class="ctrl-grp">
+          <span class="ctrl-lbl">Search</span>
+          <input class="ctrl-inp" type="text" id="gp-search" placeholder="Name, address…" style="width:200px;" oninput="renderGuestPanel()"/>
+        </div>
+        <div class="ctrl-grp">
+          <span class="ctrl-lbl">Sort</span>
+          <select class="ctrl-sel" id="gp-sort" onchange="renderGuestPanel()">
+            <option value="name">Name A–Z</option>
+            <option value="recent">Most Recent Stay</option>
+            <option value="bday">Upcoming Birthday</option>
+          </select>
+        </div>
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-outline" onclick="exportGuestsCSV()">Export CSV</button>
+        <button class="ctrl-btn btn-primary" onclick="openGuestModal(null)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Guest
+        </button>
+      </div>
+
+      <!-- Scroll area -->
+      <div class="gp-scroll" id="gp-scroll-body"></div>
+
+    </div><!-- /panel-guests -->
+
+  </div>
+</div>
+
+<!-- ══ TOOLTIP ══ -->
+<div id="bkTip"></div>
+
+<!-- ══ BOOKING MODAL ══ -->
+<div id="bkModal">
+  <div class="bk-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="m-ttl">New Booking</div>
+        <div class="modal-sub" id="m-sub">Fill in reservation details</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body grid2">
+      <div class="bk-alert" id="m-alert"></div>
+      <div class="avail-hint" id="m-avail"></div>
+
+      <!-- Guest name -->
+      <div class="fg modal-full">
+        <label class="flbl">Guest / Group Name</label>
+        <input class="fctl" type="text" id="f-guest" placeholder="e.g. JUAN DELA CRUZ" maxlength="120" autocomplete="off" oninput="suggestGuestProfile()"/>
+        <div id="guest-suggest" style="margin-top:4px;display:none;"></div>
+      </div>
+
+      <div class="fg">
+        <label class="flbl">Room</label>
+        <select class="fctl" id="f-room" onchange="checkAvailability()"></select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Booking Type</label>
+        <select class="fctl" id="f-type" onchange="checkAvailability()">
+          <option value="bk-confirmed">✅ Confirmed</option>
+          <option value="bk-reserved">⏳ Reserved / Pending</option>
+          <option value="bk-blocked">🔒 Blocked</option>
+          <option value="bk-walkin">🚶 Walk-in</option>
+          <option value="bk-comp">🎁 Complimentary</option>
+          <option value="bk-cancelled">❌ Cancelled</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Check-in Date</label>
+        <input class="fctl" type="date" id="f-cin" onchange="checkAvailability()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Check-out Date</label>
+        <input class="fctl" type="date" id="f-cout" onchange="checkAvailability()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">PAX (Guests)</label>
+        <input class="fctl" type="number" id="f-pax" min="0" max="50" placeholder="1"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Rate / Night (₱)</label>
+        <input class="fctl" type="number" id="f-rate" min="0" max="999999" placeholder="0"/>
+      </div>
+
+      <!-- ── BOOKED BY (FO Officer) ── -->
+      <div class="fg modal-full" style="border-top:1px solid var(--h-border);padding-top:12px;margin-top:2px;">
+        <label class="flbl" style="color:#9b59b6;letter-spacing:.14em;">👮 Booked By (Front Office Officer)</label>
+        <div class="fo-field-wrap">
+          <select class="fctl fctl-fo" id="f-bookedby">
+            <option value="">— Select Officer —</option>
+          </select>
+          <button class="fo-manage-btn" onclick="openFOModal()" type="button" title="Manage FO Officers">⚙ Manage</button>
+        </div>
+      </div>
+
+      <div class="fg modal-full">
+        <label class="flbl">Notes / Concerns</label>
+        <input class="fctl" type="text" id="f-notes" placeholder="e.g. Extra bed, early check-in…" maxlength="300"/>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-del" id="m-del" style="display:none;" onclick="deleteBooking()">Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveBooking()">Save Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FO OFFICER MANAGEMENT MODAL ══ -->
+<div id="foModal">
+  <div class="fo-modal-card">
+    <div class="modal-accent-purple"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl">👮 Front Office Officers</div>
+        <div class="modal-sub">Manage staff who handle reservations</div>
+      </div>
+      <button onclick="closeFOModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;font-size:20px;line-height:1;">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+      <div style="font-size:11px;color:var(--h-muted);margin-bottom:14px;padding:8px 10px;background:rgba(155,89,182,.07);border:1px solid rgba(155,89,182,.15);border-radius:3px;">
+        ℹ️ Default officers (Gemma, Tine, Reynan, Mhaan) cannot be deleted. You can add custom officers below.
+      </div>
+      <div class="fo-officer-list" id="fo-officer-list"></div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--h-muted);margin-bottom:8px;">Add New Officer</div>
+      <div class="fo-add-row">
+        <input class="fo-add-inp" type="text" id="fo-new-name" placeholder="Officer full name…" maxlength="60" onkeydown="if(event.key==='Enter')addFOOfficer()"/>
+        <button class="fo-add-btn" onclick="addFOOfficer()">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-save" onclick="closeFOModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GUEST PROFILE MODAL ══ -->
+<div id="gpModal">
+  <div class="gp-modal-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="gp-m-title">Add Guest Profile</div>
+        <div class="modal-sub" id="gp-m-sub">Guest information & preferences</div>
+      </div>
+      <button onclick="closeGuestModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body grid2">
+      <div class="modal-section-lbl">Personal Information</div>
+      <div class="fg modal-full">
+        <label class="flbl">Full Name *</label>
+        <input class="fctl" type="text" id="gp-name" placeholder="e.g. JUAN DELA CRUZ" maxlength="120" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Birthday</label>
+        <input class="fctl" type="date" id="gp-bday"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Age</label>
+        <input class="fctl" type="number" id="gp-age" min="0" max="150" placeholder="Auto-computed" readonly style="opacity:.65;cursor:not-allowed;"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Gender</label>
+        <select class="fctl" id="gp-gender">
+          <option value="">— Select —</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Nationality</label>
+        <input class="fctl" type="text" id="gp-nationality" placeholder="e.g. Filipino"/>
+      </div>
+      <div class="modal-section-lbl">Contact Details</div>
+      <div class="fg modal-full">
+        <label class="flbl">Address</label>
+        <input class="fctl" type="text" id="gp-address" placeholder="Street, City, Province…" maxlength="300"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Phone / Mobile</label>
+        <input class="fctl" type="text" id="gp-phone" placeholder="+63 9xx xxx xxxx" maxlength="30"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Email</label>
+        <input class="fctl" type="email" id="gp-email" placeholder="guest@email.com" maxlength="120"/>
+      </div>
+      <div class="modal-section-lbl">Events & Preferences</div>
+      <div class="fg">
+        <label class="flbl">Anniversary Date</label>
+        <input class="fctl" type="date" id="gp-anniv"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Special Occasion</label>
+        <input class="fctl" type="text" id="gp-occasion" placeholder="e.g. Honeymoon, Company trip…"/>
+      </div>
+      <div class="fg modal-full">
+        <label class="flbl">Preferences / Notes</label>
+        <input class="fctl" type="text" id="gp-prefs" placeholder="e.g. Non-smoking, high floor, vegetarian…" maxlength="300"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">ID Type Presented</label>
+        <input class="fctl" type="text" id="gp-id-type" placeholder="e.g. Driver's License, Passport"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">ID Number</label>
+        <input class="fctl" type="text" id="gp-id-num" placeholder="ID number" maxlength="60"/>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-del" id="gp-del-btn" style="display:none;" onclick="deleteGuest()">🗑 Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeGuestModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveGuest()">Save Guest</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM DIALOG ══ -->
+<div id="confirmModal">
+  <div class="confirm-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="cf-title">Confirm</div>
+        <div class="modal-sub" id="cf-sub"></div>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:16px 22px;">
+      <div id="cf-msg" style="font-size:12px;color:var(--h-sub);line-height:1.6;margin-bottom:14px;"></div>
+      <div class="fg">
+        <label class="flbl" style="color:#e74c3c;letter-spacing:.14em;">🔒 Enter Password to Confirm</label>
+        <input class="fctl" type="password" id="cf-password" placeholder="Enter password…"
+          style="border-color:rgba(231,76,60,.3);"
+          onkeydown="if(event.key==='Enter') document.getElementById('cf-ok').click()"/>
+        <div id="cf-pw-err" style="font-size:11px;color:#e74c3c;margin-top:4px;display:none;">⛔ Incorrect password.</div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-cncl" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-m" id="cf-ok" style="background:#e74c3c;color:#fff;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BACKUP MODAL ══ -->
+<div id="backupModal">
+  <div class="bk-modal-card">
+    <div class="modal-accent-blue"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl">💾 Backup &amp; Restore</div>
+        <div class="modal-sub">Save or restore bookings &amp; guest profiles</div>
+      </div>
+      <button onclick="closeBackupModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;font-size:20px;line-height:1;">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+      <div class="bk-info">ℹ️ Data is stored in <strong>this browser only</strong>. Use Export to save a .json file to Google Drive, USB, or email — then Import on another device to restore.</div>
+      <div class="bk-section">
+        <div class="bk-section-hd">
+          <span style="font-size:16px;">📤</span>
+          <div><div class="bk-section-lbl">Export Backup</div><div class="bk-section-desc">Download all bookings + guest profiles + officers</div></div>
+        </div>
+        <div class="bk-section-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="ctrl-btn btn-primary" onclick="exportBackup()">⬇ Download Backup .json</button>
+            <button class="ctrl-btn btn-outline" onclick="copyBackup()">📋 Copy to Clipboard</button>
+          </div>
+          <div id="bk-export-st" class="bk-file-status"></div>
+        </div>
+      </div>
+      <div class="bk-section">
+        <div class="bk-section-hd">
+          <span style="font-size:16px;">📥</span>
+          <div><div class="bk-section-lbl">Import / Restore</div><div class="bk-section-desc">Load a backup file to restore data</div></div>
+        </div>
+        <div class="bk-section-body">
+          <div class="bk-drop-zone" id="bk-drop"
+            onclick="document.getElementById('bk-file-in').click()"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="handleDrop(event)">
+            <div style="font-size:24px;margin-bottom:6px;">📂</div>
+            <div class="bk-drop-lbl"><strong>Click to choose</strong> or drag &amp; drop a .json backup</div>
+          </div>
+          <div id="bk-import-st" class="bk-file-status"></div>
+          <button class="ctrl-btn btn-blue" onclick="pasteBackup()">📋 Paste from Clipboard</button>
+        </div>
+      </div>
+    </div>
+    <div class="bk-last-saved" id="bk-last-meta">—</div>
+  </div>
+</div>
+<input type="file" id="bk-file-in" accept=".json" onchange="handleFileIn(this)" style="display:none;"/>
+
+<!-- TOAST -->
+<div id="res-toast"></div>
+
+<script>window.HIRAYA_PAGE='reservations';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   BOOTSTRAP
+═══════════════════════════════════════════════════════════ */
+if(typeof hirayaRenderTopbar==='function')
+  hirayaRenderTopbar('Reservations Dashboard','Room Blocking & Reservation');
+
+const DB = window.HirayaDB;
+
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTS & STATE
+═══════════════════════════════════════════════════════════ */
+const COL_W  = 52;
+const ROWS   = DB.ROOM_NUMBERS.map(n => ({ num:n, catg:DB.ROOM_META[n].catg }));
+const TODAY  = new Date(); TODAY.setHours(0,0,0,0);
+const DOW    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+let viewYear  = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+let editId    = null;
+let fType     = 'all';
+let fSearch   = '';
+let fOfficer  = 'all';
+let activeTab = 'gantt';
+
+/* ═══════════════════════════════════════════════════════════
+   FO OFFICER MANAGEMENT
+═══════════════════════════════════════════════════════════ */
+const FO_KEY = 'hiraya_fo_officers_v1';
+const FO_DEFAULT = ['Gemma','Tine','Reynan','Mhaan'];
+
+function loadFOOfficers(){
+  try{
+    const r = localStorage.getItem(FO_KEY);
+    if(r) return JSON.parse(r);
+  } catch(e){}
+  const def = FO_DEFAULT.map(n=>({name:n,isDefault:true}));
+  localStorage.setItem(FO_KEY, JSON.stringify(def));
+  return def;
+}
+function saveFOOfficers(arr){ localStorage.setItem(FO_KEY, JSON.stringify(arr)); }
+
+function getFONames(){
+  return loadFOOfficers().map(o=>o.name);
+}
+
+function foInitials(name){
+  if(!name) return '';
+  const parts = name.trim().split(/\s+/);
+  if(parts.length===1) return name.slice(0,3).toUpperCase();
+  return parts.map(p=>p[0]).join('').slice(0,3).toUpperCase();
+}
+
+function populateFOSelects(){
+  const names = getFONames();
+  const sel = document.getElementById('f-bookedby');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select Officer —</option>';
+  names.forEach(n=>{
+    const o=document.createElement('option');
+    o.value=n; o.textContent=`👮 ${n}`;
+    sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+
+  const fSel = document.getElementById('fOfficer');
+  const fCur = fSel.value;
+  fSel.innerHTML = '<option value="all">All Officers</option><option value="none">— Unassigned —</option>';
+  names.forEach(n=>{
+    const o=document.createElement('option');
+    o.value=n; o.textContent=n;
+    fSel.appendChild(o);
+  });
+  fSel.value = fCur||'all';
+}
+
+function openFOModal(){
+  renderFOOfficerList();
+  document.getElementById('foModal').classList.add('open');
+  setTimeout(()=>document.getElementById('fo-new-name').focus(),80);
+}
+function closeFOModal(){
+  document.getElementById('foModal').classList.remove('open');
+  populateFOSelects();
+  render();
+}
+document.getElementById('foModal').addEventListener('click',e=>{if(e.target===document.getElementById('foModal')) closeFOModal();});
+
+function renderFOOfficerList(){
+  const officers = loadFOOfficers();
+  const bookings = getAllBookingsMerged();
+  const list = document.getElementById('fo-officer-list');
+  list.innerHTML = officers.map((o,i)=>{
+    const bkCount = bookings.filter(b=>b.bookedBy===o.name).length;
+    const initials = foInitials(o.name);
+    return `
+      <div class="fo-officer-row${o.isDefault?' fo-default':''}">
+        <div class="fo-officer-avatar">${escH(initials)}</div>
+        <div style="flex:1;">
+          <div class="fo-officer-name">${escH(o.name)}</div>
+          <div class="fo-officer-tag">${o.isDefault?'Default · ':''}${bkCount} booking${bkCount!==1?'s':''}</div>
+        </div>
+        <button class="fo-del-btn" onclick="deleteFOOfficer(${i})" ${o.isDefault?'disabled title="Default officers cannot be deleted"':''}>🗑</button>
+      </div>`;
+  }).join('');
+}
+
+function addFOOfficer(){
+  const inp = document.getElementById('fo-new-name');
+  const name = inp.value.trim();
+  if(!name){ showToast('Enter a name','error'); inp.focus(); return; }
+  const officers = loadFOOfficers();
+  if(officers.some(o=>o.name.toLowerCase()===name.toLowerCase())){
+    showToast('Officer already exists','error'); inp.focus(); return;
+  }
+  officers.push({name, isDefault:false});
+  saveFOOfficers(officers);
+  inp.value='';
+  renderFOOfficerList();
+  showToast(`✓ "${name}" added as FO officer`,'success');
+}
+
+function deleteFOOfficer(idx){
+  const officers = loadFOOfficers();
+  const o = officers[idx];
+  if(!o || o.isDefault){ showToast('Default officers cannot be deleted','error'); return; }
+  showConfirm('Remove Officer?',`Remove <strong>${escH(o.name)}</strong> from the FO officers list? Existing bookings will still show their name.`,()=>{
+    const updated = loadFOOfficers();
+    updated.splice(idx,1);
+    saveFOOfficers(updated);
+    renderFOOfficerList();
+    showToast(`🗑 "${o.name}" removed`,'error');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GUEST PROFILE STORAGE
+═══════════════════════════════════════════════════════════ */
+const GP_KEY      = 'hiraya_guest_profiles_v1';
+const GP_META_KEY = 'hiraya_res_backup_meta';
+let editGuestId   = null;
+let confirmCb     = null;
+
+function loadGuests(){ try{ const r=localStorage.getItem(GP_KEY); return r?JSON.parse(r):[]; } catch(e){ return []; } }
+function saveGuests(arr){ localStorage.setItem(GP_KEY,JSON.stringify(arr)); }
+function gpUID(){ return 'gp-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7); }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ═══════════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════════ */
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('panel-gantt').style.display  = tab==='gantt'  ? 'flex' : 'none';
+  document.getElementById('panel-guests').style.display = tab==='guests' ? 'flex' : 'none';
+  document.getElementById('tab-gantt').classList.toggle('active',  tab==='gantt');
+  document.getElementById('tab-guests').classList.toggle('active', tab==='guests');
+  if(tab==='guests') renderGuestPanel();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+function showToast(msg,type='success'){
+  const t=document.getElementById('res-toast');
+  t.textContent=msg; t.className=`show ${type}`;
+  clearTimeout(t._t); t._t=setTimeout(()=>{t.className='';},3000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DATE HELPERS
+═══════════════════════════════════════════════════════════ */
+function pad2(n){ return String(n).padStart(2,'0'); }
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+function isToday(d){ return viewYear===TODAY.getFullYear()&&viewMonth===TODAY.getMonth()&&d===TODAY.getDate(); }
+function fmtDateLong(ds){ if(!ds) return '—'; const d=new Date(ds+'T00:00:00'); return d.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}); }
+function computeAge(bdayStr){ if(!bdayStr) return null; const b=new Date(bdayStr+'T00:00:00'); const now=new Date(); let age=now.getFullYear()-b.getFullYear(); const m=now.getMonth()-b.getMonth(); if(m<0||(m===0&&now.getDate()<b.getDate())) age--; return age; }
+function daysUntilNextOccurrence(mmdd){
+  const [mm,dd]=mmdd.split('-').map(Number);
+  const now=new Date(); now.setHours(0,0,0,0);
+  let next=new Date(now.getFullYear(),mm-1,dd);
+  if(next<now) next=new Date(now.getFullYear()+1,mm-1,dd);
+  return Math.round((next-now)/86400000);
+}
+function getMMDD(dateStr){ if(!dateStr) return null; return dateStr.slice(5); }
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION LOGIC
+═══════════════════════════════════════════════════════════ */
+const ALERT_DAYS = 30;
+
+function buildAlerts(){
+  const guests   = loadGuests();
+  const bookings = getAllBookingsMerged();
+  const alerts   = [];
+
+  guests.forEach(g => {
+    if(g.birthday){
+      const mmdd = getMMDD(g.birthday);
+      if(mmdd){
+        const days = daysUntilNextOccurrence(mmdd);
+        if(days <= ALERT_DAYS){
+          const age = computeAge(g.birthday);
+          alerts.push({
+            type: days===0 ? 'today-bday' : 'bday',
+            days, guest:g,
+            label: days===0 ? `🎂 Birthday Today!` : `🎂 Birthday in ${days} day${days>1?'s':''}`,
+            detail: `${g.name}${age!==null?` turns ${age+1} `:''}${days===0?'today!':'— '+fmtDateLong(g.birthday.replace(/\d{4}/,new Date().getFullYear()))}`,
+            icon: days===0?'🎂':'🎁',
+            badgeCls: days===0?'badge-today-bday':'badge-bday',
+            badgeLabel: days===0?'🎂 Today!':'Birthday',
+          });
+        }
+      }
+    }
+    if(g.anniversary){
+      const mmdd = getMMDD(g.anniversary);
+      if(mmdd){
+        const days = daysUntilNextOccurrence(mmdd);
+        if(days <= ALERT_DAYS){
+          alerts.push({
+            type: days===0 ? 'today-anniv' : 'anniv',
+            days, guest:g,
+            label: days===0 ? `💍 Anniversary Today!` : `💍 Anniversary in ${days} day${days>1?'s':''}`,
+            detail: `${g.name} — ${days===0?'today!':'in '+days+' days'} (${fmtDateLong(g.anniversary)})`,
+            icon: days===0?'💍':'💑',
+            badgeCls: days===0?'badge-today-anniv':'badge-anniv',
+            badgeLabel: days===0?'💍 Today!':'Anniversary',
+          });
+        }
+      }
+    }
+  });
+
+  const todayStr = `${TODAY.getFullYear()}-${pad2(TODAY.getMonth()+1)}-${pad2(TODAY.getDate())}`;
+  const in3 = new Date(TODAY); in3.setDate(in3.getDate()+3);
+  const in3Str = `${in3.getFullYear()}-${pad2(in3.getMonth()+1)}-${pad2(in3.getDate())}`;
+
+  bookings.filter(b=>b.type!=='bk-cancelled'&&b.checkin>=todayStr&&b.checkin<=in3Str).forEach(b=>{
+    const days = Math.round((DB.parseDate(b.checkin)-TODAY)/86400000);
+    alerts.push({
+      type:'checkin', days, booking:b,
+      label: days===0?`🛎 Check-in Today`:`🛎 Check-in in ${days} day${days>1?'s':''}`,
+      detail:`${b.guest} · Room ${b.room} · ${fmtDateLong(b.checkin)}${b.bookedBy?` · via ${b.bookedBy}`:''}${b.notes?` — ${b.notes}`:''}`,
+      icon: days===0?'🛎':'🗓',
+      badgeCls:'badge-checkin-soon',
+      badgeLabel: days===0?'Today':'Check-in Soon',
+    });
+  });
+
+  bookings.filter(b=>b.type!=='bk-cancelled'&&b.checkin<=todayStr&&b.checkout>todayStr).forEach(b=>{
+    const cout=DB.parseDate(b.checkout);
+    const daysLeft=Math.round((cout-TODAY)/86400000);
+    alerts.push({
+      type:'staying', days:0, booking:b,
+      label:`🏨 Currently Staying`,
+      detail:`${b.guest} · Room ${b.room} · Checkout in ${daysLeft} day${daysLeft!==1?'s':''} (${fmtDateLong(b.checkout)})${b.bookedBy?` · Booked by ${b.bookedBy}`:''}`,
+      icon:'🏨',
+      badgeCls:'badge-staying',
+      badgeLabel:'In-House',
+    });
+  });
+
+  alerts.sort((a,b)=>{
+    const priority={'today-bday':0,'today-anniv':1,'staying':2,'checkin':3,'bday':4,'anniv':5};
+    const pa=priority[a.type]??9, pb=priority[b.type]??9;
+    if(pa!==pb) return pa-pb;
+    return a.days-b.days;
+  });
+  return alerts;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER GUEST PANEL
+═══════════════════════════════════════════════════════════ */
+function renderGuestPanel(){
+  const guests  = loadGuests();
+  const search  = (document.getElementById('gp-search')||{}).value||'';
+  const sortBy  = (document.getElementById('gp-sort')||{}).value||'name';
+  const alerts  = buildAlerts();
+  const bookings= getAllBookingsMerged();
+
+  const urgentCount = alerts.filter(a=>a.type==='today-bday'||a.type==='today-anniv').length;
+  const badge = document.getElementById('guest-notif-badge');
+  badge.style.display = urgentCount>0?'inline-block':'none';
+  badge.textContent   = urgentCount;
+
+  let filtered = guests.filter(g=>{
+    if(!search) return true;
+    const q=search.toLowerCase();
+    return (g.name||'').toLowerCase().includes(q)||
+           (g.address||'').toLowerCase().includes(q)||
+           (g.email||'').toLowerCase().includes(q)||
+           (g.phone||'').toLowerCase().includes(q);
+  });
+
+  filtered.sort((a,b)=>{
+    if(sortBy==='name') return (a.name||'').localeCompare(b.name||'');
+    if(sortBy==='recent'){
+      const lastStay=g=>bookings.filter(b=>b.guest===g.name).sort((x,y)=>y.checkin.localeCompare(x.checkin))[0]?.checkin||'';
+      return lastStay(b).localeCompare(lastStay(a));
+    }
+    if(sortBy==='bday'){
+      const nextBday=g=>{if(!g.birthday) return 999; const mmdd=getMMDD(g.birthday); return mmdd?daysUntilNextOccurrence(mmdd):999;};
+      return nextBday(a)-nextBday(b);
+    }
+    return 0;
+  });
+
+  let alertsHtml = '';
+  if(alerts.length){
+    const todayAlerts    = alerts.filter(a=>a.days===0||a.type==='staying');
+    const upcomingAlerts = alerts.filter(a=>a.days>0&&a.type!=='staying');
+    const buildCard = a => `
+      <div class="gp-alert-card" onclick="${a.guest?`openGuestModal('${a.guest.id}')`:a.booking?`openModal('${a.booking.id}')`:''}" >
+        <div class="gp-alert-icon">${escH(a.icon)}</div>
+        <div class="gp-alert-body">
+          <div class="gp-alert-name">${escH(a.guest?a.guest.name:a.booking?.guest||'')}</div>
+          <div class="gp-alert-detail">${escH(a.detail)}</div>
+          <span class="gp-alert-badge ${a.badgeCls}">${a.badgeLabel}</span>
+        </div>
+      </div>`;
+    if(todayAlerts.length){
+      alertsHtml += `<div class="section-lbl">Today &amp; In-House</div>
+        <div class="gp-alert-grid">${todayAlerts.map(buildCard).join('')}</div>`;
+    }
+    if(upcomingAlerts.length){
+      alertsHtml += `<div class="section-lbl" style="margin-top:16px;">Upcoming (Next ${ALERT_DAYS} days)</div>
+        <div class="gp-alert-grid">${upcomingAlerts.map(buildCard).join('')}</div>`;
+    }
+  } else {
+    alertsHtml = `<div class="gp-no-alerts" style="background:var(--h-panel);border:1px solid var(--h-border);border-radius:4px;margin-bottom:18px;">
+      ✅ No upcoming birthdays, anniversaries, or arrivals in the next ${ALERT_DAYS} days.
+    </div>`;
+  }
+
+  const officers = loadFOOfficers();
+  const foStatsHtml = officers.length ? `
+    <div class="section-lbl" style="margin-top:4px;">👮 Front Office — Bookings by Officer (All Time)</div>
+    <div class="fo-stats-grid" style="margin-bottom:18px;">
+      ${officers.map(o=>{
+        const cnt = bookings.filter(b=>b.bookedBy===o.name&&b.type!=='bk-cancelled').length;
+        const initials = foInitials(o.name);
+        return `<div class="fo-stat-card">
+          <div class="fo-stat-avatar">${escH(initials)}</div>
+          <div>
+            <div class="fo-stat-val">${cnt}</div>
+            <div class="fo-stat-lbl">${escH(o.name)}</div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="fo-stat-card">
+        <div class="fo-stat-avatar" style="background:rgba(149,165,166,.15);border-color:rgba(149,165,166,.3);color:#95a5a6;">?</div>
+        <div>
+          <div class="fo-stat-val" style="color:#95a5a6;">${bookings.filter(b=>!b.bookedBy&&b.type!=='bk-cancelled').length}</div>
+          <div class="fo-stat-lbl">Unassigned</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  const todayStr    = `${TODAY.getFullYear()}-${pad2(TODAY.getMonth()+1)}-${pad2(TODAY.getDate())}`;
+  const inHouseNow  = bookings.filter(b=>b.type!=='bk-cancelled'&&b.checkin<=todayStr&&b.checkout>todayStr).length;
+  const bdays30     = alerts.filter(a=>a.type==='bday'||a.type==='today-bday').length;
+  const anniv30     = alerts.filter(a=>a.type==='anniv'||a.type==='today-anniv').length;
+
+  const kpiHtml = `
+    <div class="gp-kpi-grid">
+      <div class="gp-kpi" style="--kc:#3498db;"><div class="gp-kpi-val">${guests.length}</div><div class="gp-kpi-lbl">Guest Profiles</div></div>
+      <div class="gp-kpi" style="--kc:#2ecc71;"><div class="gp-kpi-val">${inHouseNow}</div><div class="gp-kpi-lbl">In-House Now</div></div>
+      <div class="gp-kpi" style="--kc:#f39c12;"><div class="gp-kpi-val">${bdays30}</div><div class="gp-kpi-lbl">Birthdays (30d)</div></div>
+      <div class="gp-kpi" style="--kc:#9b59b6;"><div class="gp-kpi-val">${anniv30}</div><div class="gp-kpi-lbl">Anniversaries (30d)</div></div>
+    </div>`;
+
+  const tableRows = filtered.map(g=>{
+    const bks = bookings.filter(b=>b.guest===g.name);
+    const lastStay = bks.sort((a,b)=>b.checkin.localeCompare(a.checkin))[0];
+    const age  = computeAge(g.birthday);
+    const mmdd = g.birthday?getMMDD(g.birthday):null;
+    const bdayDays = mmdd?daysUntilNextOccurrence(mmdd):null;
+    const bdayChip = bdayDays!==null
+      ? `<span style="font-size:9px;color:${bdayDays===0?'#e74c3c':'#f39c12'};">${bdayDays===0?'🎂 Today!':'🎂 '+bdayDays+'d'}</span>`
+      : '';
+    const lastFO = lastStay?.bookedBy||'';
+    return `
+      <tr onclick="openGuestModal('${g.id}')">
+        <td class="gp-td-name">${escH(g.name)}${bdayChip?` &nbsp;${bdayChip}`:''}</td>
+        <td style="font-size:11px;">${age!==null?age:'—'}</td>
+        <td style="font-size:11px;">${escH(g.address||'—')}</td>
+        <td style="font-size:11px;">${escH(g.phone||'—')}</td>
+        <td style="font-size:11px;">${g.birthday?fmtDateLong(g.birthday):'—'}</td>
+        <td style="font-size:11px;">${g.anniversary?fmtDateLong(g.anniversary):'—'}</td>
+        <td><span class="gp-stays-chip">🏨 ${bks.length}</span></td>
+        <td style="font-size:10px;color:var(--h-muted);">${lastStay?fmtDateLong(lastStay.checkin):'—'}</td>
+        <td style="font-size:10px;">${lastFO?`<span style="color:#9b59b6;font-weight:600;">👮 ${escH(lastFO)}</span>`:'<span style="color:var(--h-muted);">—</span>'}</td>
+        <td>
+          <div class="gp-action-btns">
+            <button class="gp-btn" onclick="event.stopPropagation();openGuestModal('${g.id}')">✏ Edit</button>
+            <button class="gp-btn gp-btn-del" onclick="event.stopPropagation();triggerDeleteGuest('${g.id}','${escH(g.name)}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  const emptyRow = `<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--h-muted);font-size:12px;">No guest profiles found.<br/><br/><button class="ctrl-btn btn-primary" style="margin-top:8px;" onclick="openGuestModal(null)">+ Add First Guest</button></td></tr>`;
+
+  document.getElementById('gp-scroll-body').innerHTML = `
+    <div style="padding:18px 22px 40px;">
+      ${kpiHtml}
+      ${alertsHtml}
+      ${foStatsHtml}
+      <div class="gp-card">
+        <div class="gp-hd">
+          <span class="gp-ttl">👥 All Guest Profiles</span>
+          <span style="font-size:11px;color:var(--h-muted);">${filtered.length} of ${guests.length} guests${search?' · filtered':''}</span>
+        </div>
+        <div class="gp-tbl-wrap">
+          <table class="gp-table">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Full Name</th>
+                <th>Age</th>
+                <th style="min-width:180px;">Address</th>
+                <th>Phone</th>
+                <th style="min-width:140px;">Birthday</th>
+                <th style="min-width:140px;">Anniversary</th>
+                <th>Stays</th>
+                <th style="min-width:120px;">Last Stay</th>
+                <th style="min-width:110px;">Last FO</th>
+                <th style="min-width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.length?tableRows:emptyRow}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function updateGuestBadge(){
+  const alerts = buildAlerts();
+  const urgent = alerts.filter(a=>a.type==='today-bday'||a.type==='today-anniv').length;
+  const badge  = document.getElementById('guest-notif-badge');
+  badge.style.display = urgent>0?'inline-block':'none';
+  badge.textContent   = urgent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GUEST MODAL
+═══════════════════════════════════════════════════════════ */
+function openGuestModal(id){
+  editGuestId = id||null;
+  const guests = loadGuests();
+  const g      = id ? guests.find(x=>x.id===id) : null;
+
+  document.getElementById('gp-m-title').textContent = id?'Edit Guest Profile':'Add Guest Profile';
+  document.getElementById('gp-m-sub').textContent   = id?`Editing: ${g?.name||''}`:'New guest information';
+  document.getElementById('gp-del-btn').style.display = id?'block':'none';
+
+  if(g){
+    document.getElementById('gp-name').value        = g.name||'';
+    document.getElementById('gp-bday').value         = g.birthday||'';
+    document.getElementById('gp-age').value          = g.birthday?computeAge(g.birthday):'';
+    document.getElementById('gp-gender').value       = g.gender||'';
+    document.getElementById('gp-nationality').value  = g.nationality||'';
+    document.getElementById('gp-address').value      = g.address||'';
+    document.getElementById('gp-phone').value        = g.phone||'';
+    document.getElementById('gp-email').value        = g.email||'';
+    document.getElementById('gp-anniv').value        = g.anniversary||'';
+    document.getElementById('gp-occasion').value     = g.occasion||'';
+    document.getElementById('gp-prefs').value        = g.preferences||'';
+    document.getElementById('gp-id-type').value      = g.idType||'';
+    document.getElementById('gp-id-num').value       = g.idNum||'';
+  } else {
+    ['gp-name','gp-bday','gp-nationality','gp-address','gp-phone','gp-email','gp-anniv','gp-occasion','gp-prefs','gp-id-type','gp-id-num'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('gp-gender').value = '';
+    document.getElementById('gp-age').value    = '';
+  }
+
+  document.getElementById('gpModal').classList.add('open');
+  setTimeout(()=>document.getElementById('gp-name').focus(),80);
+}
+
+document.getElementById('gp-bday').addEventListener('change',function(){
+  const age = computeAge(this.value);
+  document.getElementById('gp-age').value = age!==null?age:'';
+});
+
+function closeGuestModal(){
+  document.getElementById('gpModal').classList.remove('open');
+  editGuestId=null;
+}
+document.getElementById('gpModal').addEventListener('click',e=>{ if(e.target===document.getElementById('gpModal')) closeGuestModal(); });
+
+function saveGuest(){
+  const name = document.getElementById('gp-name').value.trim().toUpperCase();
+  if(!name){ showToast('Name is required','error'); document.getElementById('gp-name').focus(); return; }
+  const guests = loadGuests();
+  const entry  = {
+    id:          editGuestId||gpUID(),
+    name,
+    birthday:    document.getElementById('gp-bday').value,
+    gender:      document.getElementById('gp-gender').value,
+    nationality: document.getElementById('gp-nationality').value.trim(),
+    address:     document.getElementById('gp-address').value.trim(),
+    phone:       document.getElementById('gp-phone').value.trim(),
+    email:       document.getElementById('gp-email').value.trim(),
+    anniversary: document.getElementById('gp-anniv').value,
+    occasion:    document.getElementById('gp-occasion').value.trim(),
+    preferences: document.getElementById('gp-prefs').value.trim(),
+    idType:      document.getElementById('gp-id-type').value.trim(),
+    idNum:       document.getElementById('gp-id-num').value.trim(),
+    updatedAt:   new Date().toISOString(),
+    createdAt:   editGuestId?(guests.find(g=>g.id===editGuestId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
+  };
+  if(editGuestId){
+    const idx=guests.findIndex(g=>g.id===editGuestId);
+    if(idx>=0) guests[idx]=entry; else guests.push(entry);
+    showToast(`✓ "${name}" updated`,'success');
+  } else {
+    guests.push(entry);
+    showToast(`✓ "${name}" added to guest profiles`,'success');
+  }
+  saveGuests(guests);
+  closeGuestModal();
+  if(activeTab==='guests') renderGuestPanel();
+  updateGuestBadge();
+}
+
+function triggerDeleteGuest(id,name){
+  showConfirm('Delete Guest?',`Permanently delete <strong>${name}</strong>? This cannot be undone.`,()=>{
+    const guests=loadGuests().filter(g=>g.id!==id);
+    saveGuests(guests);
+    if(activeTab==='guests') renderGuestPanel();
+    updateGuestBadge();
+    showToast(`🗑 "${name}" deleted`,'error');
+  });
+}
+function deleteGuest(){
+  if(!editGuestId) return;
+  const g=loadGuests().find(x=>x.id===editGuestId);
+  closeGuestModal();
+  triggerDeleteGuest(editGuestId,g?.name||'Guest');
+}
+
+/* ── Guest name auto-suggest ── */
+function suggestGuestProfile(){
+  const q=(document.getElementById('f-guest').value||'').toLowerCase().trim();
+  const box=document.getElementById('guest-suggest');
+  if(q.length<2){ box.style.display='none'; return; }
+  const guests=loadGuests().filter(g=>g.name.toLowerCase().includes(q)).slice(0,5);
+  if(!guests.length){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);margin-bottom:4px;">Saved Guests</div>'+
+    guests.map(g=>`
+      <div onclick="applyGuestSuggest('${escH(g.name)}')"
+        style="padding:5px 8px;font-size:12px;cursor:pointer;border-radius:2px;color:var(--h-sub);display:flex;align-items:center;gap:6px;transition:background .1s;"
+        onmouseover="this.style.background='var(--h-hover-bg)'" onmouseout="this.style.background=''">
+        <span style="font-size:14px;">👤</span>
+        <span><strong>${escH(g.name)}</strong>${g.address?` <span style="color:var(--h-muted);font-size:10px;">· ${escH(g.address)}</span>`:''}${g.phone?` <span style="color:var(--h-muted);font-size:10px;">· ${escH(g.phone)}</span>`:''}
+        </span>
+      </div>`).join('');
+}
+function applyGuestSuggest(name){
+  document.getElementById('f-guest').value=name;
+  document.getElementById('guest-suggest').style.display='none';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIRM DIALOG
+═══════════════════════════════════════════════════════════ */
+function showConfirm(title,msg,onOk){
+  document.getElementById('cf-title').textContent=title;
+  document.getElementById('cf-msg').innerHTML=msg;
+  document.getElementById('cf-sub').textContent='';
+  document.getElementById('cf-password').value='';
+  document.getElementById('cf-pw-err').style.display='none';
+  confirmCb=onOk;
+  document.getElementById('confirmModal').classList.add('open');
+  setTimeout(()=>document.getElementById('cf-password').focus(),80);
+  document.getElementById('cf-ok').onclick=()=>{
+    const pw=document.getElementById('cf-password').value;
+    if(pw!=='hiraya2026'){
+      document.getElementById('cf-pw-err').style.display='block';
+      document.getElementById('cf-password').focus();
+      document.getElementById('cf-password').select();
+      return;
+    }
+    const cb=confirmCb;   // snapshot BEFORE closeConfirm nulls it
+    closeConfirm();
+    if(cb) cb();
+  };
+}
+function closeConfirm(){
+  document.getElementById('confirmModal').classList.remove('open');
+  document.getElementById('cf-password').value='';
+  document.getElementById('cf-pw-err').style.display='none';
+  confirmCb=null;
+}
+document.getElementById('confirmModal').addEventListener('click',e=>{ if(e.target===document.getElementById('confirmModal')) closeConfirm(); });
+
+/* ═══════════════════════════════════════════════════════════
+   BACKUP & RESTORE
+═══════════════════════════════════════════════════════════ */
+function openBackupModal(){
+  const meta=JSON.parse(localStorage.getItem(GP_META_KEY)||'{}');
+  const el=document.getElementById('bk-last-meta');
+  el.textContent=meta.ts
+    ?`Last backup: ${new Date(meta.ts).toLocaleString('en-PH')} · ${meta.items||0} records`
+    :'No backup yet on this device.';
+  setBackupStatus('bk-export-st','','');
+  setBackupStatus('bk-import-st','','');
+  document.getElementById('backupModal').classList.add('open');
+}
+function closeBackupModal(){ document.getElementById('backupModal').classList.remove('open'); }
+document.getElementById('backupModal').addEventListener('click',e=>{ if(e.target===document.getElementById('backupModal')) closeBackupModal(); });
+
+function setBackupStatus(id,msg,type){
+  const el=document.getElementById(id);
+  el.textContent=msg; el.className='bk-file-status'+(type?' '+type:'');
+}
+
+function buildBackupPayload(){
+  const bookings = getAllBookingsMerged();
+  const guests   = loadGuests();
+  const officers = loadFOOfficers();
+  const sidecar  = loadSidecar();
+  return {
+    _hiraya_res_backup: true,
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    totalRecords: bookings.length+guests.length,
+    bookings,
+    guests,
+    officers,
+    bookedBySidecar: sidecar,
+  };
+}
+
+function exportBackup(){
+  const payload=buildBackupPayload();
+  const json=JSON.stringify(payload,null,2);
+  const fname=`hiraya-reservations-backup-${fmtNow()}.json`;
+  const a=document.createElement('a'); a.href='data:application/json;charset=utf-8,'+encodeURIComponent(json); a.download=fname; a.click();
+  localStorage.setItem(GP_META_KEY,JSON.stringify({ts:payload.exportedAt,items:payload.totalRecords}));
+  setBackupStatus('bk-export-st',`✓ Saved: ${fname} (${payload.totalRecords} records)`,'ok');
+  document.getElementById('bk-last-meta').textContent=`Last backup: ${new Date(payload.exportedAt).toLocaleString('en-PH')} · ${payload.totalRecords} records`;
+  showToast('✓ Backup downloaded','success');
+}
+
+async function copyBackup(){
+  try{
+    await navigator.clipboard.writeText(JSON.stringify(buildBackupPayload(),null,2));
+    setBackupStatus('bk-export-st','✓ Backup JSON copied to clipboard.','ok');
+    showToast('✓ Copied to clipboard','success');
+  } catch(e){ setBackupStatus('bk-export-st','⚠ Could not access clipboard. Use Download instead.','err'); }
+}
+
+function handleFileIn(input){ const f=input.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>processImport(e.target.result,f.name); r.readAsText(f); input.value=''; }
+function handleDrop(e){ e.preventDefault(); document.getElementById('bk-drop').classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(!f){ setBackupStatus('bk-import-st','No file detected.','err'); return; } const r=new FileReader(); r.onload=ev=>processImport(ev.target.result,f.name); r.readAsText(f); }
+async function pasteBackup(){ try{ const t=await navigator.clipboard.readText(); processImport(t,'clipboard'); } catch(e){ setBackupStatus('bk-import-st','⚠ Could not read clipboard.','err'); } }
+
+function processImport(text,source){
+  let p; try{ p=JSON.parse(text); } catch(e){ setBackupStatus('bk-import-st','✗ Invalid file — not valid JSON.','err'); return; }
+  if(!p._hiraya_res_backup){ setBackupStatus('bk-import-st','✗ Not a Hiraya Reservations backup file.','err'); return; }
+  const bkCnt=Array.isArray(p.bookings)?p.bookings.length:0;
+  const gpCnt=Array.isArray(p.guests)?p.guests.length:0;
+  const ofCnt=Array.isArray(p.officers)?p.officers.length:0;
+  const ts=p.exportedAt?new Date(p.exportedAt).toLocaleString('en-PH'):'unknown';
+  showConfirm(
+    'Restore from Backup?',
+    `Importing <strong>${bkCnt} bookings</strong>, <strong>${gpCnt} guest profiles</strong>${ofCnt?`, and <strong>${ofCnt} officers</strong>`:''} from backup dated <strong>${ts}</strong>.<br/><br/>⚠ This will <strong>replace all current data</strong>. This cannot be undone.`,
+    ()=>{
+      if(Array.isArray(p.bookings) && DB.setBookings) DB.setBookings(p.bookings);
+      if(Array.isArray(p.guests)) saveGuests(p.guests);
+      if(Array.isArray(p.officers) && p.officers.length) saveFOOfficers(p.officers);
+      const newSidecar = Object.assign({}, p.bookedBySidecar || {});
+      if(Array.isArray(p.bookings)){
+        p.bookings.forEach(b=>{ if(b.id && b.bookedBy) newSidecar[b.id]=b.bookedBy; });
+      }
+      saveSidecar(newSidecar);
+      localStorage.setItem(GP_META_KEY,JSON.stringify({ts:new Date().toISOString(),items:bkCnt+gpCnt,source}));
+      closeBackupModal();
+      populateFOSelects();
+      render();
+      updateGuestBadge();
+      if(activeTab==='guests') renderGuestPanel();
+      showToast(`✓ Restored ${bkCnt+gpCnt} records`,'success');
+    }
+  );
+}
+
+function fmtNow(){ const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+
+/* ═══════════════════════════════════════════════════════════
+   GUEST CSV EXPORT
+═══════════════════════════════════════════════════════════ */
+function exportGuestsCSV(){
+  const guests=loadGuests();
+  const rows=[['Full Name','Age','Birthday','Gender','Nationality','Address','Phone','Email','Anniversary','Occasion','Preferences','ID Type','ID Number','Total Stays','Last Stay','Last FO Officer']];
+  const bookings=getAllBookingsMerged();
+  guests.forEach(g=>{
+    const bks=bookings.filter(b=>b.guest===g.name);
+    const lastBk=bks.sort((a,b)=>b.checkin.localeCompare(a.checkin))[0];
+    const last=lastBk?.checkin||'';
+    const lastFO=lastBk?.bookedBy||'';
+    rows.push([g.name,computeAge(g.birthday)??'',g.birthday||'',g.gender||'',g.nationality||'',g.address||'',g.phone||'',g.email||'',g.anniversary||'',g.occasion||'',g.preferences||'',g.idType||'',g.idNum||'',bks.length,last,lastFO]);
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=`hiraya-guests-${fmtNow()}.csv`; a.click();
+  showToast('✓ Guests CSV exported','success');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GANTT RENDER
+═══════════════════════════════════════════════════════════ */
+function render(){
+  document.getElementById('monthLbl').textContent=new Date(viewYear,viewMonth,1).toLocaleDateString('en-PH',{month:'long',year:'numeric'});
+  renderGantt(); updateStats();
+}
+
+function renderGantt(){
+  const days=daysInMonth(viewYear,viewMonth);
+  const head=document.getElementById('ganttHead');
+  const body=document.getElementById('ganttBody');
+  const foot=document.getElementById('ganttFoot');
+  document.getElementById('ganttTbl').style.width=(36+46+days*COL_W)+'px';
+  head.innerHTML=''; body.innerHTML=''; foot.innerHTML='';
+
+  const trMo=document.createElement('tr'); trMo.className='hdr-mo';
+  trMo.appendChild(_stickyTh('CAT',36,0,0,30));
+  trMo.appendChild(_stickyTh('RM',46,36,0,30));
+  for(let d=1;d<=days;d++){
+    const dow=new Date(viewYear,viewMonth,d).getDay();
+    const th=document.createElement('th');
+    th.style.width=COL_W+'px'; th.style.top='0'; th.textContent=d;
+    if(isToday(d))           th.style.background='rgba(255,255,255,.22)';
+    else if(dow===0||dow===6) th.style.background='rgba(0,0,0,.18)';
+    trMo.appendChild(th);
+  }
+  head.appendChild(trMo);
+
+  const trDow=document.createElement('tr'); trDow.className='hdr-dow';
+  const dA=_stickyTh('CAT',36,0,30,29); dA.style.fontSize='8px'; trDow.appendChild(dA);
+  const dB=_stickyTh('ROOM',46,36,30,29); dB.style.fontSize='8px'; trDow.appendChild(dB);
+  for(let d=1;d<=days;d++){
+    const dow=new Date(viewYear,viewMonth,d).getDay();
+    const th=document.createElement('th');
+    th.style.width=COL_W+'px'; th.style.top='30px';
+    th.classList.toggle('col-today',isToday(d));
+    th.classList.toggle('col-wknd',dow===0||dow===6);
+    th.innerHTML=`<span class="dow-sub">${DOW[dow]}</span>`;
+    trDow.appendChild(th);
+  }
+  head.appendChild(trDow);
+
+  const monthStart=new Date(viewYear,viewMonth,1);
+  const monthEnd=new Date(viewYear,viewMonth,days+1);
+
+  ROWS.forEach((room,idx)=>{
+    const tr=document.createElement('tr');
+    if(idx>0&&ROWS[idx-1].catg!==room.catg) tr.classList.add('row-div');
+    const tc=document.createElement('td'); tc.className='cell-catg'; tc.textContent=room.catg; tr.appendChild(tc);
+    const tr2=document.createElement('td'); tr2.className='cell-room'; tr2.textContent=room.num; tr.appendChild(tr2);
+    for(let d=1;d<=days;d++){
+      const dow=new Date(viewYear,viewMonth,d).getDay();
+      const td=document.createElement('td');
+      td.className='cell-day'+(isToday(d)?' col-today':'')+(dow===0||dow===6?' col-wknd':'');
+      td.style.width=COL_W+'px';
+      td.dataset.room=room.num; td.dataset.day=d;
+      if(isToday(d)){const ln=document.createElement('div');ln.className='today-line';td.appendChild(ln);}
+      td.addEventListener('click',()=>openModal(null,room.num,d));
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  });
+
+  const rangeStart=DB.fmtDate(new Date(viewYear,viewMonth,1));
+  const rangeEnd=DB.fmtDate(new Date(viewYear,viewMonth+1,1));
+  const allBks=getBookingsInRangeMerged(rangeStart,rangeEnd);
+
+  allBks.forEach(bk=>{
+    if(fType!=='all'&&bk.type!==fType) return;
+    if(fSearch){const q=fSearch.toLowerCase();if(!bk.guest.toLowerCase().includes(q)&&!String(bk.room).includes(q)) return;}
+    if(fOfficer!=='all'){
+      if(fOfficer==='none'&&bk.bookedBy) return;
+      if(fOfficer!=='none'&&bk.bookedBy!==fOfficer) return;
+    }
+
+    const cin=DB.parseDate(bk.checkin);
+    const cout=DB.parseDate(bk.checkout);
+    const startDay=cin<monthStart?1:(cin>=monthEnd?null:cin.getDate());
+    if(startDay===null) return;
+    const lastOccupied=new Date(cout.getTime()-86400000);
+    if(lastOccupied<monthStart) return;
+    const endDay=lastOccupied>=monthEnd?days:lastOccupied.getDate();
+    if(endDay<startDay) return;
+    const span=endDay-startDay+1;
+    const startTd=body.querySelector(`td[data-room="${bk.room}"][data-day="${startDay}"]`);
+    if(!startTd) return;
+
+    const bar=document.createElement('div');
+    bar.className='bk-bar'+(bk.type==='bk-cancelled'?' bk-cancelled':'');
+    bar.style.cssText=`left:1px;width:${span*COL_W-2}px;color:#fff;background:${DB.BOOKING_COLORS[bk.type]||'#888'};`;
+
+    const nameSpan=document.createElement('span');
+    nameSpan.textContent=bk.guest;
+    nameSpan.style.overflow='hidden';
+    nameSpan.style.textOverflow='ellipsis';
+    nameSpan.style.flex='1';
+    bar.appendChild(nameSpan);
+
+    if(bk.bookedBy && span*COL_W > 60){
+      const foChip=document.createElement('span');
+      foChip.className='bk-bar-fo';
+      foChip.textContent=foInitials(bk.bookedBy);
+      foChip.title=`Booked by: ${bk.bookedBy}`;
+      bar.appendChild(foChip);
+    }
+
+    bar.dataset.id=bk.id;
+    bar.addEventListener('mouseenter',e=>showTip(e,bk));
+    bar.addEventListener('mousemove',moveTip);
+    bar.addEventListener('mouseleave',hideTip);
+    bar.addEventListener('click',e=>{e.stopPropagation();openModal(bk.id);});
+    startTd.style.overflow='visible';
+    startTd.appendChild(bar);
+  });
+
+  addFootRow(foot,allBks,days,'REV',(bks,d)=>{
+    const bksF=bksFiltered(bks);
+    const t=bksF.filter(b=>b.type!=='bk-cancelled'&&occOnDay(b,viewYear,viewMonth,d)).reduce((s,b)=>s+(Number(b.rate)||0),0);
+    return t?'₱'+t.toLocaleString('en-PH'):'';
+  },'rev');
+  addFootRow(foot,allBks,days,'RMN',(bks,d)=>bksFiltered(bks).filter(b=>b.type!=='bk-cancelled'&&occOnDay(b,viewYear,viewMonth,d)).length||'','rmn');
+  addFootRow(foot,allBks,days,'PAX',(bks,d)=>{
+    const t=bksFiltered(bks).filter(b=>b.type!=='bk-cancelled'&&occOnDay(b,viewYear,viewMonth,d)).reduce((s,b)=>s+(Number(b.pax)||0),0);
+    return t||'';
+  },'pax');
+}
+
+function bksFiltered(bks){
+  return bks.filter(bk=>{
+    if(fOfficer==='none'&&bk.bookedBy) return false;
+    if(fOfficer!=='all'&&fOfficer!=='none'&&bk.bookedBy!==fOfficer) return false;
+    return true;
+  });
+}
+
+function _stickyTh(text,width,left,top,zIdx){
+  const th=document.createElement('th');
+  th.style.cssText=`width:${width}px;position:sticky;left:${left}px;top:${top}px;z-index:${zIdx};`;
+  th.style.background=top===0?'var(--h-red)':'var(--h-panel2)';
+  th.textContent=text;
+  return th;
+}
+function occOnDay(bk,y,m,d){const cin=DB.parseDate(bk.checkin);const cout=DB.parseDate(bk.checkout);const cell=new Date(y,m,d);return cin<=cell&&cell<cout;}
+function addFootRow(foot,bks,days,label,fn,cls){
+  const tr=document.createElement('tr');
+  const td0=document.createElement('td');td0.className='cell-ft-lbl';td0.textContent=label;tr.appendChild(td0);
+  const td1=document.createElement('td');td1.className='cell-ft-lbl2';td1.textContent='—';tr.appendChild(td1);
+  for(let d=1;d<=days;d++){const td=document.createElement('td');const val=fn(bks,d);td.className='cell-ft'+(val?' fv '+cls:'');td.textContent=val!==''?val:'';tr.appendChild(td);}
+  foot.appendChild(tr);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════════════ */
+function updateStats(){
+  const days=daysInMonth(viewYear,viewMonth);
+  const ms=new Date(viewYear,viewMonth,1);
+  const me=new Date(viewYear,viewMonth,days+1);
+  const bks=getAllBookingsMerged().filter(b=>{
+    if(b.type==='bk-cancelled') return false;
+    const cin=DB.parseDate(b.checkin);
+    const cout=DB.parseDate(b.checkout);
+    return cin<me&&cout>ms;
+  });
+  let nights=0,pax=0,rev=0;
+  bks.forEach(b=>{
+    const cin=DB.parseDate(b.checkin);const cout=DB.parseDate(b.checkout);
+    const s=cin<ms?ms:cin;const e=cout>me?me:cout;
+    const n=Math.max(0,Math.round((e-s)/86400000));
+    nights+=n;pax+=Number(b.pax)||0;rev+=n*(Number(b.rate)||0);
+  });
+  const occ=ROWS.length*days?Math.round((nights/(ROWS.length*days))*100):0;
+
+  const foCount={};
+  bks.forEach(b=>{ if(b.bookedBy){ foCount[b.bookedBy]=(foCount[b.bookedBy]||0)+1; } });
+  const topFO = Object.entries(foCount).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('s-bk').textContent=bks.length;
+  document.getElementById('s-rn').textContent=nights;
+  document.getElementById('s-px').textContent=pax;
+  document.getElementById('s-rv').textContent='₱'+rev.toLocaleString('en-PH');
+  document.getElementById('s-oc').textContent=occ+'%';
+  document.getElementById('s-fo').textContent=topFO?`${topFO[0]} (${topFO[1]})`:'—';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BOOKING MODAL
+═══════════════════════════════════════════════════════════ */
+const roomSel=document.getElementById('f-room');
+ROWS.forEach(r=>{const o=document.createElement('option');o.value=r.num;o.textContent=`Room ${r.num} — ${DB.ROOM_META[r.num].type} (${r.catg})`;roomSel.appendChild(o);});
+
+function openModal(id,preRoom,preDay){
+  editId=id||null; clearAlert();
+  populateFOSelects();
+  if(id){
+    const rawBk=DB.getBookings().find(b=>b.id===id);
+    if(!rawBk) return;
+    const bk=mergeFO(rawBk);
+    document.getElementById('m-ttl').textContent='Edit Booking';
+    document.getElementById('m-sub').textContent=`Room ${bk.room} · ${bk.guest}`;
+    document.getElementById('f-guest').value=bk.guest;
+    document.getElementById('f-room').value=bk.room;
+    document.getElementById('f-type').value=bk.type;
+    document.getElementById('f-cin').value=bk.checkin;
+    document.getElementById('f-cout').value=bk.checkout;
+    document.getElementById('f-pax').value=bk.pax;
+    document.getElementById('f-rate').value=bk.rate;
+    document.getElementById('f-notes').value=bk.notes;
+    document.getElementById('f-bookedby').value=bk.bookedBy||'';
+    document.getElementById('m-del').style.display='block';
+  } else {
+    document.getElementById('m-ttl').textContent='New Booking';
+    document.getElementById('m-sub').textContent='Fill in reservation details';
+    document.getElementById('f-guest').value='';
+    document.getElementById('f-room').value=preRoom||ROWS[0].num;
+    document.getElementById('f-type').value='bk-confirmed';
+    const y=viewYear,m=viewMonth+1,d=preDay||1;
+    document.getElementById('f-cin').value=`${y}-${pad2(m)}-${pad2(d)}`;
+    const co=new Date(viewYear,viewMonth,(preDay||1)+1);
+    document.getElementById('f-cout').value=DB.fmtDate(co);
+    document.getElementById('f-pax').value=1;
+    document.getElementById('f-rate').value=2800;
+    document.getElementById('f-notes').value='';
+    document.getElementById('f-bookedby').value='';
+    document.getElementById('m-del').style.display='none';
+  }
+  document.getElementById('guest-suggest').style.display='none';
+  document.getElementById('bkModal').classList.add('open');
+  setTimeout(()=>document.getElementById('f-guest').focus(),80);
+  checkAvailability();
+}
+
+function closeModal(){
+  document.getElementById('bkModal').classList.remove('open');
+  document.getElementById('guest-suggest').style.display='none';
+  clearAlert(); editId=null;
+}
+
+function checkAvailability(){
+  const room=Number(document.getElementById('f-room').value);
+  const cin=document.getElementById('f-cin').value;
+  const cout=document.getElementById('f-cout').value;
+  const type=document.getElementById('f-type').value;
+  const hint=document.getElementById('m-avail');
+  if(!room||!cin||!cout||type==='bk-cancelled'){hint.className='avail-hint';return;}
+  const check=DB.checkBookingOverlap({room,checkin:cin,checkout:cout,type},editId);
+  if(check.conflict){
+    const cb=check.conflictingBooking;
+    hint.textContent=`⛔ Unavailable — overlaps with "${cb?cb.guest:'?'}"`;
+    hint.className='avail-hint show busy';
+  } else {
+    const cinD=DB.parseDate(cin);const coutD=DB.parseDate(cout);
+    if(!cinD||!coutD||coutD<=cinD){hint.className='avail-hint';return;}
+    const nights=Math.round((coutD-cinD)/86400000);
+    hint.textContent=`✅ Room ${room} is available — ${nights} night${nights!==1?'s':''}`;
+    hint.className='avail-hint show ok';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BOOKEDBY SIDECAR
+═══════════════════════════════════════════════════════════ */
+const FO_SIDECAR_KEY = 'hiraya_bookedby_sidecar_v1';
+
+function loadSidecar(){
+  try{ return JSON.parse(localStorage.getItem(FO_SIDECAR_KEY)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveSidecar(obj){ localStorage.setItem(FO_SIDECAR_KEY, JSON.stringify(obj)); }
+
+function sidecarSet(id, bookedBy){
+  const s = loadSidecar();
+  if(bookedBy){ s[id] = bookedBy; } else { delete s[id]; }
+  saveSidecar(s);
+}
+
+function mergeFO(bk){
+  if(!bk) return bk;
+  const sidecar = loadSidecar();
+  return Object.assign({}, bk, { bookedBy: bk.bookedBy || sidecar[bk.id] || '' });
+}
+
+function getAllBookingsMerged(){
+  const raw = DB.getBookings ? DB.getBookings() : [];
+  return raw.map(mergeFO);
+}
+
+function getBookingsInRangeMerged(start, end){
+  const raw = DB.getBookingsInRange ? DB.getBookingsInRange(start, end) : [];
+  return raw.map(mergeFO);
+}
+
+function saveBooking(){
+  clearAlert();
+  const id = editId || DB.uid();
+  const bookedBy = document.getElementById('f-bookedby').value || '';
+  const bk={
+    id,
+    room:Number(document.getElementById('f-room').value),
+    guest:document.getElementById('f-guest').value.trim().toUpperCase(),
+    type:document.getElementById('f-type').value,
+    checkin:document.getElementById('f-cin').value,
+    checkout:document.getElementById('f-cout').value,
+    pax:Number(document.getElementById('f-pax').value)||0,
+    rate:Number(document.getElementById('f-rate').value)||0,
+    notes:document.getElementById('f-notes').value.trim(),
+    bookedBy,
+  };
+  const result=DB.upsertBooking(bk);
+  if(!result.ok){showAlert(result.error,'error');return;}
+
+  sidecarSet(id, bookedBy);
+
+  autoCreateGuestProfile(bk.guest);
+  closeModal();
+  render();
+  updateGuestBadge();
+}
+
+function autoCreateGuestProfile(guestName){
+  if(!guestName) return;
+  const guests=loadGuests();
+  if(guests.some(g=>g.name===guestName)) return;
+  guests.push({
+    id:gpUID(), name:guestName,
+    birthday:'',gender:'',nationality:'',address:'',phone:'',email:'',
+    anniversary:'',occasion:'',preferences:'',idType:'',idNum:'',
+    createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+    autoCreated:true,
+  });
+  saveGuests(guests);
+  showToast(`👤 Guest profile auto-created for "${guestName}". Complete their info in Guest Profiles.`,'info');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DELETE BOOKING  ← FIXED
+   Capture editId into a local variable BEFORE closing the
+   modal (which resets editId to null), then use that local
+   variable inside the confirm callback.
+═══════════════════════════════════════════════════════════ */
+function deleteBooking(){
+  if(!editId) return;
+
+  // ── Snapshot the id and guest name NOW, before closeModal() clears editId ──
+  const idToDelete   = editId;
+  const rawBk        = DB.getBookings().find(b => b.id === idToDelete);
+  const guestName    = rawBk ? rawBk.guest : 'this booking';
+
+  showConfirm(
+    'Delete Booking?',
+    `Delete booking for <strong>"${escH(guestName)}"</strong>? This cannot be undone.`,
+    () => {
+      DB.deleteBooking(idToDelete);
+      sidecarSet(idToDelete, ''); // clean up sidecar entry
+      closeModal();               // safe to close here — we no longer need editId
+      render();
+      updateGuestBadge();
+      showToast(`🗑 "${guestName}" booking deleted`, 'error');
+    }
+  );
+}
+
+function showAlert(msg,type){
+  const el=document.getElementById('m-alert');
+  el.textContent=(type==='error'?'⛔ ':'⚠️ ')+msg;
+  el.className='bk-alert '+type;
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function clearAlert(){
+  const el=document.getElementById('m-alert'); el.className='bk-alert'; el.textContent='';
+  document.getElementById('m-avail').className='avail-hint';
+}
+
+document.getElementById('bkModal').addEventListener('click',function(e){if(e.target===this) closeModal();});
+
+/* ═══════════════════════════════════════════════════════════
+   TOOLTIP
+═══════════════════════════════════════════════════════════ */
+const tip=document.getElementById('bkTip');
+function showTip(e,bk){
+  const cin=DB.parseDate(bk.checkin);const cout=DB.parseDate(bk.checkout);
+  const nights=Math.round((cout-cin)/86400000);
+  const fmt=d=>d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+  const total=nights*(Number(bk.rate)||0);
+  const guestProfile=loadGuests().find(g=>g.name===bk.guest);
+  const gpNote=guestProfile&&guestProfile.birthday
+    ?`<div class="tt-row"><span>Birthday</span><span class="tt-val" style="color:#f39c12;">🎂 ${fmtDateLong(guestProfile.birthday)}</span></div>`:''
+  const foRow=bk.bookedBy
+    ?`<div class="tt-row"><span>Booked By</span><span class="tt-val"><span class="tt-fo-chip">👮 ${DB.esc(bk.bookedBy)}</span></span></div>`:
+     `<div class="tt-row"><span>Booked By</span><span class="tt-val" style="color:var(--h-muted);">— Unassigned</span></div>`;
+  tip.innerHTML=`
+    <div class="tt-name">${DB.esc(bk.guest)}</div>
+    <div class="tt-row"><span>Room</span><span class="tt-val">${DB.esc(String(bk.room))} — ${DB.esc(DB.ROOM_META[bk.room]?.type||'')}</span></div>
+    <div class="tt-row"><span>Type</span><span class="tt-val" style="color:${DB.BOOKING_COLORS[bk.type]||'#888'}">${DB.esc(DB.BOOKING_LABELS[bk.type]||bk.type)}</span></div>
+    <div class="tt-row"><span>Check-in</span><span class="tt-val">${DB.esc(fmt(cin))}</span></div>
+    <div class="tt-row"><span>Check-out</span><span class="tt-val">${DB.esc(fmt(cout))}</span></div>
+    <div class="tt-row"><span>Nights</span><span class="tt-val">${nights}</span></div>
+    <div class="tt-row"><span>PAX</span><span class="tt-val">${DB.esc(String(bk.pax||0))}</span></div>
+    ${bk.rate?`<div class="tt-row"><span>Rate/Night</span><span class="tt-val" style="color:#2ecc71;">₱${Number(bk.rate).toLocaleString('en-PH')}</span></div>`:''}
+    ${total?`<div class="tt-row"><span>Total</span><span class="tt-val" style="color:#2ecc71;">₱${total.toLocaleString('en-PH')}</span></div>`:''}
+    ${bk.notes?`<div class="tt-row"><span>Notes</span><span class="tt-val" style="color:#f39c12;">${DB.esc(bk.notes)}</span></div>`:''}
+    ${gpNote}
+    ${foRow}
+    <div class="tt-hint">Click to edit · 👤 ${guestProfile?'Profile saved':'No profile yet'}</div>`;
+  moveTip(e); tip.classList.add('show');
+}
+function moveTip(e){let x=e.clientX+14,y=e.clientY+14;if(x+290>window.innerWidth) x=e.clientX-294;if(y+240>window.innerHeight) y=e.clientY-244;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.classList.remove('show');}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════════════════════════ */
+document.getElementById('prevMo').addEventListener('click',()=>{if(--viewMonth<0){viewMonth=11;viewYear--;}render();});
+document.getElementById('nextMo').addEventListener('click',()=>{if(++viewMonth>11){viewMonth=0;viewYear++;}render();});
+document.getElementById('todayBtn').addEventListener('click',()=>{
+  viewYear=TODAY.getFullYear();viewMonth=TODAY.getMonth();render();
+  requestAnimationFrame(()=>{
+    const wrap=document.getElementById('ganttWrap');
+    const td=wrap.querySelector(`td[data-day="${TODAY.getDate()}"]`);
+    if(td) td.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  });
+});
+document.getElementById('newBkBtn').addEventListener('click',()=>openModal(null));
+document.getElementById('fType').addEventListener('change',e=>{fType=e.target.value;render();});
+document.getElementById('fOfficer').addEventListener('change',e=>{fOfficer=e.target.value;render();});
+document.getElementById('fSearch').addEventListener('input',e=>{fSearch=e.target.value.trim();render();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();closeGuestModal();closeConfirm();closeBackupModal();closeFOModal();}
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CROSS-PAGE SYNC
+═══════════════════════════════════════════════════════════ */
+if(DB.onUpdate) DB.onUpdate(key=>{ if(key===DB.KEY.bookings){render();updateGuestBadge();} });
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+populateFOSelects();
+render();
+updateGuestBadge();
+
+requestAnimationFrame(()=>{
+  if(viewYear===TODAY.getFullYear()&&viewMonth===TODAY.getMonth()){
+    const wrap=document.getElementById('ganttWrap');
+    const td=wrap.querySelector(`td[data-day="${TODAY.getDate()}"]`);
+    if(td) td.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  }
+});
+</script>
+</body>
+</html>

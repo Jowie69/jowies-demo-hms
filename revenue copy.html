@@ -1,0 +1,2126 @@
+<!-- revenue.html — Hiraya HMS · Revenue & Reports -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Revenue & Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style id="print-styles">
+    @media print {
+      #hms-sidebar, #hms-topbar, .ctrl-bar, .tab-bar, .no-print, .btn-print-trigger { display:none !important; }
+      #hms-main { margin-left:0 !important; }
+      body, html { overflow:visible !important; height:auto !important; background:#fff !important; margin:0 !important; padding:0 !important; }
+      #hms-main, .rev-shell, .rv-scroll { overflow:visible !important; height:auto !important; margin:0 !important; }
+      .print-only { display:block !important; }
+      .print-page { page-break-after: always; margin:0 !important; padding:0 !important; }
+      :root { --h-dark:#fff; --h-panel:#fff; --h-panel2:#f5f5f5; --h-border:#ddd; --h-text:#111; --h-sub:#444; --h-muted:#888; --h-input-bg:#f9f9f9; }
+      .kpi-card, .chart-card, .entries-card, .rev-table { background:#fff !important; border-color:#ddd !important; }
+      .data-table thead th, .data-table tbody td { color:#333 !important; }
+      .print-header { display:block !important; }
+      .print-table { width:100%; border-collapse:collapse; font-size:10pt; }
+      .print-table th, .print-table td { border:1px solid #333; padding:6px; text-align:left; }
+      .print-table th { background:#f0f0f0; font-weight:bold; }
+      .print-table .amt { text-align:right; font-family:'Courier New',monospace; }
+      .print-sig-section { margin-top:30mm; display:flex; justify-content:space-between; }
+      .print-sig-line { flex:1; text-align:center; }
+      .print-sig-line .line { border-top:1px solid #000; margin-bottom:4px; min-height:30mm; }
+      .print-sig-line .label { font-size:9pt; font-weight:bold; }
+      .print-sig-line .role { font-size:8pt; color:#666; margin-top:2px; }
+      #billing-print-area {
+        display:block !important;
+        position:fixed; top:0; left:0; width:100%; height:100%;
+        background:#fff; z-index:99999; padding:0; margin:0;
+        font-family:'Times New Roman',serif;
+      }
+      #panel-billing .ctrl-bar, #panel-billing .billing-editor { display:none !important; }
+    }
+    .print-only { display:none; }
+
+    html, body { height:100%; overflow:hidden; }
+    #hms-main  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .rev-shell { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+    .tab-bar {
+      display:flex; align-items:center; gap:0; flex-shrink:0;
+      border-bottom:1px solid var(--h-border); background:var(--h-panel);
+      padding:0 20px;
+    }
+    .tab-btn {
+      display:flex; align-items:center; gap:7px;
+      padding:12px 18px; font-size:12px; font-weight:600;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted);
+      border:none; background:none; cursor:pointer;
+      border-bottom:2px solid transparent; margin-bottom:-1px;
+      transition:color .15s, border-color .15s;
+    }
+    .tab-btn:hover { color:var(--h-text); }
+    .tab-btn.active { color:var(--h-text); border-bottom-color:var(--h-red); }
+    .tab-badge { background:var(--h-red); color:#fff; font-size:9px; font-weight:800; padding:1px 5px; border-radius:10px; }
+
+    .ctrl-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+      padding:9px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .ctrl-grp  { display:flex; align-items:center; gap:6px; }
+    .ctrl-lbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .ctrl-sel, .ctrl-inp {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      color:var(--h-text); outline:none; cursor:pointer;
+    }
+    .ctrl-sel:focus,.ctrl-inp:focus { border-color:var(--h-red); }
+    .ctrl-btn {
+      display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600;
+      cursor:pointer; white-space:nowrap; transition:background .15s;
+    }
+    .btn-primary { background:var(--h-red); color:#fff; }
+    .btn-primary:hover { background:var(--h-red-dk); }
+    .btn-outline { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-outline:hover { background:var(--h-hover-bg); }
+    .btn-green  { background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .btn-green:hover { background:rgba(46,204,113,.25); }
+    .btn-blue   { background:rgba(52,152,219,.14); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .btn-blue:hover { background:rgba(52,152,219,.25); }
+    .ctrl-sep  { width:1px; height:20px; background:var(--h-border); }
+    .ctrl-fill { flex:1; }
+    .nav-btn {
+      width:28px; height:28px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    }
+    .nav-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .month-lbl {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; min-width:148px; text-align:center;
+    }
+
+    .rv-scroll { flex:1; overflow-y:auto; padding:18px 22px 40px; }
+
+    .daily-status-bar {
+      display:flex; align-items:center; gap:12px; padding:10px 16px;
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      margin-bottom:16px;
+    }
+    .daily-status-dot { width:8px; height:8px; border-radius:50%; box-shadow:0 0 6px currentColor; }
+    .daily-status-text { font-size:12px; color:var(--h-text); font-weight:600; }
+    .daily-status-meta { font-size:11px; color:var(--h-muted); margin-left:auto; }
+
+    .daily-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px; }
+    .daily-kpi {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:14px 16px; position:relative; overflow:hidden;
+    }
+    .daily-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent,var(--h-border)); }
+    .daily-kpi-val   { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:var(--h-text); line-height:1; margin-bottom:3px; }
+    .daily-kpi-label { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); }
+
+    .entries-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      margin-bottom:16px; overflow:hidden;
+    }
+    .entries-hd {
+      padding:12px 18px; border-bottom:1px solid var(--h-border);
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--h-panel2);
+    }
+    .entries-ttl { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-sub); }
+
+    .rev-table { width:100%; border-collapse:collapse; }
+    .rev-table thead th {
+      font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--h-muted); padding:10px 12px; text-align:left;
+      border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .rev-table tbody td { padding:10px 12px; font-size:12px; color:var(--h-sub); border-bottom:1px solid var(--h-border); }
+    .rev-table tbody tr:hover td { background:var(--h-hover-bg); }
+    .rev-table tfoot td { padding:10px 12px; font-size:12px; font-weight:700; color:var(--h-text); border-top:2px solid var(--h-border); background:var(--h-panel2); }
+    .tbl-scroll { overflow-x:auto; }
+
+    .td-guest  { color:var(--h-text) !important; font-weight:600; }
+    .td-amount { font-family:'Cinzel',serif; font-size:12px; }
+    .td-green  { color:#2ecc71 !important; font-weight:700; }
+    .td-muted  { color:var(--h-muted) !important; }
+
+    .pay-badge { display:inline-block; padding:2px 8px; border-radius:2px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .pay-cash     { background:rgba(46,204,113,.12); color:#2ecc71; }
+    .pay-card     { background:rgba(52,152,219,.12); color:#3498db; }
+    .pay-gcash    { background:rgba(41,128,185,.14); color:#5dade2; }
+    .pay-transfer { background:rgba(142,68,173,.12); color:#9b59b6; }
+    .pay-comp     { background:rgba(243,156,18,.12); color:#f39c12; }
+    .pay-other    { background:rgba(149,165,166,.12); color:#95a5a6; }
+    .id-badge { display:inline-block; padding:2px 7px; border-radius:2px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; background:rgba(192,39,45,.1); color:#C0272D; }
+
+    .del-row-btn { background:none; border:none; cursor:pointer; padding:3px 6px; color:var(--h-muted); border-radius:2px; font-size:12px; transition:background .12s, color .12s; }
+    .del-row-btn:hover { background:rgba(231,76,60,.12); color:#e74c3c; }
+
+    .ledger-card { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; margin-bottom:16px; overflow:hidden; }
+    .ledger-hd { padding:12px 18px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; background:var(--h-panel2); }
+    .ledger-ttl { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-sub); }
+    .ledger-entry { display:flex; align-items:center; gap:14px; padding:10px 18px; border-bottom:1px solid var(--h-border); font-size:12px; cursor:pointer; transition:background .12s; }
+    .ledger-entry:last-child { border-bottom:none; }
+    .ledger-entry:hover { background:var(--h-hover-bg); }
+    .ledger-date { font-family:'Cinzel',serif; font-size:11px; color:var(--h-text); min-width:100px; }
+    .ledger-entries-count { color:var(--h-muted); font-size:11px; min-width:70px; }
+    .ledger-amount { color:#2ecc71; font-weight:700; font-family:'Cinzel',serif; margin-left:auto; }
+
+    .settings-section { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:16px 18px; margin-bottom:16px; }
+    .settings-title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-sub); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .item-row { display:grid; grid-template-columns:1fr 1fr 32px; gap:8px; align-items:flex-end; padding:10px; background:var(--h-panel2); border-radius:3px; margin-bottom:8px; }
+    .item-row input { background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px; padding:6px 8px; font-size:11px; color:var(--h-text); outline:none; }
+    .item-row input:focus { border-color:var(--h-red); }
+    .item-del-btn { background:none; border:none; cursor:pointer; color:var(--h-muted); padding:4px; font-size:14px; line-height:1; transition:color .12s; }
+    .item-del-btn:hover { color:#e74c3c; }
+
+    /* ── BACKUP PANEL ─────────────────────────────────── */
+    .backup-section { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:18px 20px; margin-bottom:16px; }
+    .backup-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+    .bkp-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:3px; border:none; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:background .15s; white-space:nowrap; }
+    .bkp-export { background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .bkp-export:hover { background:rgba(46,204,113,.28); }
+    .bkp-import { background:rgba(52,152,219,.14); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .bkp-import:hover { background:rgba(52,152,219,.26); }
+    .bkp-clear  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); }
+    .bkp-clear:hover { background:rgba(231,76,60,.2); }
+    .bkp-status { font-size:11px; font-weight:600; padding:5px 11px; border-radius:3px; }
+    .bkp-ok  { background:rgba(46,204,113,.12); color:#2ecc71; }
+    .bkp-err { background:rgba(231,76,60,.12); color:#e74c3c; }
+
+    .backup-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:14px; }
+    .bkp-stat { background:var(--h-panel2); border:1px solid var(--h-border); border-radius:3px; padding:12px 14px; }
+    .bkp-stat-val { font-family:'Cinzel',serif; font-size:18px; font-weight:700; color:var(--h-text); }
+    .bkp-stat-lbl { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-top:2px; }
+
+    .backup-info { font-size:11px; color:var(--h-muted); line-height:1.7; padding:10px 12px; background:var(--h-panel2); border-radius:3px; border:1px solid var(--h-border); }
+    .backup-info strong { color:var(--h-sub); }
+    .backup-info code { font-size:10px; background:var(--h-input-bg); padding:1px 5px; border-radius:2px; border:1px solid var(--h-border); }
+
+    /* ── MODALS ───────────────────────────────────────── */
+    #entryModal, #restoreConfirmModal {
+      position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.62);
+      backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #entryModal.open, #restoreConfirmModal.open { opacity:1; pointer-events:all; }
+    .modal-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:680px; max-width:96vw; max-height:94vh; overflow:hidden;
+      display:flex; flex-direction:column;
+      transform:scale(.95) translateY(10px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-card-sm { width:480px; }
+    #entryModal.open .modal-card, #restoreConfirmModal.open .modal-card { transform:scale(1) translateY(0); }
+    .modal-accent { height:3px; background:linear-gradient(90deg,transparent,var(--h-red),transparent); }
+    .modal-hd { padding:14px 22px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .modal-ttl { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .modal-sub { font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .modal-body { padding:18px 22px; display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow-y:auto; }
+    .modal-full { grid-column:1/-1; }
+    .modal-ft { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; }
+
+    .fg   { display:flex; flex-direction:column; gap:4px; }
+    .flbl { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .fctl {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:8px 10px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text);
+      outline:none; width:100%; appearance:none;
+    }
+    .fctl::placeholder { color:var(--h-muted); }
+    .fctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+
+    .btn-m    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-save { background:var(--h-red); color:#fff; }
+    .btn-save:hover { background:var(--h-red-dk); }
+    .btn-cncl { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-cncl:hover { background:var(--h-hover-bg); }
+    .btn-del  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del:hover { background:rgba(231,76,60,.22); }
+
+    .minibar-cart-item { display:flex; align-items:center; justify-content:space-between; padding:6px; border-bottom:1px solid var(--h-border); font-size:11px; }
+    .minibar-cart-item:last-child { border-bottom:none; }
+    .minibar-item-info { flex:1; }
+    .minibar-item-name { font-weight:600; color:var(--h-text); }
+    .minibar-item-price { color:#f39c12; font-weight:700; min-width:60px; text-align:right; }
+
+    /* Toast */
+    #rev-toast {
+      position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(16px);
+      background:#1a1a1a; color:#fff; border-radius:4px; padding:9px 20px;
+      font-size:12px; font-weight:600; letter-spacing:.04em;
+      opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:99999;
+    }
+    #rev-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    #rev-toast.err  { background:#8b1a1a; }
+
+    /* ══════════════════════════════════════════════════
+       CALENDAR MODAL
+    ══════════════════════════════════════════════════ */
+    #calendarModal {
+      position:fixed; inset:0; z-index:99000;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .18s;
+    }
+    #calendarModal.open { opacity:1; pointer-events:all; }
+    #calendarModal .cal-backdrop {
+      position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px);
+    }
+    .cal-card {
+      position:relative; z-index:1;
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:6px;
+      width:300px; overflow:hidden;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);
+      transform:scale(.92) translateY(12px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+    }
+    #calendarModal.open .cal-card { transform:scale(1) translateY(0); }
+    .cal-accent { height:3px; background:linear-gradient(90deg,transparent,#C0272D,transparent); }
+    .cal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 16px; background:var(--h-panel2); border-bottom:1px solid var(--h-border);
+    }
+    .cal-nav {
+      width:28px; height:28px; border:1px solid var(--h-border); border-radius:3px;
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:16px; line-height:1;
+      transition:background .12s, color .12s;
+    }
+    .cal-nav:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .cal-month-year {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; cursor:pointer; padding:4px 8px; border-radius:3px;
+      transition:background .12s;
+    }
+    .cal-month-year:hover { background:var(--h-hover-bg); }
+    .cal-grid { padding:10px 12px 14px; }
+    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px; }
+    .cal-weekday { text-align:center; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted); padding:4px 0; }
+    .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+    .cal-day {
+      aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:500; color:var(--h-sub); border-radius:3px;
+      cursor:pointer; transition:background .1s, color .1s; border:none; background:none;
+    }
+    .cal-day:hover:not(.cal-day-empty):not(.cal-day-selected) { background:var(--h-hover-bg); color:var(--h-text); }
+    .cal-day-empty { cursor:default; opacity:0; }
+    .cal-day-today { color:var(--h-red) !important; font-weight:700; }
+    .cal-day-today::after { content:''; position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--h-red); }
+    .cal-day-today { position:relative; }
+    .cal-day-selected { background:var(--h-red) !important; color:#fff !important; font-weight:700; }
+    .cal-footer { padding:8px 12px; border-top:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; background:var(--h-panel2); }
+    .cal-today-btn { font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--h-red); background:none; border:none; cursor:pointer; padding:4px 8px; border-radius:3px; transition:background .12s; }
+    .cal-today-btn:hover { background:rgba(192,39,45,.08); }
+    .cal-clear-btn { font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted); background:none; border:none; cursor:pointer; padding:4px 8px; border-radius:3px; transition:background .12s; }
+    .cal-clear-btn:hover { background:var(--h-hover-bg); }
+
+    .date-trigger-wrap { position:relative; }
+    .date-trigger {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 8px 6px 32px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--h-text);
+      outline:none; cursor:pointer; text-align:left; transition:border-color .15s;
+      display:flex; align-items:center; gap:8px; min-height:34px;
+    }
+    .date-trigger:hover, .date-trigger:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .date-trigger-icon {
+      position:absolute; left:8px; top:50%; transform:translateY(-50%);
+      color:var(--h-muted); pointer-events:none;
+    }
+    .date-trigger-text { font-size:12px; }
+    .date-trigger-text.placeholder { color:var(--h-muted); font-style:italic; }
+
+    /* ══════════════════════════════════════════════════
+       ROOM CATEGORY DROPDOWN
+    ══════════════════════════════════════════════════ */
+    .room-cat-wrap { position:relative; }
+    .room-cat-select {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:5px 28px 5px 8px; font-family:'DM Sans',sans-serif; font-size:11px; color:var(--h-text);
+      outline:none; cursor:pointer; appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 8px center;
+    }
+    .room-cat-select:focus { border-color:var(--h-red); }
+
+    #catManagerModal {
+      position:fixed; inset:0; z-index:99100;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .18s;
+    }
+    #catManagerModal.open { opacity:1; pointer-events:all; }
+    #catManagerModal .cat-backdrop {
+      position:absolute; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(6px);
+    }
+    .cat-card {
+      position:relative; z-index:1;
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:6px;
+      width:400px; max-width:96vw; max-height:80vh; overflow:hidden;
+      display:flex; flex-direction:column;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);
+      transform:scale(.92) translateY(12px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+    }
+    #catManagerModal.open .cat-card { transform:scale(1) translateY(0); }
+    .cat-card-accent { height:3px; background:linear-gradient(90deg,transparent,#C0272D,transparent); }
+    .cat-card-hd { padding:14px 18px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:var(--h-panel2); }
+    .cat-card-ttl { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text); }
+    .cat-list { flex:1; overflow-y:auto; padding:10px 14px; }
+    .cat-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:3px; border:1px solid var(--h-border); background:var(--h-panel2); margin-bottom:6px; }
+    .cat-item-name { flex:1; font-size:12px; font-weight:600; color:var(--h-text); }
+    .cat-item-del { background:none; border:none; cursor:pointer; color:var(--h-muted); font-size:13px; padding:2px 5px; border-radius:2px; transition:color .12s, background .12s; }
+    .cat-item-del:hover { color:#e74c3c; background:rgba(231,76,60,.1); }
+    .cat-add-row { display:flex; gap:8px; padding:10px 14px; border-top:1px solid var(--h-border); flex-shrink:0; background:var(--h-panel2); }
+    .cat-add-input { flex:1; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px; padding:7px 10px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--h-text); outline:none; }
+    .cat-add-input:focus { border-color:var(--h-red); }
+    .cat-add-btn { background:var(--h-red); color:#fff; border:none; border-radius:3px; padding:7px 14px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:background .15s; }
+    .cat-add-btn:hover { background:var(--h-red-dk); }
+
+    /* ══════════════════════════════════════════════════
+       BILLING STATEMENT STYLES
+    ══════════════════════════════════════════════════ */
+    .billing-layout {
+      display:grid; grid-template-columns:1fr 480px; gap:20px; align-items:start;
+    }
+    .billing-editor {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:16px;
+    }
+    .billing-editor-section { margin-bottom:16px; border-bottom:1px solid var(--h-border); padding-bottom:16px; }
+    .billing-editor-section:last-child { border-bottom:none; margin-bottom:0; }
+    .billing-section-title {
+      font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+      color:var(--h-red); margin-bottom:10px; display:flex; align-items:center; gap:6px;
+    }
+    .billing-field { margin-bottom:8px; }
+    .billing-field label { display:block; font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-bottom:3px; }
+    .billing-input {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 8px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--h-text);
+      outline:none;
+    }
+    .billing-input:focus { border-color:var(--h-red); }
+    .billing-row-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .billing-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+
+    /* ── DISCOUNT SECTION ── */
+    .disc-section { background:var(--h-panel2); border:1px solid var(--h-border); border-radius:4px; padding:12px 14px; margin-bottom:8px; }
+    .disc-pct-btns { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+    .disc-pct-btn {
+      padding:4px 10px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); font-family:'DM Sans',sans-serif;
+      font-size:11px; font-weight:700; cursor:pointer; transition:all .12s; white-space:nowrap;
+    }
+    .disc-pct-btn:hover { background:rgba(192,39,45,.1); border-color:var(--h-red); color:var(--h-red); }
+    .disc-pct-btn.active { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .disc-pct-btn.clear-btn { background:rgba(149,165,166,.1); color:var(--h-muted); }
+    .disc-pct-btn.clear-btn:hover { background:rgba(231,76,60,.1); color:#e74c3c; border-color:rgba(231,76,60,.3); }
+    .disc-manual-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
+    .disc-summary-bar {
+      display:flex; gap:16px; flex-wrap:wrap;
+      background:rgba(192,39,45,.06); border:1px solid rgba(192,39,45,.15);
+      border-radius:3px; padding:8px 12px; margin-top:8px;
+    }
+    .disc-sum-item { display:flex; flex-direction:column; gap:1px; }
+    .disc-sum-lbl { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted); }
+    .disc-sum-val { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .disc-sum-val.is-discount { color:#e74c3c; }
+    .disc-sum-val.is-total { color:#2ecc71; font-size:16px; }
+
+    /* ── PAYMENT ENTRIES ── */
+    .payment-entries-wrap { background:var(--h-panel2); border:1px solid var(--h-border); border-radius:4px; overflow:hidden; }
+    .payment-entries-hd { padding:9px 12px; background:var(--h-panel2); border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; }
+    .payment-entries-ttl { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-sub); }
+    .payment-entry-row {
+      display:grid; grid-template-columns:130px 1fr 90px 30px;
+      gap:6px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--h-border);
+      font-size:11px;
+    }
+    .payment-entry-row:last-child { border-bottom:none; }
+    .payment-entry-row input, .payment-entry-row select {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:5px 7px; font-family:'DM Sans',sans-serif; font-size:11px; color:var(--h-text);
+      outline:none; width:100%; appearance:none;
+    }
+    .payment-entry-row input:focus, .payment-entry-row select:focus { border-color:var(--h-red); }
+    .payment-entry-row .pay-type-badge {
+      font-size:9px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+      padding:2px 7px; border-radius:2px;
+    }
+    .payment-del-btn {
+      background:none; border:none; cursor:pointer; color:var(--h-muted);
+      font-size:13px; padding:2px 4px; border-radius:2px; transition:all .12s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .payment-del-btn:hover { background:rgba(231,76,60,.1); color:#e74c3c; }
+    .payment-summary-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px; background:var(--h-panel); border-top:2px solid var(--h-border);
+      font-size:11px;
+    }
+    .payment-sum-label { font-weight:700; color:var(--h-sub); letter-spacing:.04em; }
+    .payment-sum-val { font-family:'Cinzel',serif; font-size:14px; font-weight:700; }
+    .payment-sum-val.paid { color:#2ecc71; }
+    .payment-sum-val.balance-due { color:#e74c3c; }
+    .payment-sum-val.balanced { color:#2ecc71; }
+    .payment-add-row { padding:8px 12px; border-top:1px solid var(--h-border); background:var(--h-panel2); display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .pay-type-dp { background:rgba(52,152,219,.12); color:#3498db; border:1px solid rgba(52,152,219,.3); }
+    .pay-type-tranche { background:rgba(155,89,182,.12); color:#9b59b6; border:1px solid rgba(155,89,182,.3); }
+    .pay-type-full { background:rgba(46,204,113,.12); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+    .pay-type-other { background:rgba(149,165,166,.12); color:#95a5a6; border:1px solid rgba(149,165,166,.3); }
+
+    /* Preview / printable area */
+    .bs-preview-wrap { position:sticky; top:0; }
+    .bs-preview-label {
+      font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--h-muted); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+    }
+    .bs-preview-label span { flex:1; height:1px; background:var(--h-border); }
+    #billing-print-area {
+      background:#fff; color:#000;
+      font-family:'Times New Roman', Times, serif;
+      padding:20px 28px;
+      border:1px solid var(--h-border);
+      border-radius:4px;
+      min-height:600px;
+      font-size:11px;
+      line-height:1.4;
+    }
+    .bs-header { text-align:center; margin-bottom:16px; }
+    .bs-logo-wrap { width:60px; height:60px; margin:0 auto 6px; }
+    .bs-logo { width:60px; height:60px; display:block; object-fit:contain; }
+    .bs-logo-fallback { width:60px; height:60px; background:#C0272D; border-radius:2px; display:flex; align-items:center; justify-content:center; }
+
+    .logo-upload-zone {
+      display:flex; align-items:center; gap:12px; padding:10px 12px;
+      background:var(--h-panel2); border:1px dashed var(--h-border); border-radius:4px;
+      transition:border-color .15s, background .15s;
+    }
+    .logo-upload-zone:hover { border-color:var(--h-red); background:rgba(192,39,45,.04); }
+    .logo-upload-zone.has-logo { border-style:solid; border-color:rgba(46,204,113,.4); background:rgba(46,204,113,.04); }
+    .logo-preview-thumb { width:52px; height:52px; border-radius:3px; object-fit:contain; border:1px solid var(--h-border); background:#fff; flex-shrink:0; }
+    .logo-placeholder-thumb { width:52px; height:52px; border-radius:3px; border:1px dashed var(--h-border); background:rgba(192,39,45,.08); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#C0272D; opacity:.5; }
+    .logo-upload-info { flex:1; min-width:0; }
+    .logo-upload-name { font-size:11px; font-weight:600; color:var(--h-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .logo-upload-hint { font-size:10px; color:var(--h-muted); }
+    .logo-upload-actions { display:flex; gap:6px; flex-shrink:0; }
+    .logo-btn { font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:5px 10px; border-radius:3px; border:none; cursor:pointer; transition:background .15s; }
+    .logo-btn-upload { background:rgba(192,39,45,.12); color:#C0272D; border:1px solid rgba(192,39,45,.25); }
+    .logo-btn-upload:hover { background:rgba(192,39,45,.22); }
+    .logo-btn-remove { background:rgba(149,165,166,.12); color:var(--h-muted); border:1px solid var(--h-border); }
+    .logo-btn-remove:hover { background:rgba(231,76,60,.1); color:#e74c3c; border-color:rgba(231,76,60,.3); }
+
+    .bs-hotel-name { font-size:15px; font-weight:900; color:#C0272D; letter-spacing:.06em; text-transform:uppercase; background:#FFE800; padding:2px 8px; display:inline-block; margin-bottom:4px; }
+    .bs-hotel-addr { font-size:10px; font-style:italic; color:#333; margin-bottom:2px; }
+    .bs-hotel-mobile { font-size:10px; font-style:italic; color:#333; font-weight:bold; }
+    .bs-title { font-size:13px; font-weight:bold; margin:10px 0 14px; letter-spacing:.06em; }
+    .bs-meta-row { display:flex; gap:20px; margin-bottom:12px; }
+    .bs-meta-field { display:flex; align-items:baseline; gap:6px; }
+    .bs-meta-lbl { font-weight:bold; font-size:11px; }
+    .bs-meta-val { border-bottom:1px solid #333; min-width:180px; font-size:11px; padding:0 4px 1px; background:#DDFFD0; min-height:16px; }
+    .bs-meta-val-plain { border-bottom:1px solid #333; min-width:120px; font-size:11px; padding:0 4px 1px; min-height:16px; }
+    .bs-section-title { font-weight:bold; font-size:11px; letter-spacing:.06em; text-align:center; margin:12px 0 6px; }
+    .bs-table { width:100%; border-collapse:collapse; font-size:10px; margin-bottom:4px; }
+    .bs-table th, .bs-table td { border:1px solid #333; padding:4px 6px; text-align:center; }
+    .bs-table th { background:#f0f0f0; font-weight:bold; font-size:9.5px; }
+    .bs-table td.bs-left { text-align:left; }
+    .bs-table td.bs-right { text-align:right; font-family:'Courier New',monospace; }
+    .bs-table tr:nth-child(even) td { background:#fafafa; }
+    .bs-totals-wrap { display:flex; justify-content:flex-end; margin:6px 0; }
+    .bs-totals-table { border-collapse:collapse; font-size:10px; }
+    .bs-totals-table td { padding:3px 8px; }
+    .bs-totals-table td:first-child { text-align:right; font-weight:bold; padding-right:12px; min-width:140px; }
+    .bs-totals-table td:last-child { font-family:'Courier New',monospace; border-bottom:1px solid #333; min-width:100px; text-align:right; }
+    .bs-totals-table tr.bs-grand td { border-top:2px solid #333; font-weight:bold; font-size:11px; }
+    .bs-sigs { display:flex; justify-content:space-between; margin-top:28px; }
+    .bs-sig-col { flex:1; text-align:center; }
+    .bs-sig-role { font-size:9.5px; color:#555; }
+    .bs-sig-name { font-weight:bold; font-size:10px; border-bottom:1px solid #333; padding-bottom:2px; margin:18px 8px 3px; text-decoration:underline; }
+    .bs-sig-title { font-size:9.5px; color:#333; }
+    .bs-payment-section { margin-top:14px; border-top:1px solid #ccc; padding-top:10px; }
+    .bs-payment-title { font-weight:bold; font-style:italic; font-size:10.5px; margin-bottom:6px; }
+    .bs-payment-grid { display:flex; gap:0; }
+    .bs-payment-col { flex:1; font-size:9px; border-right:1px solid #ddd; padding-right:8px; margin-right:8px; }
+    .bs-payment-col:last-child { border-right:none; }
+    .bs-payment-method { font-weight:bold; }
+    .bs-stmt-num { font-weight:bold; font-style:italic; color:#C0272D; font-size:10px; margin-top:10px; }
+    /* Payment schedule on printed bill */
+    .bs-pay-schedule { margin-top:10px; border-top:1px solid #ccc; padding-top:8px; }
+    .bs-pay-schedule-title { font-weight:bold; font-size:10px; margin-bottom:4px; }
+    .bs-pay-sched-table { width:100%; border-collapse:collapse; font-size:9.5px; }
+    .bs-pay-sched-table th, .bs-pay-sched-table td { border:1px solid #ccc; padding:3px 6px; }
+    .bs-pay-sched-table th { background:#f5f5f5; font-weight:bold; text-align:left; }
+    .bs-pay-sched-table .sched-amt { text-align:right; font-family:'Courier New',monospace; }
+    .bs-balance-row { display:flex; justify-content:flex-end; gap:16px; margin-top:6px; font-size:10px; font-weight:bold; }
+
+    /* Accommodation row UI */
+    .accom-row-grid { display:grid; grid-template-columns:110px 1fr 55px 80px 28px; gap:6px; align-items:flex-end; margin-bottom:6px; }
+    .accom-row-grid input { background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px; padding:5px 7px; font-size:11px; color:var(--h-text); outline:none; width:100%; }
+    .accom-row-grid input:focus { border-color:var(--h-red); }
+    .accom-row-hdr { display:grid; grid-template-columns:110px 1fr 55px 80px 28px; gap:6px; margin-bottom:4px; }
+    .accom-row-hdr span { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted); }
+
+    .accom-date-btn {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:5px 6px; font-size:11px; color:var(--h-text); cursor:pointer; text-align:left;
+      display:flex; align-items:center; gap:5px; outline:none; transition:border-color .15s;
+    }
+    .accom-date-btn:hover, .accom-date-btn:focus { border-color:var(--h-red); }
+    .accom-date-btn .cal-ico { color:var(--h-muted); flex-shrink:0; }
+    .accom-date-btn.placeholder-text { color:var(--h-muted); }
+
+    @media (max-width:900px) {
+      .modal-body { grid-template-columns:1fr; }
+      .billing-layout { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="rev-shell">
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-daily" onclick="switchTab('daily')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Daily Revenue Report
+        <span class="tab-badge" id="pendingBadge">0</span>
+      </button>
+      <button class="tab-btn" id="tab-ledger" onclick="switchTab('ledger')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Revenue Ledger
+      </button>
+      <button class="tab-btn" id="tab-billing" onclick="switchTab('billing')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Billing Statement
+      </button>
+      <button class="tab-btn" id="tab-backup" onclick="switchTab('backup')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Backup &amp; Restore
+      </button>
+      <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m3.08 3.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m3.08-3.08l4.24-4.24"/></svg>
+        Settings
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- DAILY REVENUE REPORT                             -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div id="panel-daily" class="rev-shell">
+      <div class="ctrl-bar no-print">
+        <div class="ctrl-grp">
+          <button class="nav-btn" id="dPrevDay">&#8249;</button>
+          <span class="month-lbl" id="dailyDateLbl">—</span>
+          <button class="nav-btn" id="dNextDay">&#8250;</button>
+        </div>
+        <div class="ctrl-sep"></div>
+        <button class="ctrl-btn btn-outline" id="dTodayBtn">Today</button>
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-outline" onclick="exportDailyCSV()">Export CSV</button>
+        <button class="ctrl-btn btn-green btn-print-trigger" onclick="printDailyReport()">Print Report</button>
+        <button class="ctrl-btn btn-primary" onclick="openEntryModal()">Add Entry</button>
+      </div>
+
+      <div class="rv-scroll" id="dailyScroll">
+        <div class="print-header print-only" id="printHeader">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div style="width:48px;height:48px;background:#C0272D;border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="5" height="20" fill="white"/><rect x="4" y="11" width="20" height="6" fill="white"/><rect x="19" y="4" width="5" height="20" fill="white"/></svg>
+            </div>
+            <div>
+              <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:#111;">HIRAYA HOTEL &amp; EVENTS PLACE</div>
+              <div style="font-size:13px;color:#555;margin-top:4px;">Daily Revenue Report</div>
+              <div style="font-size:11px;color:#888;margin-top:2px;" id="printMeta">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="dailyStatusBar" class="daily-status-bar">
+          <div class="daily-status-dot" id="statusDot" style="color:#2ecc71;background:#2ecc71;"></div>
+          <span class="daily-status-text" id="statusText">Today's Report — Open</span>
+          <span class="daily-status-meta" id="statusMeta"></span>
+        </div>
+
+        <div class="daily-kpi-grid" id="dailyKpiGrid"></div>
+
+        <div class="entries-card">
+          <div class="entries-hd">
+            <span class="entries-ttl">Transaction Entries</span>
+            <span style="font-size:11px;color:var(--h-muted);" id="entriesCount">0 entries</span>
+          </div>
+          <div class="tbl-scroll">
+            <table class="rev-table" id="revTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Guest Name</th>
+                  <th>Amount</th>
+                  <th>Disc %</th>
+                  <th>Discount</th>
+                  <th>Net Amount</th>
+                  <th>Payment</th>
+                  <th>Reference</th>
+                  <th>Rooms</th>
+                  <th>Mini Bar</th>
+                  <th>ID</th>
+                  <th>ID Type</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th class="no-print">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="revTableBody"></tbody>
+              <tfoot id="revTableFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="print-only print-sig-section">
+          <div class="print-sig-line"><div class="line"></div><div class="label" id="printSig1Label">Prepared by</div><div class="role" id="printSig1Role">Front Desk Officer</div></div>
+          <div class="print-sig-line"><div class="line"></div><div class="label" id="printSig2Label">Reviewed by</div><div class="role" id="printSig2Role">Supervisor</div></div>
+          <div class="print-sig-line"><div class="line"></div><div class="label" id="printSig3Label">Approved by</div><div class="role" id="printSig3Role">General Manager</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- LEDGER                                           -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div id="panel-ledger" class="rev-shell" style="display:none;">
+      <div class="ctrl-bar">
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-outline" onclick="exportLedgerCSV()">Export All CSV</button>
+      </div>
+      <div class="rv-scroll" id="ledgerContent"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- BILLING STATEMENT                                -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div id="panel-billing" class="rev-shell" style="display:none;">
+      <div class="ctrl-bar no-print">
+        <div class="ctrl-grp">
+          <span style="font-size:11px;color:var(--h-muted);">Statement No.</span>
+          <input type="text" id="bs-stmt-num" class="ctrl-inp" value="HRH-00029" style="width:110px;" oninput="bsRender()"/>
+        </div>
+        <div class="ctrl-sep"></div>
+        <button class="ctrl-btn btn-outline" onclick="bsClear()">New / Clear</button>
+        <button class="ctrl-btn btn-outline" onclick="bsSaveDraft()">Save Draft</button>
+        <button class="ctrl-btn btn-outline" onclick="bsLoadDraft()">Load Draft</button>
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-green" onclick="bsPrint()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Billing Statement
+        </button>
+      </div>
+      <div class="rv-scroll">
+        <div class="billing-layout">
+
+          <!-- LEFT: Editor -->
+          <div class="billing-editor">
+
+            <!-- Hotel Logo -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Hotel Logo
+              </div>
+              <div class="logo-upload-zone" id="logoUploadZone">
+                <div class="logo-placeholder-thumb" id="logoThumbWrap">
+                  <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="5" height="20" fill="currentColor"/><rect x="4" y="11" width="20" height="6" fill="currentColor"/><rect x="19" y="4" width="5" height="20" fill="currentColor"/></svg>
+                </div>
+                <div class="logo-upload-info">
+                  <div class="logo-upload-name" id="logoFileName">No logo uploaded</div>
+                  <div class="logo-upload-hint">PNG, JPG, WEBP · Displayed at 60×60px on statement · Saved in browser</div>
+                </div>
+                <div class="logo-upload-actions">
+                  <button type="button" class="logo-btn logo-btn-upload" onclick="document.getElementById('logoFileInput').click()">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:middle;margin-right:3px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
+                  <button type="button" class="logo-btn logo-btn-remove" id="logoRemoveBtn" onclick="removeLogo()" style="display:none;">Remove</button>
+                </div>
+              </div>
+              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" style="display:none;" onchange="handleLogoUpload(event)"/>
+            </div>
+
+            <!-- Guest Info -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Guest Details
+              </div>
+              <div class="billing-field">
+                <label>Billed To (Guest / Company Name)</label>
+                <input type="text" class="billing-input" id="bs-billed-to" placeholder="e.g. JUAN DELA CRUZ" oninput="bsRender()"/>
+              </div>
+              <div class="billing-row-fields">
+                <div class="billing-field">
+                  <label>Date</label>
+                  <div class="date-trigger-wrap">
+                    <svg class="date-trigger-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <button type="button" class="date-trigger" id="bs-date-btn" onclick="openCalendar('bs-date','bs-date-btn')">
+                      <span class="date-trigger-text placeholder" id="bs-date-display">Select date…</span>
+                    </button>
+                    <input type="hidden" id="bs-date"/>
+                  </div>
+                </div>
+                <div class="billing-field">
+                  <label>Check-In Date</label>
+                  <div class="date-trigger-wrap">
+                    <svg class="date-trigger-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <button type="button" class="date-trigger" id="bs-checkin-btn" onclick="openCalendar('bs-checkin','bs-checkin-btn')">
+                      <span class="date-trigger-text placeholder" id="bs-checkin-display">Select date…</span>
+                    </button>
+                    <input type="hidden" id="bs-checkin"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accommodation Rows -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Hotel Accommodation
+                </div>
+                <button type="button" onclick="openCatManager()" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);background:var(--h-input-bg);border:1px solid var(--h-border);border-radius:3px;padding:3px 8px;cursor:pointer;" title="Manage room categories">
+                  ⚙ Categories
+                </button>
+              </div>
+              <div class="accom-row-hdr">
+                <span>Date Range</span>
+                <span>Room Category</span>
+                <span>Nights</span>
+                <span>Rate (₱)</span>
+                <span></span>
+              </div>
+              <div id="bs-accom-rows"></div>
+              <button class="ctrl-btn btn-outline" onclick="bsAddAccomRow()" style="margin-top:4px;font-size:10px;">+ Add Row</button>
+            </div>
+
+            <!-- Extras / Other Charges -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Other Charges (Optional)
+              </div>
+              <div id="bs-extra-rows"></div>
+              <button class="ctrl-btn btn-outline" onclick="bsAddExtraRow()" style="font-size:10px;">+ Add Charge</button>
+            </div>
+
+            <!-- ══ ENHANCED DISCOUNT SECTION ══ -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                Discount & Total
+              </div>
+              <div class="disc-section">
+                <!-- Quick % presets -->
+                <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--h-muted);margin-bottom:6px;">Quick Discount %</div>
+                <div class="disc-pct-btns" id="disc-pct-btns">
+                  <button class="disc-pct-btn" onclick="bsApplyDiscPct(5)">5%</button>
+                  <button class="disc-pct-btn" onclick="bsApplyDiscPct(10)">10%</button>
+                  <button class="disc-pct-btn" onclick="bsApplyDiscPct(20)">20%</button>
+                  <button class="disc-pct-btn" onclick="bsApplyDiscPct(30)">30%</button>
+                  <button class="disc-pct-btn" onclick="bsApplyDiscPct(50)">50%</button>
+                  <button class="disc-pct-btn clear-btn" onclick="bsClearDiscount()">✕ Clear</button>
+                </div>
+                <!-- Manual entry: % or ₱ -->
+                <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--h-muted);margin-bottom:6px;">Or Enter Manually</div>
+                <div class="disc-manual-row">
+                  <div class="billing-field" style="margin-bottom:0;">
+                    <label>Discount % <span style="font-weight:400;color:var(--h-muted);">(auto-calculates ₱)</span></label>
+                    <input type="number" class="billing-input" id="bs-disc-pct" placeholder="0"
+                      min="0" max="100" step="0.01"
+                      oninput="bsDiscPctChanged()" style="border-left:3px solid rgba(192,39,45,.4);"/>
+                  </div>
+                  <div class="billing-field" style="margin-bottom:0;">
+                    <label>Discount ₱ <span style="font-weight:400;color:var(--h-muted);">(auto-calculates %)</span></label>
+                    <input type="number" class="billing-input" id="bs-discount" placeholder="0.00"
+                      min="0" step="0.01"
+                      oninput="bsDiscAmtChanged()" style="border-left:3px solid rgba(192,39,45,.4);"/>
+                  </div>
+                </div>
+                <div class="billing-field" style="margin-top:6px;">
+                  <label>Discount Note</label>
+                  <input type="text" class="billing-input" id="bs-discount-note" placeholder="e.g. Senior Citizen, Loyalty, Corporate Rate" oninput="bsRender()"/>
+                </div>
+                <!-- Live summary -->
+                <div class="disc-summary-bar" id="disc-summary-bar">
+                  <div class="disc-sum-item">
+                    <span class="disc-sum-lbl">Subtotal</span>
+                    <span class="disc-sum-val" id="ds-subtotal">₱0.00</span>
+                  </div>
+                  <div class="disc-sum-item">
+                    <span class="disc-sum-lbl">Discount</span>
+                    <span class="disc-sum-val is-discount" id="ds-discount">— ₱0.00</span>
+                  </div>
+                  <div class="disc-sum-item">
+                    <span class="disc-sum-lbl">Total Due</span>
+                    <span class="disc-sum-val is-total" id="ds-total">₱0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ══ PAYMENT SCHEDULE SECTION ══ -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Payment Schedule
+              </div>
+              <div style="font-size:10px;color:var(--h-muted);margin-bottom:8px;">Track down payments, tranches, and partial payments. System auto-calculates balance.</div>
+
+              <div class="payment-entries-wrap">
+                <div class="payment-entries-hd">
+                  <span class="payment-entries-ttl">Payments Received</span>
+                  <span style="font-size:10px;color:var(--h-muted);" id="pay-entries-count">0 payments</span>
+                </div>
+                <div id="pay-entries-list">
+                  <!-- rendered by JS -->
+                </div>
+                <!-- Summary row -->
+                <div class="payment-summary-row">
+                  <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                    <div>
+                      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Total Due</div>
+                      <div class="payment-sum-val" id="pay-total-due">₱0.00</div>
+                    </div>
+                    <div>
+                      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Total Paid</div>
+                      <div class="payment-sum-val paid" id="pay-total-paid">₱0.00</div>
+                    </div>
+                    <div>
+                      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Balance</div>
+                      <div class="payment-sum-val" id="pay-balance">₱0.00</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Add payment row -->
+                <div class="payment-add-row">
+                  <select id="pay-new-type" class="billing-input" style="width:130px;padding:5px 8px;font-size:11px;">
+                    <option value="Down Payment">Down Payment</option>
+                    <option value="Tranche">Tranche / Installment</option>
+                    <option value="Full Payment">Full Payment</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div class="date-trigger-wrap" style="width:130px;">
+                    <svg class="date-trigger-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <button type="button" class="date-trigger" id="pay-new-date-btn" onclick="openCalendar('pay-new-date','pay-new-date-btn')" style="width:130px;padding-left:28px;">
+                      <span class="date-trigger-text placeholder" id="pay-new-date-display">Date…</span>
+                    </button>
+                    <input type="hidden" id="pay-new-date"/>
+                  </div>
+                  <input type="number" id="pay-new-amount" class="billing-input" placeholder="₱ Amount" min="0" step="0.01" style="width:110px;padding:5px 8px;font-size:11px;"
+                    onkeydown="if(event.key==='Enter'){bsAddPayment();event.preventDefault();}"/>
+                  <input type="text" id="pay-new-note" class="billing-input" placeholder="Note (optional)" style="flex:1;min-width:100px;padding:5px 8px;font-size:11px;"
+                    onkeydown="if(event.key==='Enter'){bsAddPayment();event.preventDefault();}"/>
+                  <button class="ctrl-btn btn-primary" onclick="bsAddPayment()" style="padding:5px 12px;font-size:10px;white-space:nowrap;">+ Add</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Signatories -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Signatories
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div>
+                  <div class="billing-field"><label>Prepared By</label><input type="text" class="billing-input" id="bs-sig1-label" value="Prepared by" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Name</label><input type="text" class="billing-input" id="bs-sig1-name" value="Gemmalyn A. Atencia" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Title</label><input type="text" class="billing-input" id="bs-sig1-title" value="Front Office" oninput="bsRender()"/></div>
+                </div>
+                <div>
+                  <div class="billing-field"><label>Noted By</label><input type="text" class="billing-input" id="bs-sig2-label" value="Noted by" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Name</label><input type="text" class="billing-input" id="bs-sig2-name" value="Maria Rowan Samarista" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Title</label><input type="text" class="billing-input" id="bs-sig2-title" value="Sales & Marketing" oninput="bsRender()"/></div>
+                </div>
+                <div>
+                  <div class="billing-field"><label>Approved By</label><input type="text" class="billing-input" id="bs-sig3-label" value="Approved by" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Name</label><input type="text" class="billing-input" id="bs-sig3-name" value="Dansle Ann M. Varin" oninput="bsRender()"/></div>
+                  <div class="billing-field"><label>Title</label><input type="text" class="billing-input" id="bs-sig3-title" value="General Manager" oninput="bsRender()"/></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="billing-editor-section">
+              <div class="billing-section-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Modes of Payment
+              </div>
+              <div style="font-size:10px;color:var(--h-muted);margin-bottom:6px;">Edit the payment method details shown on the statement.</div>
+              <div class="billing-field"><label>GCash Number</label><input type="text" class="billing-input" id="bs-pay-gcash" value="0992-366-8788" oninput="bsRender()"/></div>
+              <div class="billing-row-fields">
+                <div class="billing-field"><label>BDO Account Name</label><input type="text" class="billing-input" id="bs-pay-bdo-name" value="HIRAYA RESORT HOTEL" oninput="bsRender()"/></div>
+                <div class="billing-field"><label>BDO Account No.</label><input type="text" class="billing-input" id="bs-pay-bdo-num" value="013378004765" oninput="bsRender()"/></div>
+              </div>
+              <div class="billing-row-fields">
+                <div class="billing-field"><label>Landbank Account Name</label><input type="text" class="billing-input" id="bs-pay-lbp-name" value="HIRAYA EVENT CATERING SERVICES" oninput="bsRender()"/></div>
+                <div class="billing-field"><label>Landbank Account No.</label><input type="text" class="billing-input" id="bs-pay-lbp-num" value="0411224287" oninput="bsRender()"/></div>
+              </div>
+            </div>
+
+          </div><!-- /billing-editor -->
+
+          <!-- RIGHT: Preview -->
+          <div class="bs-preview-wrap">
+            <div class="bs-preview-label">
+              <span></span> Live Preview <span></span>
+            </div>
+            <div id="billing-print-area">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- BACKUP & RESTORE                                 -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div id="panel-backup" class="rev-shell" style="display:none;">
+      <div class="ctrl-bar">
+        <span style="font-size:11px;color:var(--h-muted);">All daily entries from Day 0 are included in every backup.</span>
+        <div class="ctrl-fill"></div>
+        <span id="bkpLastExportBar" style="font-size:11px;color:var(--h-muted);"></span>
+      </div>
+      <div class="rv-scroll">
+        <div class="backup-stats" id="backupStats"></div>
+        <div class="backup-section">
+          <div class="settings-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Export Backup
+          </div>
+          <div class="backup-row">
+            <button class="bkp-btn bkp-export" onclick="exportFullBackup()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Full Backup (.json)
+            </button>
+            <button class="bkp-btn" style="background:rgba(155,89,182,.12);color:#9b59b6;border:1px solid rgba(155,89,182,.3);" onclick="exportDailyEntriesOnly()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export Daily Entries Only
+            </button>
+            <span id="bkpExportStatus"></span>
+          </div>
+          <div class="backup-info">
+            <strong>Full Backup</strong> includes all daily revenue entries, the revenue ledger, mini bar settings, and signatories.<br/>
+            Files are named <code>hiraya-revenue-backup-YYYY-MM-DD.json</code>.
+          </div>
+        </div>
+        <div class="backup-section">
+          <div class="settings-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Restore from Backup
+          </div>
+          <div class="backup-row">
+            <button class="bkp-btn bkp-import" onclick="document.getElementById('restoreInput').click()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Restore Full Backup
+            </button>
+            <button class="bkp-btn bkp-import" style="background:rgba(155,89,182,.12);color:#9b59b6;border:1px solid rgba(155,89,182,.3);" onclick="document.getElementById('mergeInput').click()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+              Merge Daily Entries
+            </button>
+            <span id="bkpRestoreStatus"></span>
+          </div>
+          <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restoreFullBackup(event)"/>
+          <input type="file" id="mergeInput"   accept=".json" style="display:none;" onchange="mergeDailyEntries(event)"/>
+          <div class="backup-info" style="margin-top:10px;">
+            <strong>Restore Full Backup</strong> will <span style="color:#e74c3c;font-weight:700;">overwrite all current data</span>.<br/>
+            <strong>Merge Daily Entries</strong> adds new dates without overwriting existing ones.
+          </div>
+        </div>
+        <div class="backup-section">
+          <div class="settings-title" style="color:#e74c3c;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Danger Zone
+          </div>
+          <div class="backup-row">
+            <button class="bkp-btn bkp-clear" onclick="clearRevenueData()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+              Clear All Revenue Data
+            </button>
+          </div>
+          <div class="backup-info" style="margin-top:10px;border-color:rgba(231,76,60,.25);">
+            ⚠️ <strong>Irreversible.</strong> Export a backup first.
+          </div>
+        </div>
+        <div class="backup-section">
+          <div class="settings-title">Backup History</div>
+          <div id="backupHistory" style="font-size:12px;color:var(--h-muted);">No backups recorded yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- SETTINGS                                         -->
+    <!-- ════════════════════════════════════════════════ -->
+    <div id="panel-settings" class="rev-shell" style="display:none;">
+      <div class="ctrl-bar">
+        <div class="ctrl-fill"></div>
+        <button class="ctrl-btn btn-outline" onclick="resetSettings()">Reset to Defaults</button>
+      </div>
+      <div class="rv-scroll">
+        <div class="settings-section">
+          <div class="settings-title">Mini Bar Items</div>
+          <div id="minibarConfig"></div>
+          <button class="ctrl-btn btn-outline" onclick="addMinibarItem()" style="margin-top:12px;">+ Add Item</button>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">Report Signatories</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="fg"><label class="flbl">Label 1</label><input type="text" id="sig1Label" class="fctl" value="Prepared by"/></div>
+            <div class="fg"><label class="flbl">Role 1</label><input type="text" id="sig1Role" class="fctl" value="Front Desk Officer"/></div>
+            <div class="fg"><label class="flbl">Label 2</label><input type="text" id="sig2Label" class="fctl" value="Reviewed by"/></div>
+            <div class="fg"><label class="flbl">Role 2</label><input type="text" id="sig2Role" class="fctl" value="Supervisor"/></div>
+            <div class="fg"><label class="flbl">Label 3</label><input type="text" id="sig3Label" class="fctl" value="Approved by"/></div>
+            <div class="fg"><label class="flbl">Role 3</label><input type="text" id="sig3Role" class="fctl" value="General Manager"/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /rev-shell -->
+</div><!-- /hms-main -->
+
+<!-- ENTRY MODAL -->
+<div id="entryModal">
+  <div class="modal-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="modalTitle">New Entry</div>
+        <div class="modal-sub">Daily Revenue Report</div>
+      </div>
+      <button onclick="closeEntryModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg modal-full">
+        <label class="flbl">Guest Name *</label>
+        <input class="fctl" type="text" id="f-guest" placeholder="e.g. JUAN DELA CRUZ" maxlength="120" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Amount (₱) *</label>
+        <input class="fctl" type="number" id="f-amount" min="0" step="0.01" placeholder="0.00" oninput="calcDiscount()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Discount %</label>
+        <input class="fctl" type="number" id="f-disc-pct" min="0" max="100" step="0.01" placeholder="0" oninput="calcDiscount()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Discount (₱)</label>
+        <input class="fctl" type="number" id="f-disc-amt" min="0" step="0.01" placeholder="0.00" readonly/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Net Amount (₱)</label>
+        <input class="fctl" type="number" id="f-net" min="0" step="0.01" placeholder="0.00" readonly style="color:#2ecc71;font-weight:700;"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Payment Mode</label>
+        <select class="fctl" id="f-pay">
+          <option value="Cash">Cash</option>
+          <option value="Card">Credit/Debit Card</option>
+          <option value="GCash">GCash</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Complimentary">Complimentary</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Reference No.</label>
+        <input class="fctl" type="text" id="f-ref" placeholder="OR / Transaction number" maxlength="80"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Rooms Occupied</label>
+        <input class="fctl" type="text" id="f-rooms" placeholder="e.g. 201, 202" maxlength="80"/>
+      </div>
+      <div class="fg modal-full">
+        <label class="flbl">Mini Bar Items</label>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;">
+          <select class="fctl" id="f-minibar-select" style="flex:1;"><option value="">— Select Item —</option></select>
+          <input class="fctl" type="number" id="f-minibar-qty" placeholder="Qty" min="1" step="1" style="width:70px;"/>
+          <button type="button" class="ctrl-btn btn-outline" onclick="addMinibarToCart()" style="padding:6px 12px;">Add</button>
+        </div>
+        <div id="minibarCart" style="background:var(--h-panel2);border:1px solid var(--h-border);border-radius:3px;padding:8px;max-height:150px;overflow-y:auto;font-size:11px;min-height:40px;color:var(--h-muted);text-align:center;">No items selected</div>
+      </div>
+      <div class="fg modal-full">
+        <label class="flbl">Mini Bar Subtotal</label>
+        <input class="fctl" type="text" id="f-minibar-total" placeholder="₱0.00" readonly style="color:#f39c12;font-weight:700;"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">ID Number</label>
+        <input class="fctl" type="text" id="f-id" placeholder="ID number" maxlength="80"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">ID Type</label>
+        <select class="fctl" id="f-idtype">
+          <option value="">— None —</option>
+          <option value="PILI MOLIDO">Pili Molido</option>
+          <option value="PWD">PWD</option>
+          <option value="Senior Citizen">Senior Citizen</option>
+          <option value="Government">Government ID</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Transaction Date</label>
+        <input class="fctl" type="date" id="f-date"/>
+      </div>
+      <div class="fg modal-full">
+        <label class="flbl">Notes</label>
+        <input class="fctl" type="text" id="f-notes" placeholder="Additional notes…" maxlength="200"/>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-del" id="modalDelBtn" style="display:none;" onclick="deleteEntry()">Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeEntryModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR MODAL -->
+<div id="calendarModal">
+  <div class="cal-backdrop" onclick="closeCalendar()"></div>
+  <div class="cal-card">
+    <div class="cal-accent"></div>
+    <div class="cal-header">
+      <button class="cal-nav" id="calPrev">&#8249;</button>
+      <span class="cal-month-year" id="calMonthYear" onclick="calCycleView()">—</span>
+      <button class="cal-nav" id="calNext">&#8250;</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-weekdays">
+        <span class="cal-weekday">Su</span><span class="cal-weekday">Mo</span><span class="cal-weekday">Tu</span>
+        <span class="cal-weekday">We</span><span class="cal-weekday">Th</span><span class="cal-weekday">Fr</span>
+        <span class="cal-weekday">Sa</span>
+      </div>
+      <div class="cal-days" id="calDays"></div>
+    </div>
+    <div class="cal-footer">
+      <button class="cal-today-btn" onclick="calGoToday()">Today</button>
+      <span style="font-size:10px;color:var(--h-muted);" id="calSelectedLabel">No date selected</span>
+      <button class="cal-clear-btn" onclick="calClear()">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MANAGER MODAL -->
+<div id="catManagerModal">
+  <div class="cat-backdrop" onclick="closeCatManager()"></div>
+  <div class="cat-card">
+    <div class="cat-card-accent"></div>
+    <div class="cat-card-hd">
+      <div>
+        <div class="cat-card-ttl">Room Categories</div>
+        <div style="font-size:11px;color:var(--h-muted);margin-top:2px;">Manage available room categories for billing</div>
+      </div>
+      <button onclick="closeCatManager()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;font-size:18px;">✕</button>
+    </div>
+    <div class="cat-list" id="catList"></div>
+    <div class="cat-add-row">
+      <input type="text" class="cat-add-input" id="catNewInput" placeholder="e.g. Deluxe Double Room" onkeydown="if(event.key==='Enter')addRoomCategory()"/>
+      <button class="cat-add-btn" onclick="addRoomCategory()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="rev-toast"></div>
+
+<script>window.HIRAYA_PAGE = 'revenue';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script src="activity-log.js"></script>
+<script>
+if (typeof hirayaRenderTopbar === 'function')
+  hirayaRenderTopbar('Revenue & Reports', 'Financial Summary & Reporting');
+
+/* ══════════════════════════════════════════════════════
+   CONSTANTS & KEYS
+══════════════════════════════════════════════════════ */
+const DAILY_KEY       = 'hiraya_daily_entries';
+const LEDGER_KEY      = 'hiraya_revenue_ledger';
+const LAST_MIG_KEY    = 'hiraya_last_migration';
+const MINIBAR_KEY     = 'hiraya_minibar_config';
+const SIGNATORIES_KEY = 'hiraya_signatories';
+const BKP_HISTORY_KEY = 'hiraya_revenue_bkp_history';
+const BS_DRAFT_KEY    = 'hiraya_billing_draft';
+const BS_LOGO_KEY     = 'hiraya_billing_logo';
+const ROOM_CATS_KEY   = 'hiraya_room_categories';
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let dailyDate   = new Date(TODAY);
+let activeTab   = 'daily';
+let editEntryId = null;
+let minibarCart = {};
+
+const DEFAULT_MINIBAR = [
+  { name:'SOFTDRINKS', price:80 },
+  { name:'DELICACIES', price:150 },
+  { name:'BEER',       price:200 },
+  { name:'WINE',       price:450 },
+];
+const DEFAULT_SIGNATORIES = [
+  { label:'Prepared by', role:'Front Desk Officer' },
+  { label:'Reviewed by', role:'Supervisor' },
+  { label:'Approved by', role:'General Manager' },
+];
+const DEFAULT_ROOM_CATEGORIES = [
+  'Standard Room','Deluxe Room','Superior Room','Suite',
+  'Family Room','Cottage','Villa','Function Hall',
+];
+
+/* ══════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════ */
+function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function parseDate(s) { const [y,m,d]=s.split('-'); return new Date(y,m-1,d); }
+function fmtDateLong(d) { return d.toLocaleDateString('en-PH',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); }
+function fmtDateDisplay(s) { if(!s) return null; try { return parseDate(s).toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}); } catch(e){ return s; } }
+function fmtDateShort(s) { if(!s) return '—'; try { return parseDate(s).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}); } catch(e){ return s; } }
+function fmtTime(isoStr) { if(!isoStr) return '—'; return new Date(isoStr).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid()  { return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9); }
+function lsGet(k,def) { try { return JSON.parse(localStorage.getItem(k)||JSON.stringify(def)); } catch(e){ return def; } }
+function lsSet(k,v) { localStorage.setItem(k,JSON.stringify(v)); }
+function bsFmt(n) { return (n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+let _toastT;
+function showToast(msg, type='ok') {
+  const el=document.getElementById('rev-toast');
+  el.textContent=msg; el.className='show'+(type==='err'?' err':'');
+  clearTimeout(_toastT); _toastT=setTimeout(()=>el.className='',2600);
+}
+
+/* ══════════════════════════════════════════════════════
+   DATA ACCESS
+══════════════════════════════════════════════════════ */
+function loadDailyEntries()      { return lsGet(DAILY_KEY,{}); }
+function saveDailyEntries(data)  { lsSet(DAILY_KEY,data); }
+function getEntriesForDate(d)    { return loadDailyEntries()[d]||[]; }
+function saveEntriesForDate(d,e) { const all=loadDailyEntries(); all[d]=e; saveDailyEntries(all); }
+function loadLedger()            { return lsGet(LEDGER_KEY,[]); }
+function saveLedger(d)           { lsSet(LEDGER_KEY,d); }
+function loadRoomCategories()    { return lsGet(ROOM_CATS_KEY,DEFAULT_ROOM_CATEGORIES); }
+function saveRoomCategories(cats){ lsSet(ROOM_CATS_KEY,cats); }
+
+/* ══════════════════════════════════════════════════════
+   LOGO ENGINE
+══════════════════════════════════════════════════════ */
+function handleLogoUpload(event) {
+  const file=event.target.files[0]; if(!file) return;
+  if(file.size>2*1024*1024){ showToast('Image too large — max 2MB','err'); event.target.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=function(e){ lsSet(BS_LOGO_KEY,e.target.result); updateLogoUI(e.target.result,file.name); bsRender(); showToast('Logo uploaded ✓'); };
+  reader.readAsDataURL(file); event.target.value='';
+}
+function removeLogo() { localStorage.removeItem(BS_LOGO_KEY); updateLogoUI(null,null); bsRender(); showToast('Logo removed'); }
+function updateLogoUI(dataUrl,fileName) {
+  const zone=document.getElementById('logoUploadZone');
+  const thumbWrap=document.getElementById('logoThumbWrap');
+  const fileLabel=document.getElementById('logoFileName');
+  const removeBtn=document.getElementById('logoRemoveBtn');
+  if(!zone) return;
+  if(dataUrl){
+    zone.classList.add('has-logo');
+    thumbWrap.innerHTML=`<img src="${dataUrl}" class="logo-preview-thumb" alt="Logo preview"/>`;
+    fileLabel.textContent=fileName||'Custom logo'; fileLabel.style.color='var(--h-text)';
+    if(removeBtn) removeBtn.style.display='block';
+  } else {
+    zone.classList.remove('has-logo');
+    thumbWrap.innerHTML=`<svg width="22" height="22" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="5" height="20" fill="currentColor"/><rect x="4" y="11" width="20" height="6" fill="currentColor"/><rect x="19" y="4" width="5" height="20" fill="currentColor"/></svg>`;
+    fileLabel.textContent='No logo uploaded'; fileLabel.style.color='';
+    if(removeBtn) removeBtn.style.display='none';
+  }
+}
+function initLogoUI() {
+  const saved=lsGet(BS_LOGO_KEY,null); if(saved) updateLogoUI(saved,'Saved logo');
+  const zone=document.getElementById('logoUploadZone');
+  if(!zone||zone._ddWired) return; zone._ddWired=true;
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.borderColor='var(--h-red)';});
+  zone.addEventListener('dragleave',()=>{zone.style.borderColor='';});
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();zone.style.borderColor='';
+    const file=e.dataTransfer.files[0];
+    if(!file||!file.type.startsWith('image/')){ showToast('Please drop an image file','err'); return; }
+    if(file.size>2*1024*1024){ showToast('Image too large — max 2MB','err'); return; }
+    const reader=new FileReader();
+    reader.onload=ev=>{lsSet(BS_LOGO_KEY,ev.target.result);updateLogoUI(ev.target.result,file.name);bsRender();showToast('Logo uploaded ✓');};
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   CALENDAR ENGINE
+══════════════════════════════════════════════════════ */
+let _calTarget=null, _calBtnId=null;
+let _calYear=new Date().getFullYear(), _calMonth=new Date().getMonth();
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function openCalendar(targetInputId,btnId) {
+  _calTarget=targetInputId; _calBtnId=btnId;
+  const currentVal=document.getElementById(targetInputId).value;
+  if(currentVal){ const d=parseDate(currentVal); _calYear=d.getFullYear(); _calMonth=d.getMonth(); }
+  else { const now=new Date(); _calYear=now.getFullYear(); _calMonth=now.getMonth(); }
+  renderCalendar(); document.getElementById('calendarModal').classList.add('open');
+}
+function closeCalendar() { document.getElementById('calendarModal').classList.remove('open'); }
+function renderCalendar() {
+  document.getElementById('calMonthYear').textContent=MONTH_NAMES[_calMonth]+' '+_calYear;
+  const firstDay=new Date(_calYear,_calMonth,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayStr=fmtDate(today);
+  const selectedStr=_calTarget?document.getElementById(_calTarget).value||'':'';
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<button class="cal-day cal-day-empty" disabled></button>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls='cal-day';
+    if(dateStr===todayStr) cls+=' cal-day-today';
+    if(dateStr===selectedStr) cls+=' cal-day-selected';
+    html+=`<button class="${cls}" onclick="calSelectDay('${dateStr}')">${d}</button>`;
+  }
+  document.getElementById('calDays').innerHTML=html;
+  const selLbl=document.getElementById('calSelectedLabel');
+  if(selectedStr){ selLbl.textContent=fmtDateDisplay(selectedStr)||selectedStr; selLbl.style.color='var(--h-text)'; }
+  else { selLbl.textContent='No date selected'; selLbl.style.color='var(--h-muted)'; }
+}
+function calSelectDay(dateStr) {
+  if(_calTarget){ document.getElementById(_calTarget).value=dateStr; updateDateTrigger(_calTarget); }
+  renderCalendar(); bsRender(); setTimeout(closeCalendar,120);
+}
+function updateDateTrigger(inputId) {
+  // Handle accom row hidden inputs
+  const match=inputId.match(/^arow-date-hidden-(\d+)$/);
+  if(match){ const i=parseInt(match[1]); const val=document.getElementById(inputId).value; bsAccomRows[i].date=val; const labelEl=document.getElementById(`arow-date-label-${i}`); const btnEl=document.getElementById(`arow-date-btn-${i}`); if(labelEl) labelEl.textContent=val||'Date…'; if(btnEl) btnEl.classList.toggle('placeholder-text',!val); bsRender(); return; }
+  // Payment new date
+  if(inputId==='pay-new-date'){ const val=document.getElementById(inputId).value; const displayEl=document.getElementById('pay-new-date-display'); if(displayEl){ if(val){ displayEl.textContent=fmtDateShort(val); displayEl.classList.remove('placeholder'); } else { displayEl.textContent='Date…'; displayEl.classList.add('placeholder'); } } return; }
+  // Standard display span
+  const val=document.getElementById(inputId).value; const displayId=inputId+'-display'; const displayEl=document.getElementById(displayId); if(!displayEl) return;
+  if(val){ displayEl.textContent=fmtDateDisplay(val); displayEl.classList.remove('placeholder'); }
+  else { displayEl.textContent='Select date…'; displayEl.classList.add('placeholder'); }
+}
+function calGoToday() { const now=new Date(); _calYear=now.getFullYear(); _calMonth=now.getMonth(); renderCalendar(); }
+function calClear() { if(_calTarget){ document.getElementById(_calTarget).value=''; updateDateTrigger(_calTarget); } renderCalendar(); bsRender(); }
+function calCycleView() { calGoToday(); }
+document.getElementById('calPrev').addEventListener('click',()=>{ _calMonth--; if(_calMonth<0){_calMonth=11;_calYear--;} renderCalendar(); });
+document.getElementById('calNext').addEventListener('click',()=>{ _calMonth++; if(_calMonth>11){_calMonth=0;_calYear++;} renderCalendar(); });
+
+/* ══════════════════════════════════════════════════════
+   ROOM CATEGORY MANAGER
+══════════════════════════════════════════════════════ */
+function openCatManager() { renderCatList(); document.getElementById('catManagerModal').classList.add('open'); setTimeout(()=>document.getElementById('catNewInput').focus(),80); }
+function closeCatManager() { document.getElementById('catManagerModal').classList.remove('open'); bsRenderAccomRows(); }
+function renderCatList() {
+  const cats=loadRoomCategories(); const el=document.getElementById('catList');
+  if(!cats.length){ el.innerHTML='<div style="padding:12px;color:var(--h-muted);font-size:12px;text-align:center;">No categories yet. Add one below.</div>'; return; }
+  el.innerHTML=cats.map((cat,i)=>`<div class="cat-item"><span class="cat-item-name">${esc(cat)}</span><button class="cat-item-del" onclick="deleteRoomCategory(${i})">✕</button></div>`).join('');
+}
+function addRoomCategory() {
+  const input=document.getElementById('catNewInput'); const val=input.value.trim(); if(!val){ input.focus(); return; }
+  const cats=loadRoomCategories(); if(cats.includes(val)){ showToast('Category already exists','err'); return; }
+  cats.push(val); saveRoomCategories(cats); input.value=''; renderCatList(); showToast(`"${val}" added ✓`);
+}
+function deleteRoomCategory(i) {
+  const cats=loadRoomCategories(); if(!confirm(`Delete "${cats[i]}"?`)) return;
+  cats.splice(i,1); saveRoomCategories(cats); renderCatList();
+}
+
+/* ══════════════════════════════════════════════════════
+   BILLING — ACCOMMODATION ROWS
+══════════════════════════════════════════════════════ */
+let bsAccomRows = [{ date:'', category:'', nights:1, rate:'' }];
+let bsExtraRows = [];
+
+function bsAddAccomRow() { bsAccomRows.push({date:'',category:'',nights:1,rate:''}); bsRenderAccomRows(); bsRender(); }
+function bsRemoveAccomRow(i) { if(bsAccomRows.length<=1){bsAccomRows[0]={date:'',category:'',nights:1,rate:''};} else {bsAccomRows.splice(i,1);} bsRenderAccomRows(); bsRender(); }
+function bsAddExtraRow() { bsExtraRows.push({desc:'',qty:1,rate:''}); bsRenderExtraRows(); bsRender(); }
+function bsRemoveExtraRow(i) { bsExtraRows.splice(i,1); bsRenderExtraRows(); bsRender(); }
+
+function bsRenderAccomRows() {
+  const container=document.getElementById('bs-accom-rows'); if(!container) return;
+  const cats=loadRoomCategories();
+  container.innerHTML=bsAccomRows.map((r,i)=>{
+    const catOptions=cats.map(c=>`<option value="${esc(c)}" ${r.category===c?'selected':''}>${esc(c)}</option>`).join('');
+    return `<div class="accom-row-grid" id="arow-${i}">
+      <button type="button" class="accom-date-btn ${!r.date?'placeholder-text':''}" id="arow-date-btn-${i}" onclick="openCalendar('arow-date-hidden-${i}','arow-date-btn-${i}')">
+        <svg class="cal-ico" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="arow-date-label-${i}">${r.date||'Date…'}</span>
+      </button>
+      <input type="hidden" id="arow-date-hidden-${i}" value="${esc(r.date)}"
+        oninput="bsAccomRows[${i}].date=this.value;document.getElementById('arow-date-label-${i}').textContent=this.value||'Date…';document.getElementById('arow-date-btn-${i}').classList.toggle('placeholder-text',!this.value);bsRender()"/>
+      <div class="room-cat-wrap">
+        <select class="room-cat-select" onchange="bsAccomRows[${i}].category=this.value;bsRender()">
+          <option value="">— Category —</option>${catOptions}
+        </select>
+      </div>
+      <input type="number" placeholder="1" min="1" value="${r.nights||1}" oninput="bsAccomRows[${i}].nights=Number(this.value)||1;bsRender()"/>
+      <input type="number" placeholder="Rate" min="0" step="0.01" value="${r.rate}" oninput="bsAccomRows[${i}].rate=this.value;bsRender()"/>
+      <button onclick="bsRemoveAccomRow(${i})" class="item-del-btn">✕</button>
+    </div>`;
+  }).join('');
+}
+function bsRenderExtraRows() {
+  const container=document.getElementById('bs-extra-rows'); if(!container) return;
+  if(!bsExtraRows.length){ container.innerHTML='<div style="font-size:11px;color:var(--h-muted);margin-bottom:6px;">No extra charges.</div>'; return; }
+  container.innerHTML=`<div style="display:grid;grid-template-columns:1fr 55px 80px 28px;gap:6px;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Description</span><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Qty</span><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);">Rate (₱)</span><span></span></div>`
+    +bsExtraRows.map((r,i)=>`<div style="display:grid;grid-template-columns:1fr 55px 80px 28px;gap:6px;margin-bottom:6px;"><input type="text" placeholder="e.g. Extra Bed" value="${esc(r.desc)}" class="billing-input" oninput="bsExtraRows[${i}].desc=this.value;bsRender()"/><input type="number" placeholder="1" min="1" value="${r.qty||1}" class="billing-input" oninput="bsExtraRows[${i}].qty=Number(this.value)||1;bsRender()"/><input type="number" placeholder="0" min="0" step="0.01" value="${r.rate}" class="billing-input" oninput="bsExtraRows[${i}].rate=this.value;bsRender()"/><button onclick="bsRemoveExtraRow(${i})" class="item-del-btn">✕</button></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   BILLING — DISCOUNT ENGINE (NEW)
+══════════════════════════════════════════════════════ */
+function bsGetSubtotal() {
+  let sub=0;
+  bsAccomRows.forEach(r=>{ sub+=(parseFloat(r.rate)||0)*(parseInt(r.nights)||1); });
+  bsExtraRows.forEach(r=>{ sub+=(parseFloat(r.rate)||0)*(parseInt(r.qty)||1); });
+  return sub;
+}
+
+function bsApplyDiscPct(pct) {
+  const sub=bsGetSubtotal();
+  const discAmt=Math.round(sub*(pct/100)*100)/100;
+  document.getElementById('bs-disc-pct').value=pct;
+  document.getElementById('bs-discount').value=discAmt.toFixed(2);
+  // Highlight active button
+  document.querySelectorAll('.disc-pct-btn:not(.clear-btn)').forEach(btn=>{
+    btn.classList.toggle('active', btn.textContent===pct+'%');
+  });
+  bsRender();
+}
+
+function bsDiscPctChanged() {
+  const pct=parseFloat(document.getElementById('bs-disc-pct').value)||0;
+  const sub=bsGetSubtotal();
+  const discAmt=Math.round(sub*(pct/100)*100)/100;
+  document.getElementById('bs-discount').value=discAmt.toFixed(2);
+  // Clear preset highlights
+  document.querySelectorAll('.disc-pct-btn:not(.clear-btn)').forEach(btn=>btn.classList.remove('active'));
+  bsRender();
+}
+
+function bsDiscAmtChanged() {
+  const discAmt=parseFloat(document.getElementById('bs-discount').value)||0;
+  const sub=bsGetSubtotal();
+  const pct=sub>0 ? Math.round((discAmt/sub)*10000)/100 : 0;
+  document.getElementById('bs-disc-pct').value=pct.toFixed(2);
+  // Clear preset highlights
+  document.querySelectorAll('.disc-pct-btn:not(.clear-btn)').forEach(btn=>btn.classList.remove('active'));
+  bsRender();
+}
+
+function bsClearDiscount() {
+  document.getElementById('bs-disc-pct').value='';
+  document.getElementById('bs-discount').value='';
+  document.querySelectorAll('.disc-pct-btn:not(.clear-btn)').forEach(btn=>btn.classList.remove('active'));
+  bsRender();
+}
+
+function bsUpdateDiscountSummary(sub, discAmt, total) {
+  const el_sub  = document.getElementById('ds-subtotal');
+  const el_disc = document.getElementById('ds-discount');
+  const el_tot  = document.getElementById('ds-total');
+  if(el_sub)  el_sub.textContent  = '₱'+bsFmt(sub);
+  if(el_disc) el_disc.textContent = discAmt>0 ? `− ₱${bsFmt(discAmt)}` : '— ₱0.00';
+  if(el_tot)  el_tot.textContent  = '₱'+bsFmt(total);
+}
+
+/* ══════════════════════════════════════════════════════
+   BILLING — PAYMENT SCHEDULE ENGINE (NEW)
+══════════════════════════════════════════════════════ */
+let bsPayments = []; // [{id, type, date, amount, note}]
+
+function bsAddPayment() {
+  const type   = document.getElementById('pay-new-type').value;
+  const date   = document.getElementById('pay-new-date').value;
+  const amount = parseFloat(document.getElementById('pay-new-amount').value)||0;
+  const note   = document.getElementById('pay-new-note').value.trim();
+  if(!amount || amount<=0){ showToast('Enter a payment amount','err'); document.getElementById('pay-new-amount').focus(); return; }
+  bsPayments.push({ id:uid(), type, date, amount, note });
+  // Reset add-row
+  document.getElementById('pay-new-type').value='Down Payment';
+  document.getElementById('pay-new-date').value='';
+  document.getElementById('pay-new-date-display').textContent='Date…';
+  document.getElementById('pay-new-date-display').classList.add('placeholder');
+  document.getElementById('pay-new-amount').value='';
+  document.getElementById('pay-new-note').value='';
+  bsRenderPayments();
+  bsRender();
+  showToast(`Payment of ₱${bsFmt(amount)} added ✓`);
+}
+
+function bsRemovePayment(id) {
+  bsPayments = bsPayments.filter(p=>p.id!==id);
+  bsRenderPayments(); bsRender();
+}
+
+const PAY_TYPE_COLORS = {
+  'Down Payment': { badge:'pay-type-dp', label:'DOWN PMT' },
+  'Tranche':      { badge:'pay-type-tranche', label:'TRANCHE' },
+  'Full Payment': { badge:'pay-type-full', label:'FULL PMT' },
+  'Other':        { badge:'pay-type-other', label:'OTHER' },
+};
+
+function bsRenderPayments() {
+  const list    = document.getElementById('pay-entries-list');
+  const countEl = document.getElementById('pay-entries-count');
+  const totalDue = bsGetTotalDue();
+  const totalPaid = bsPayments.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const balance   = totalDue - totalPaid;
+
+  // Count
+  if(countEl) countEl.textContent = bsPayments.length+' payment'+(bsPayments.length!==1?'s':'');
+
+  // List
+  if(!list) return;
+  if(!bsPayments.length){
+    list.innerHTML=`<div style="padding:14px 12px;font-size:11px;color:var(--h-muted);text-align:center;font-style:italic;">No payments recorded yet. Add one below.</div>`;
+  } else {
+    list.innerHTML=bsPayments.map((p,i)=>{
+      const meta = PAY_TYPE_COLORS[p.type]||PAY_TYPE_COLORS['Other'];
+      return `<div class="payment-entry-row">
+        <span class="pay-type-badge ${meta.badge}" style="padding:2px 7px;border-radius:2px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">${meta.label}</span>
+        <span style="font-size:11px;color:var(--h-muted);">
+          ${p.date?fmtDateShort(p.date):'<span style="font-style:italic;color:var(--h-muted);">No date</span>'}
+          ${p.note?`<br/><span style="font-size:10px;color:var(--h-muted);">${esc(p.note)}</span>`:''}
+        </span>
+        <span style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#2ecc71;text-align:right;">₱${bsFmt(p.amount)}</span>
+        <button class="payment-del-btn" onclick="bsRemovePayment('${p.id}')" title="Remove">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Summary
+  const dueEl  = document.getElementById('pay-total-due');
+  const paidEl = document.getElementById('pay-total-paid');
+  const balEl  = document.getElementById('pay-balance');
+  if(dueEl)  dueEl.textContent  = '₱'+bsFmt(totalDue);
+  if(paidEl) paidEl.textContent = '₱'+bsFmt(totalPaid);
+  if(balEl){
+    balEl.textContent = '₱'+bsFmt(Math.abs(balance));
+    balEl.className   = 'payment-sum-val';
+    if(balance===0){ balEl.classList.add('balanced'); balEl.textContent='✓ Settled'; }
+    else if(balance<0){ balEl.classList.add('paid'); balEl.textContent='Overpaid ₱'+bsFmt(Math.abs(balance)); }
+    else { balEl.classList.add('balance-due'); }
+  }
+}
+
+function bsGetTotalDue() {
+  const sub      = bsGetSubtotal();
+  const discAmt  = parseFloat(document.getElementById('bs-discount')?.value)||0;
+  return Math.max(0, sub - discAmt);
+}
+
+/* ══════════════════════════════════════════════════════
+   BILLING — VALUES & RENDER
+══════════════════════════════════════════════════════ */
+function bsGetValues() {
+  const v=id=>{ const el=document.getElementById(id); return el?el.value:''; };
+  return {
+    stmtNum:   v('bs-stmt-num'),
+    billedTo:  v('bs-billed-to'),
+    date:      v('bs-date'),
+    checkin:   v('bs-checkin'),
+    discPct:   parseFloat(v('bs-disc-pct'))||0,
+    discount:  parseFloat(v('bs-discount'))||0,
+    discNote:  v('bs-discount-note'),
+    sig1Label: v('bs-sig1-label'), sig1Name: v('bs-sig1-name'), sig1Title: v('bs-sig1-title'),
+    sig2Label: v('bs-sig2-label'), sig2Name: v('bs-sig2-name'), sig2Title: v('bs-sig2-title'),
+    sig3Label: v('bs-sig3-label'), sig3Name: v('bs-sig3-name'), sig3Title: v('bs-sig3-title'),
+    payGcash:  v('bs-pay-gcash'),
+    payBdoName:v('bs-pay-bdo-name'), payBdoNum:v('bs-pay-bdo-num'),
+    payLbpName:v('bs-pay-lbp-name'), payLbpNum:v('bs-pay-lbp-num'),
+  };
+}
+
+function bsFmtAmt(n) { if(!n&&n!==0) return '–'; return n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function bsFmtDate(s) { if(!s) return '—'; try { const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'}); } catch(e){ return s; } }
+
+function bsRender() {
+  const preview=document.getElementById('billing-print-area'); if(!preview) return;
+  const vals=bsGetValues();
+
+  // Compute totals
+  let accomSubtotal=0;
+  const accomRowsHTML=bsAccomRows.map(r=>{ const rate=parseFloat(r.rate)||0; const nights=parseInt(r.nights)||1; const sub=rate*nights; accomSubtotal+=sub; return `<tr><td class="bs-left">${esc(r.date)||''}</td><td class="bs-left">${esc(r.category)||''}</td><td>${nights}</td><td class="bs-right">${rate?bsFmtAmt(rate):'–'}</td><td class="bs-right">${sub?bsFmtAmt(sub):'–'}</td><td class="bs-right">–</td><td class="bs-right">${sub?bsFmtAmt(sub):'–'}</td></tr>`; }).join('');
+
+  let extraSubtotal=0;
+  let extraRowsHTML='';
+  if(bsExtraRows.length){
+    extraRowsHTML=`<tr><td colspan="7" style="background:#f8f8f8;font-weight:bold;font-size:9.5px;text-align:center;padding:4px 6px;letter-spacing:.06em;">OTHER CHARGES</td></tr>`;
+    bsExtraRows.forEach(r=>{ const rate=parseFloat(r.rate)||0; const qty=parseInt(r.qty)||1; const sub=rate*qty; extraSubtotal+=sub; extraRowsHTML+=`<tr><td class="bs-left" colspan="2">${esc(r.desc)||''}</td><td>${qty}</td><td class="bs-right">${rate?bsFmtAmt(rate):'–'}</td><td class="bs-right">${sub?bsFmtAmt(sub):'–'}</td><td class="bs-right">–</td><td class="bs-right">${sub?bsFmtAmt(sub):'–'}</td></tr>`; });
+  }
+
+  const grandTotal   = accomSubtotal + extraSubtotal;
+  const totalAmount  = grandTotal - vals.discount;
+  const totalPaid    = bsPayments.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const balance      = totalAmount - totalPaid;
+  const discPctLabel = vals.discPct>0 ? ` (${vals.discPct}%)` : '';
+
+  // Update live discount summary bar
+  bsUpdateDiscountSummary(grandTotal, vals.discount, totalAmount);
+  // Update payment panel totals
+  bsRenderPayments();
+
+  const dateDisplay   = vals.date   ? bsFmtDate(vals.date)   : '________________';
+  const checkinDisplay= vals.checkin? bsFmtDate(vals.checkin): '';
+
+  // Logo
+  const uploadedLogo=lsGet(BS_LOGO_KEY,null);
+  let logoHTML;
+  if(uploadedLogo){
+    logoHTML=`<div class="bs-logo-wrap" style="width:60px;height:60px;margin:0 auto 6px;"><img src="${uploadedLogo}" class="bs-logo" alt="Hiraya Logo" style="width:60px;height:60px;object-fit:contain;display:block;"/></div>`;
+  } else {
+    logoHTML=`<div class="bs-logo-wrap" style="width:60px;height:60px;margin:0 auto 6px;"><img src="hiraya.jpeg" class="bs-logo" alt="Hiraya Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:60px;height:60px;object-fit:contain;display:block;"/><div class="bs-logo-fallback" style="display:none;width:60px;height:60px;background:#C0272D;border-radius:2px;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="5" height="20" fill="white"/><rect x="4" y="11" width="20" height="6" fill="white"/><rect x="19" y="4" width="5" height="20" fill="white"/></svg></div></div>`;
+  }
+
+  // Payment schedule section for print
+  let paySchedHTML = '';
+  if(bsPayments.length){
+    const PAY_LABELS = { 'Down Payment':'Down Payment','Tranche':'Tranche','Full Payment':'Full Payment','Other':'Other' };
+    paySchedHTML = `
+      <div class="bs-pay-schedule">
+        <div class="bs-pay-schedule-title">PAYMENT SCHEDULE</div>
+        <table class="bs-pay-sched-table">
+          <thead><tr><th>#</th><th>Type</th><th>Date</th><th>Note</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody>
+            ${bsPayments.map((p,i)=>`<tr><td>${i+1}</td><td><strong>${esc(p.type)}</strong></td><td>${p.date?bsFmtDate(p.date):'—'}</td><td>${esc(p.note||'—')}</td><td class="sched-amt">₱${bsFmtAmt(p.amount)}</td></tr>`).join('')}
+            <tr style="background:#f5f5f5;font-weight:bold;">
+              <td colspan="4" style="text-align:right;">Total Paid:</td>
+              <td class="sched-amt">₱${bsFmtAmt(totalPaid)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="bs-balance-row">
+          <span>Total Due: <strong>₱${bsFmtAmt(totalAmount)}</strong></span>
+          <span>Total Paid: <strong style="color:#27ae60;">₱${bsFmtAmt(totalPaid)}</strong></span>
+          <span>Balance: <strong style="color:${balance<=0?'#27ae60':'#e74c3c'};">${balance<=0?'SETTLED':'₱'+bsFmtAmt(balance)}</strong></span>
+        </div>
+      </div>`;
+  }
+
+  preview.innerHTML = `
+    <div class="bs-header">
+      ${logoHTML}
+      <div class="bs-hotel-name">HIRAYA HOTEL AND EVENTS PLACE</div>
+      <div class="bs-hotel-addr">Purok 5 Magallanes Iraya St. Brgy. Camambugan Daet, Camarines Norte</div>
+      <div class="bs-hotel-mobile">Mobile #: 0992-366-8788</div>
+      <div class="bs-title">BILLING STATEMENT</div>
+    </div>
+    <div class="bs-meta-row">
+      <div class="bs-meta-field"><span class="bs-meta-lbl">Billed to:</span><span class="bs-meta-val">${esc(vals.billedTo)||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></div>
+    </div>
+    <div class="bs-meta-row">
+      <div class="bs-meta-field"><span class="bs-meta-lbl">Date:</span><span class="bs-meta-val-plain">${dateDisplay}</span></div>
+      ${checkinDisplay?`<div class="bs-meta-field"><span class="bs-meta-lbl">Check-in:</span><span class="bs-meta-val-plain">${checkinDisplay}</span></div>`:''}
+    </div>
+    <div class="bs-section-title">HOTEL ACCOMODATION</div>
+    <table class="bs-table">
+      <thead><tr><th class="bs-left">DATE</th><th class="bs-left">ROOM CATEGORY</th><th># OF NIGHTS / PCS</th><th>RATE</th><th>SUB-TOTAL</th><th>DISCOUNT</th><th>TOTAL</th></tr></thead>
+      <tbody>${accomRowsHTML}${extraRowsHTML}</tbody>
+    </table>
+    <div class="bs-totals-wrap">
+      <table class="bs-totals-table">
+        <tr>
+          <td>₱</td><td>${accomSubtotal?bsFmtAmt(accomSubtotal):'–'}</td>
+          <td style="padding-left:8px;">₱</td><td>${extraSubtotal?bsFmtAmt(extraSubtotal):'–'}</td>
+          <td style="padding-left:8px;">₱</td><td>${grandTotal?bsFmtAmt(grandTotal):'–'}</td>
+        </tr>
+        <tr>
+          <td colspan="4"></td>
+          <td style="padding-right:4px;text-align:right;font-weight:bold;">LESS${discPctLabel}:</td>
+          <td style="text-decoration:underline;">${vals.discount?bsFmtAmt(vals.discount)+(vals.discNote?` (${vals.discNote})`:''):'___________'}</td>
+        </tr>
+        <tr class="bs-grand">
+          <td colspan="4"></td>
+          <td style="text-align:right;">TOTAL AMOUNT: ₱</td>
+          <td>${bsFmtAmt(totalAmount)}</td>
+        </tr>
+      </table>
+    </div>
+    ${paySchedHTML}
+    <div class="bs-sigs">
+      <div class="bs-sig-col"><div class="bs-sig-role">${esc(vals.sig1Label)}</div><div class="bs-sig-name">${esc(vals.sig1Name)}</div><div class="bs-sig-title">${esc(vals.sig1Title)}</div></div>
+      <div class="bs-sig-col"><div class="bs-sig-role">${esc(vals.sig2Label)}</div><div class="bs-sig-name">${esc(vals.sig2Name)}</div><div class="bs-sig-title">${esc(vals.sig2Title)}</div></div>
+      <div class="bs-sig-col"><div class="bs-sig-role">${esc(vals.sig3Label)}</div><div class="bs-sig-name">${esc(vals.sig3Name)}</div><div class="bs-sig-title">${esc(vals.sig3Title)}</div></div>
+    </div>
+    <div class="bs-payment-section">
+      <div class="bs-payment-title">MODES OF PAYMENT:</div>
+      <div class="bs-payment-grid">
+        <div class="bs-payment-col"><div class="bs-payment-method">●G-Cash</div><div>Number: ${esc(vals.payGcash)}</div><div style="font-style:italic;color:#555;">(JE*A AN*E AU***Y B.)</div></div>
+        <div class="bs-payment-col"><div class="bs-payment-method">●BDO SAVINGS ACCOUNT</div><div>Account Name: ${esc(vals.payBdoName)}</div><div>Account Number: ${esc(vals.payBdoNum)}</div></div>
+        <div class="bs-payment-col"><div class="bs-payment-method">●LANDBANK SAVINGS ACCOUNT</div><div>Account Name: ${esc(vals.payLbpName)}</div><div>Account Number: ${esc(vals.payLbpNum)}</div></div>
+      </div>
+    </div>
+    <div class="bs-stmt-num">BILLING STATEMENT No. ${esc(vals.stmtNum)}</div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   BILLING — PRINT
+══════════════════════════════════════════════════════ */
+function bsPrint() {
+  const printArea=document.getElementById('billing-print-area'); if(!printArea) return;
+  const printWin=window.open('','_blank','width=900,height=700');
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <title>Billing Statement — ${document.getElementById('bs-stmt-num').value}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+      @page{margin:0.5in;}
+      body{margin:0;padding:0;font-family:'Times New Roman',Times,serif;font-size:11px;color:#000;background:#fff;}
+      .bs-header{text-align:center;margin-bottom:16px;}
+      .bs-logo-wrap{width:60px;height:60px;margin:0 auto 6px;}
+      .bs-logo{width:60px;height:60px;display:block;object-fit:contain;}
+      .bs-logo-fallback{width:60px;height:60px;background:#C0272D;border-radius:2px;display:flex;align-items:center;justify-content:center;}
+      .bs-hotel-name{font-size:15px;font-weight:900;color:#C0272D;letter-spacing:.06em;text-transform:uppercase;background:#FFE800;padding:2px 8px;display:inline-block;margin-bottom:4px;}
+      .bs-hotel-addr{font-size:10px;font-style:italic;color:#333;margin-bottom:2px;}
+      .bs-hotel-mobile{font-size:10px;font-style:italic;color:#333;font-weight:bold;}
+      .bs-title{font-size:13px;font-weight:bold;margin:10px 0 14px;letter-spacing:.06em;}
+      .bs-meta-row{display:flex;gap:20px;margin-bottom:8px;}
+      .bs-meta-field{display:flex;align-items:baseline;gap:6px;}
+      .bs-meta-lbl{font-weight:bold;font-size:11px;}
+      .bs-meta-val{border-bottom:1px solid #333;min-width:180px;font-size:11px;padding:0 4px 1px;background:#DDFFD0;min-height:16px;}
+      .bs-meta-val-plain{border-bottom:1px solid #333;min-width:120px;font-size:11px;padding:0 4px 1px;min-height:16px;}
+      .bs-section-title{font-weight:bold;font-size:11px;letter-spacing:.06em;text-align:center;margin:12px 0 6px;}
+      .bs-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:4px;}
+      .bs-table th,.bs-table td{border:1px solid #333;padding:4px 6px;text-align:center;}
+      .bs-table th{background:#f0f0f0;font-weight:bold;font-size:9.5px;}
+      .bs-table td.bs-left{text-align:left;}
+      .bs-table td.bs-right{text-align:right;font-family:'Courier New',monospace;}
+      .bs-totals-wrap{display:flex;justify-content:flex-end;margin:6px 0;}
+      .bs-totals-table{border-collapse:collapse;font-size:10px;}
+      .bs-totals-table td{padding:3px 8px;}
+      .bs-totals-table td:first-child{text-align:right;font-weight:bold;padding-right:12px;min-width:140px;}
+      .bs-totals-table td:last-child{font-family:'Courier New',monospace;border-bottom:1px solid #333;min-width:100px;text-align:right;}
+      .bs-totals-table tr.bs-grand td{border-top:2px solid #333;font-weight:bold;font-size:11px;}
+      .bs-sigs{display:flex;justify-content:space-between;margin-top:28px;}
+      .bs-sig-col{flex:1;text-align:center;}
+      .bs-sig-role{font-size:9.5px;color:#555;}
+      .bs-sig-name{font-weight:bold;font-size:10px;border-bottom:1px solid #333;padding-bottom:2px;margin:18px 8px 3px;text-decoration:underline;}
+      .bs-sig-title{font-size:9.5px;color:#333;}
+      .bs-payment-section{margin-top:14px;border-top:1px solid #ccc;padding-top:10px;}
+      .bs-payment-title{font-weight:bold;font-style:italic;font-size:10.5px;margin-bottom:6px;}
+      .bs-payment-grid{display:flex;gap:0;}
+      .bs-payment-col{flex:1;font-size:9px;border-right:1px solid #ddd;padding-right:8px;margin-right:8px;}
+      .bs-payment-col:last-child{border-right:none;}
+      .bs-payment-method{font-weight:bold;}
+      .bs-stmt-num{font-weight:bold;font-style:italic;color:#C0272D;font-size:10px;margin-top:10px;}
+      .bs-pay-schedule{margin-top:10px;border-top:1px solid #ccc;padding-top:8px;}
+      .bs-pay-schedule-title{font-weight:bold;font-size:10px;margin-bottom:4px;}
+      .bs-pay-sched-table{width:100%;border-collapse:collapse;font-size:9.5px;}
+      .bs-pay-sched-table th,.bs-pay-sched-table td{border:1px solid #ccc;padding:3px 6px;}
+      .bs-pay-sched-table th{background:#f5f5f5;font-weight:bold;text-align:left;}
+      .sched-amt{text-align:right;font-family:'Courier New',monospace;}
+      .bs-balance-row{display:flex;justify-content:flex-end;gap:16px;margin-top:6px;font-size:10px;font-weight:bold;}
+    </style>
+  </head><body>${printArea.innerHTML}</body></html>`);
+  printWin.document.close();
+  printWin.onload=function(){ printWin.focus(); printWin.print(); };
+}
+
+function bsSaveDraft() {
+  const vals=bsGetValues();
+  const draft={ vals, accomRows:bsAccomRows, extraRows:bsExtraRows, payments:bsPayments };
+  lsSet(BS_DRAFT_KEY,draft); showToast('Draft saved ✓');
+}
+function bsLoadDraft() {
+  const draft=lsGet(BS_DRAFT_KEY,null); if(!draft){ showToast('No draft found.','err'); return; }
+  const { vals, accomRows, extraRows, payments } = draft;
+  const setVal=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
+  setVal('bs-stmt-num',vals.stmtNum);
+  setVal('bs-billed-to',vals.billedTo);
+  setVal('bs-date',vals.date); updateDateTrigger('bs-date');
+  setVal('bs-checkin',vals.checkin); updateDateTrigger('bs-checkin');
+  setVal('bs-disc-pct',vals.discPct||'');
+  setVal('bs-discount',vals.discount||'');
+  setVal('bs-discount-note',vals.discNote);
+  setVal('bs-sig1-label',vals.sig1Label); setVal('bs-sig1-name',vals.sig1Name); setVal('bs-sig1-title',vals.sig1Title);
+  setVal('bs-sig2-label',vals.sig2Label); setVal('bs-sig2-name',vals.sig2Name); setVal('bs-sig2-title',vals.sig2Title);
+  setVal('bs-sig3-label',vals.sig3Label); setVal('bs-sig3-name',vals.sig3Name); setVal('bs-sig3-title',vals.sig3Title);
+  setVal('bs-pay-gcash',vals.payGcash);
+  setVal('bs-pay-bdo-name',vals.payBdoName); setVal('bs-pay-bdo-num',vals.payBdoNum);
+  setVal('bs-pay-lbp-name',vals.payLbpName); setVal('bs-pay-lbp-num',vals.payLbpNum);
+  bsAccomRows=accomRows&&accomRows.length?accomRows:[{date:'',category:'',nights:1,rate:''}];
+  bsExtraRows=extraRows||[];
+  bsPayments=payments||[];
+  bsRenderAccomRows(); bsRenderExtraRows(); bsRenderPayments(); bsRender();
+  showToast('Draft loaded ✓');
+}
+function bsClear() {
+  if(!confirm('Clear the billing statement form?')) return;
+  ['bs-billed-to','bs-date','bs-checkin','bs-disc-pct','bs-discount','bs-discount-note'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  updateDateTrigger('bs-date'); updateDateTrigger('bs-checkin');
+  document.getElementById('bs-stmt-num').value='HRH-00030';
+  document.querySelectorAll('.disc-pct-btn:not(.clear-btn)').forEach(btn=>btn.classList.remove('active'));
+  bsAccomRows=[{date:'',category:'',nights:1,rate:''}];
+  bsExtraRows=[]; bsPayments=[];
+  bsRenderAccomRows(); bsRenderExtraRows(); bsRenderPayments(); bsRender();
+}
+function bsInitPanel() {
+  initLogoUI(); bsRenderAccomRows(); bsRenderExtraRows(); bsRenderPayments(); bsRender();
+}
+
+/* ══════════════════════════════════════════════════════
+   BACKUP ENGINE
+══════════════════════════════════════════════════════ */
+function buildFullBackup() {
+  const dailyEntries=loadDailyEntries(); const ledger=loadLedger();
+  const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR); const signatories=lsGet(SIGNATORIES_KEY,DEFAULT_SIGNATORIES);
+  const totalEntries=Object.values(dailyEntries).reduce((s,arr)=>s+(arr.length||0),0);
+  const dateRange=Object.keys(dailyEntries).sort();
+  return { _meta:{system:'Hiraya HMS — Revenue & Reports',version:'2.0',exportedAt:new Date().toISOString(),totalDays:dateRange.length,totalEntries,dateFrom:dateRange[0]||null,dateTo:dateRange[dateRange.length-1]||null}, dailyEntries,ledger,minibar,signatories };
+}
+function exportFullBackup() {
+  const backup=buildFullBackup(); const json=JSON.stringify(backup,null,2); const ts=fmtDate(new Date());
+  const blob=new Blob([json],{type:'application/json'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`hiraya-revenue-backup-${ts}.json`; a.click();
+  URL.revokeObjectURL(url); recordBackupHistory('export',backup._meta);
+  showToast(`Backup exported — ${backup._meta.totalEntries} entries across ${backup._meta.totalDays} days ✓`);
+  updateBackupUI();
+}
+function exportDailyEntriesOnly() {
+  const dailyEntries=loadDailyEntries(); const dateRange=Object.keys(dailyEntries).sort();
+  const totalEntries=Object.values(dailyEntries).reduce((s,arr)=>s+(arr.length||0),0);
+  const payload={_meta:{type:'daily-entries-only',system:'Hiraya HMS',exportedAt:new Date().toISOString(),totalDays:dateRange.length,totalEntries,dateFrom:dateRange[0]||null,dateTo:dateRange[dateRange.length-1]||null},dailyEntries};
+  const json=JSON.stringify(payload,null,2); const ts=fmtDate(new Date());
+  const blob=new Blob([json],{type:'application/json'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`hiraya-daily-entries-${ts}.json`; a.click();
+  URL.revokeObjectURL(url); showToast(`Daily entries exported — ${totalEntries} entries across ${dateRange.length} days ✓`);
+}
+function restoreFullBackup(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      if(!backup.dailyEntries||typeof backup.dailyEntries!=='object') throw new Error('Invalid backup: missing dailyEntries');
+      const meta=backup._meta||{}; const totalEntries=meta.totalEntries||Object.values(backup.dailyEntries).reduce((s,a)=>s+(a.length||0),0);
+      const totalDays=meta.totalDays||Object.keys(backup.dailyEntries).length; const exportedAt=meta.exportedAt?new Date(meta.exportedAt).toLocaleString('en-PH'):'unknown';
+      if(!confirm(`Restore backup?\n\nExported: ${exportedAt}\nDays with data: ${totalDays}\nTotal entries: ${totalEntries}\n\n⚠️ This will OVERWRITE all current revenue data. Proceed?`)){event.target.value='';return;}
+      saveDailyEntries(backup.dailyEntries); if(backup.ledger) saveLedger(backup.ledger); if(backup.minibar) lsSet(MINIBAR_KEY,backup.minibar); if(backup.signatories) lsSet(SIGNATORIES_KEY,backup.signatories);
+      recordBackupHistory('restore',meta); showToast(`Restored! ${totalEntries} entries across ${totalDays} days ✓`);
+      setStatusOk('bkpRestoreStatus',`Restored ${totalEntries} entries (${totalDays} days)`); renderDaily(); renderSettings(); updateBackupUI();
+    } catch(err){setStatusErr('bkpRestoreStatus','Restore failed: '+err.message); showToast('Restore failed: '+err.message,'err');}
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+function mergeDailyEntries(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const payload=JSON.parse(e.target.result);
+      if(!payload.dailyEntries||typeof payload.dailyEntries!=='object') throw new Error('Invalid file: missing dailyEntries');
+      const incoming=payload.dailyEntries; const existing=loadDailyEntries(); const inDates=Object.keys(incoming); const newDates=inDates.filter(d=>!existing[d]); const skipDates=inDates.filter(d=>existing[d]);
+      const totalNew=newDates.reduce((s,d)=>s+(incoming[d].length||0),0);
+      if(!inDates.length){showToast('No entries found in file.','err');return;}
+      if(!confirm(`Merge daily entries?\n\nNew dates to import: ${newDates.length} (${totalNew} entries)\nDates already in system (skipped): ${skipDates.length}\n\nExisting data is NOT overwritten. Proceed?`)){event.target.value='';return;}
+      newDates.forEach(d=>{existing[d]=incoming[d];}); saveDailyEntries(existing);
+      recordBackupHistory('merge',{totalEntries:totalNew,totalDays:newDates.length});
+      showToast(`Merged ${totalNew} entries from ${newDates.length} new dates ✓`);
+      setStatusOk('bkpRestoreStatus',`Merged ${totalNew} entries (${newDates.length} new dates)`); renderDaily(); updateBackupUI();
+    } catch(err){setStatusErr('bkpRestoreStatus','Merge failed: '+err.message); showToast('Merge failed: '+err.message,'err');}
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+function clearRevenueData() {
+  if(!confirm('⚠️ Delete ALL revenue data — daily entries, ledger, settings?\n\nExport a backup first! This cannot be undone.')) return;
+  if(!confirm('Final confirmation: Delete everything?')) return;
+  localStorage.removeItem(DAILY_KEY);localStorage.removeItem(LEDGER_KEY);localStorage.removeItem(MINIBAR_KEY);localStorage.removeItem(SIGNATORIES_KEY);
+  showToast('All revenue data cleared.','err'); renderDaily(); renderSettings(); updateBackupUI();
+}
+function setStatusOk(id,msg){const el=document.getElementById(id);if(!el)return;el.className='bkp-status bkp-ok';el.textContent=msg;setTimeout(()=>{if(el.textContent===msg)el.textContent='';},6000);}
+function setStatusErr(id,msg){const el=document.getElementById(id);if(!el)return;el.className='bkp-status bkp-err';el.textContent=msg;setTimeout(()=>{if(el.textContent===msg)el.textContent='';},8000);}
+function recordBackupHistory(type,meta){const history=lsGet(BKP_HISTORY_KEY,[]);history.unshift({type,timestamp:new Date().toISOString(),entries:meta.totalEntries||0,days:meta.totalDays||0,dateFrom:meta.dateFrom||null,dateTo:meta.dateTo||null});lsSet(BKP_HISTORY_KEY,history.slice(0,20));}
+function updateBackupUI(){
+  const dailyEntries=loadDailyEntries();const ledger=loadLedger();const allDates=Object.keys(dailyEntries).sort();const totalEntries=Object.values(dailyEntries).reduce((s,a)=>s+(a.length||0),0);const totalNet=Object.values(dailyEntries).flat().reduce((s,e)=>s+(Number(e.net)||0),0);
+  document.getElementById('backupStats').innerHTML=[{val:allDates.length,label:'Days on Record',accent:'#3498db'},{val:totalEntries,label:'Total Entries',accent:'#2ecc71'},{val:'₱'+Math.round(totalNet).toLocaleString('en-PH'),label:'Lifetime Revenue',accent:'#f39c12'},{val:allDates[0]||'—',label:'Oldest Entry Date',accent:'#9b59b6'},{val:allDates[allDates.length-1]||'—',label:'Latest Entry Date',accent:'#C0272D'},{val:ledger.length+' archived',label:'Ledger Records',accent:'#95a5a6'}].map(k=>`<div class="bkp-stat" style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:${k.accent};"></div><div class="bkp-stat-val">${k.val}</div><div class="bkp-stat-lbl">${k.label}</div></div>`).join('');
+  const history=lsGet(BKP_HISTORY_KEY,[]);const lastExp=history.find(h=>h.type==='export');const lbl=document.getElementById('bkpLastExportBar');if(lbl) lbl.textContent=lastExp?`Last backup: ${new Date(lastExp.timestamp).toLocaleString('en-PH')}`:'No backup exported yet — export one now!';
+  const histEl=document.getElementById('backupHistory');if(!histEl)return;if(!history.length){histEl.innerHTML='<div style="color:var(--h-muted);">No backup activity yet.</div>';return;}
+  const typeLabels={export:'📤 Exported',restore:'📥 Restored',merge:'🔀 Merged'};
+  histEl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--h-border);color:var(--h-muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:9px;">Action</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--h-border);color:var(--h-muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:9px;">Time</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--h-border);color:var(--h-muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:9px;">Entries</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--h-border);color:var(--h-muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:9px;">Date Range</th></tr></thead><tbody>${history.map(h=>`<tr style="border-bottom:1px solid var(--h-border);"><td style="padding:7px 10px;">${typeLabels[h.type]||h.type}</td><td style="padding:7px 10px;color:var(--h-muted);">${new Date(h.timestamp).toLocaleString('en-PH')}</td><td style="padding:7px 10px;">${h.entries} entries · ${h.days} days</td><td style="padding:7px 10px;color:var(--h-muted);">${h.dateFrom||'—'} → ${h.dateTo||'—'}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════════════ */
+function switchTab(tab) {
+  activeTab=tab;
+  ['daily','ledger','billing','backup','settings'].forEach(t=>{
+    document.getElementById('panel-'+t).style.display=t===tab?'flex':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='ledger')   renderLedger();
+  if(tab==='settings') renderSettings();
+  if(tab==='backup')   updateBackupUI();
+  if(tab==='billing')  bsInitPanel();
+}
+
+/* ══════════════════════════════════════════════════════
+   MINI BAR
+══════════════════════════════════════════════════════ */
+function addMinibarToCart(){
+  const sel=document.getElementById('f-minibar-select');const qty=parseInt(document.getElementById('f-minibar-qty').value)||0;const idx=sel.value;
+  if(!idx||qty<1){alert('Select item and quantity');return;}
+  minibarCart[idx]=(minibarCart[idx]||0)+qty;sel.value='';document.getElementById('f-minibar-qty').value='1';renderMinibarCart();
+}
+function renderMinibarCart(){
+  const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);const container=document.getElementById('minibarCart');let total=0;
+  if(!Object.keys(minibarCart).length){container.innerHTML='<div style="color:var(--h-muted);text-align:center;">No items selected</div>';document.getElementById('f-minibar-total').value='₱0.00';return;}
+  container.innerHTML=Object.entries(minibarCart).map(([idx,qty])=>{const item=minibar[idx];if(!item)return'';const sub=item.price*qty;total+=sub;return`<div class="minibar-cart-item"><div class="minibar-item-info"><div class="minibar-item-name">${esc(item.name)}</div><div style="font-size:10px;color:var(--h-muted);">₱${item.price} × ${qty}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="minibar-item-price">₱${sub.toLocaleString('en-PH')}</div><button type="button" onclick="updateMinibarQty(${idx},-1)" style="background:none;border:none;cursor:pointer;color:var(--h-muted);font-size:11px;padding:2px 4px;">−</button><button type="button" onclick="updateMinibarQty(${idx},1)" style="background:none;border:none;cursor:pointer;color:var(--h-muted);font-size:11px;padding:2px 4px;">+</button><button type="button" onclick="delMinibarCartItem(${idx})" style="background:none;border:none;cursor:pointer;color:#e74c3c;font-size:12px;padding:2px 4px;">✕</button></div></div>`;}).join('');
+  document.getElementById('f-minibar-total').value='₱'+total.toLocaleString('en-PH',{minimumFractionDigits:2});
+}
+function updateMinibarQty(idx,delta){minibarCart[idx]=Math.max(0,(minibarCart[idx]||0)+delta);if(!minibarCart[idx])delete minibarCart[idx];renderMinibarCart();}
+function delMinibarCartItem(idx){delete minibarCart[idx];renderMinibarCart();}
+function getMinibarTotal(){const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);return Object.entries(minibarCart).reduce((sum,[idx,qty])=>{const it=minibar[idx];return sum+(it?it.price*qty:0);},0);}
+function getMinibarDisplay(entry){if(!entry.minibarCart||!Object.keys(entry.minibarCart).length)return'—';const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);return Object.entries(entry.minibarCart).map(([idx,qty])=>{const it=minibar[idx];return it?`${it.name}(×${qty})`:'';}).filter(Boolean).join(', ');}
+
+/* ══════════════════════════════════════════════════════
+   DISCOUNT (DAILY REPORT MODAL)
+══════════════════════════════════════════════════════ */
+function calcDiscount(){
+  const amt=parseFloat(document.getElementById('f-amount').value)||0;const pct=parseFloat(document.getElementById('f-disc-pct').value)||0;
+  const disc=Math.round(amt*(pct/100)*100)/100;
+  document.getElementById('f-disc-amt').value=disc.toFixed(2);document.getElementById('f-net').value=Math.round((amt-disc)*100)/100;
+}
+
+/* ══════════════════════════════════════════════════════
+   DAILY RENDER
+══════════════════════════════════════════════════════ */
+function payClass(pay){return{Cash:'pay-cash',Card:'pay-card',GCash:'pay-gcash','Bank Transfer':'pay-transfer',Complimentary:'pay-comp'}[pay]||'pay-other';}
+function renderDaily(){
+  const dateStr=fmtDate(dailyDate);const entries=getEntriesForDate(dateStr);
+  document.getElementById('dailyDateLbl').textContent=fmtDateLong(dailyDate);
+  document.getElementById('printMeta').textContent=`Date: ${fmtDateLong(dailyDate)} · Generated: ${new Date().toLocaleString('en-PH')}`;
+  if(fmtDate(dailyDate)===fmtDate(TODAY)) document.getElementById('pendingBadge').textContent=entries.length;
+  const totalAmt=entries.reduce((s,e)=>s+(Number(e.amount)||0),0);const totalDisc=entries.reduce((s,e)=>s+(Number(e.discAmt)||0),0);const totalNet=entries.reduce((s,e)=>s+(Number(e.net)||0),0);
+  const cashTotal=entries.filter(e=>e.pay==='Cash').reduce((s,e)=>s+(Number(e.net)||0),0);const cardTotal=entries.filter(e=>['Card','GCash','Bank Transfer'].includes(e.pay)).reduce((s,e)=>s+(Number(e.net)||0),0);
+  document.getElementById('dailyKpiGrid').innerHTML=[{val:'₱'+totalNet.toLocaleString('en-PH'),label:'Total Revenue',accent:'#2ecc71'},{val:entries.length,label:'Transactions',accent:'#3498db'},{val:'₱'+cashTotal.toLocaleString('en-PH'),label:'Cash',accent:'#27ae60'},{val:'₱'+cardTotal.toLocaleString('en-PH'),label:'Digital',accent:'#8e44ad'},{val:'₱'+totalDisc.toLocaleString('en-PH'),label:'Discounts',accent:'#f39c12'},{val:'₱'+totalAmt.toLocaleString('en-PH'),label:'Gross Amount',accent:'#95a5a6'}].map(k=>`<div class="daily-kpi" style="--accent:${k.accent};"><div class="daily-kpi-val">${k.val}</div><div class="daily-kpi-label">${k.label}</div></div>`).join('');
+  document.getElementById('entriesCount').textContent=entries.length+' entr'+(entries.length===1?'y':'ies');
+  const tbody=document.getElementById('revTableBody');
+  if(!entries.length){tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--h-muted);font-size:12px;">No entries yet. Click <strong>Add Entry</strong> to begin.</td></tr>`;}
+  else{tbody.innerHTML=entries.map((e,idx)=>`<tr><td class="td-muted">${idx+1}</td><td class="td-guest">${esc(e.guest)}</td><td class="td-amount">₱${Number(e.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td class="td-muted">${e.discPct?e.discPct+'%':'—'}</td><td class="${e.discAmt>0?'':'td-muted'}">₱${Number(e.discAmt||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td class="td-green">₱${Number(e.net||0).toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td><span class="pay-badge ${payClass(e.pay)}">${esc(e.pay||'—')}</span></td><td class="td-muted" style="font-size:10px;">${esc(e.ref||'—')}</td><td>${e.rooms?`<span style="font-family:'Cinzel',serif;font-size:11px;color:var(--h-text);">${esc(e.rooms)}</span>`:'—'}</td><td>${getMinibarDisplay(e)!=='—'?`<span style="background:rgba(243,156,18,.1);color:#f39c12;font-size:9px;font-weight:700;padding:2px 7px;border-radius:2px;">${getMinibarDisplay(e)}</span>`:'—'}</td><td class="td-muted" style="font-size:10px;">${esc(e.idNum||'—')}</td><td>${e.idType?`<span class="id-badge">${esc(e.idType)}</span>`:'—'}</td><td style="font-size:10px;color:var(--h-sub);">${esc(e.txDate||dateStr)}</td><td style="font-size:10px;color:var(--h-muted);">${fmtTime(e.createdAt)}</td><td class="no-print"><button class="del-row-btn" onclick="openEntryModal('${e.id}')">Edit</button></td></tr>`).join('');}
+  document.getElementById('revTableFoot').innerHTML=`<tr><td colspan="2" style="font-family:'Cinzel',serif;">TOTALS</td><td>₱${totalAmt.toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td>—</td><td>₱${totalDisc.toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td style="color:#2ecc71;">₱${totalNet.toLocaleString('en-PH',{minimumFractionDigits:2})}</td><td colspan="9"></td></tr>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   ENTRY MODAL
+══════════════════════════════════════════════════════ */
+function openEntryModal(entryId){
+  editEntryId=entryId||null;const dateStr=fmtDate(dailyDate);const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);
+  const sel=document.getElementById('f-minibar-select');
+  sel.innerHTML='<option value="">— Select Item —</option>'+minibar.map((m,i)=>`<option value="${i}">${esc(m.name)} (₱${m.price})</option>`).join('');
+  if(entryId){
+    const e=getEntriesForDate(dateStr).find(x=>x.id===entryId); if(!e) return;
+    document.getElementById('modalTitle').textContent='Edit Entry';
+    document.getElementById('f-guest').value=e.guest;document.getElementById('f-amount').value=e.amount;document.getElementById('f-disc-pct').value=e.discPct||'';document.getElementById('f-disc-amt').value=e.discAmt||'0';document.getElementById('f-net').value=e.net;document.getElementById('f-pay').value=e.pay||'Cash';document.getElementById('f-ref').value=e.ref||'';document.getElementById('f-rooms').value=e.rooms||'';document.getElementById('f-id').value=e.idNum||'';document.getElementById('f-idtype').value=e.idType||'';document.getElementById('f-date').value=e.txDate||dateStr;document.getElementById('f-notes').value=e.notes||'';
+    minibarCart=e.minibarCart?JSON.parse(JSON.stringify(e.minibarCart)):{};document.getElementById('modalDelBtn').style.display='block';
+  } else {
+    document.getElementById('modalTitle').textContent='New Entry';
+    ['f-guest','f-ref','f-rooms','f-id','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-amount').value='';document.getElementById('f-disc-pct').value='';document.getElementById('f-disc-amt').value='0.00';document.getElementById('f-net').value='';document.getElementById('f-pay').value='Cash';document.getElementById('f-idtype').value='';document.getElementById('f-date').value=dateStr;
+    minibarCart={};document.getElementById('modalDelBtn').style.display='none';
+  }
+  document.getElementById('f-minibar-qty').value='1';sel.value='';renderMinibarCart();
+  document.getElementById('entryModal').classList.add('open');setTimeout(()=>document.getElementById('f-guest').focus(),80);
+}
+function closeEntryModal(){document.getElementById('entryModal').classList.remove('open');editEntryId=null;}
+document.getElementById('entryModal').addEventListener('click',function(e){if(e.target===this)closeEntryModal();});
+function saveEntry(){
+  const guest=document.getElementById('f-guest').value.trim().toUpperCase();const amount=parseFloat(document.getElementById('f-amount').value)||0;
+  if(!guest){alert('Guest name is required.');return;}if(!amount){alert('Amount is required.');return;}
+  const dateStr=fmtDate(dailyDate);const entries=getEntriesForDate(dateStr);const roomNet=parseFloat(document.getElementById('f-net').value)||amount;const mbTotal=getMinibarTotal();const totalNet=roomNet+mbTotal;
+  const entry={id:editEntryId||uid(),guest,amount,discPct:parseFloat(document.getElementById('f-disc-pct').value)||0,discAmt:parseFloat(document.getElementById('f-disc-amt').value)||0,net:totalNet,minibarCart:JSON.parse(JSON.stringify(minibarCart)),minibarTotal:mbTotal,pay:document.getElementById('f-pay').value,ref:document.getElementById('f-ref').value.trim(),rooms:document.getElementById('f-rooms').value.trim(),idNum:document.getElementById('f-id').value.trim(),idType:document.getElementById('f-idtype').value,txDate:document.getElementById('f-date').value||dateStr,notes:document.getElementById('f-notes').value.trim(),createdAt:editEntryId?(entries.find(e=>e.id===editEntryId)?.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};
+  if(editEntryId){const idx=entries.findIndex(e=>e.id===editEntryId);if(idx>=0)entries[idx]=entry;else entries.push(entry);}else{entries.push(entry);}
+  saveEntriesForDate(dateStr,entries);closeEntryModal();renderDaily();showToast(editEntryId?'Entry updated ✓':'Entry saved ✓');
+}
+function deleteEntry(){
+  if(!editEntryId)return;const dateStr=fmtDate(dailyDate);saveEntriesForDate(dateStr,getEntriesForDate(dateStr).filter(e=>e.id!==editEntryId));closeEntryModal();renderDaily();showToast('Entry deleted');
+}
+
+/* ══════════════════════════════════════════════════════
+   PRINT & CSV
+══════════════════════════════════════════════════════ */
+function printDailyReport(){
+  const sigs=lsGet(SIGNATORIES_KEY,DEFAULT_SIGNATORIES);
+  document.getElementById('printSig1Label').textContent=sigs[0]?.label||'Prepared by';document.getElementById('printSig1Role').textContent=sigs[0]?.role||'Front Desk Officer';document.getElementById('printSig2Label').textContent=sigs[1]?.label||'Reviewed by';document.getElementById('printSig2Role').textContent=sigs[1]?.role||'Supervisor';document.getElementById('printSig3Label').textContent=sigs[2]?.label||'Approved by';document.getElementById('printSig3Role').textContent=sigs[2]?.role||'General Manager';
+  document.querySelectorAll('.print-header').forEach(el=>el.style.display='block');window.print();document.querySelectorAll('.print-header').forEach(el=>el.style.display='none');
+}
+function exportDailyCSV(){
+  const dateStr=fmtDate(dailyDate);const entries=getEntriesForDate(dateStr);
+  const rows=[['Guest','Amount','Discount %','Discount','Net','Payment','Reference','Rooms','Mini Bar','ID','ID Type','Date','Time','Notes'],...entries.map(e=>[e.guest,e.amount,e.discPct||0,e.discAmt||0,e.net,e.pay,e.ref||'',e.rooms||'',getMinibarDisplay(e),e.idNum||'',e.idType||'',e.txDate,e.createdAt?new Date(e.createdAt).toLocaleString('en-PH'):'',e.notes||''])];
+  downloadCSV(rows,`hiraya-daily-${dateStr}.csv`);
+}
+function exportLedgerCSV(){
+  const all=loadDailyEntries();const allDates=Object.keys(all).sort();const rows=[['Date','Entry Count','Total Gross','Total Discounts','Total Net Revenue']];
+  allDates.forEach(d=>{const ents=all[d]||[];rows.push([d,ents.length,ents.reduce((s,e)=>s+(Number(e.amount)||0),0).toFixed(2),ents.reduce((s,e)=>s+(Number(e.discAmt)||0),0).toFixed(2),ents.reduce((s,e)=>s+(Number(e.net)||0),0).toFixed(2)]);});
+  downloadCSV(rows,'hiraya-ledger-all.csv');showToast(`Exported ${allDates.length} days of data ✓`);
+}
+function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=filename;a.click();}
+
+/* ══════════════════════════════════════════════════════
+   LEDGER
+══════════════════════════════════════════════════════ */
+function renderLedger(){
+  const all=loadDailyEntries();const allDates=Object.keys(all).sort().reverse();const el=document.getElementById('ledgerContent');
+  if(!allDates.length){el.innerHTML=`<div style="padding:32px;text-align:center;color:var(--h-muted);font-size:13px;">No revenue data recorded yet.</div>`;return;}
+  const byMonth={};allDates.forEach(d=>{const dt=parseDate(d);const key=dt.toLocaleDateString('en-PH',{month:'long',year:'numeric'});if(!byMonth[key])byMonth[key]=[];byMonth[key].push(d);});
+  el.innerHTML=Object.entries(byMonth).map(([month,dates])=>{const monthTotal=dates.reduce((s,d)=>s+(all[d]||[]).reduce((ss,e)=>ss+(Number(e.net)||0),0),0);return`<div class="ledger-card"><div class="ledger-hd"><span class="ledger-ttl">${esc(month)}</span><span style="font-family:'Cinzel',serif;font-size:13px;color:#2ecc71;">₱${Math.round(monthTotal).toLocaleString('en-PH')}</span></div>${dates.map(d=>{const ents=all[d]||[];const total=ents.reduce((s,e)=>s+(Number(e.net)||0),0);const dt=parseDate(d);const lbl=dt.toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric'});return`<div class="ledger-entry" onclick="viewDay('${d}')"><div class="ledger-date">${esc(lbl)}</div><div class="ledger-entries-count">${ents.length} ${ents.length===1?'entry':'entries'}</div><div style="font-size:10px;color:var(--h-muted);">₱${Math.round(total).toLocaleString('en-PH')}</div><div style="font-size:10px;color:var(--h-muted);margin-left:auto;">Click to view →</div></div>`;}).join('')}</div>`;}).join('');
+}
+function viewDay(dateStr){dailyDate=parseDate(dateStr);switchTab('daily');renderDaily();}
+
+/* ══════════════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════════════ */
+function renderSettings(){
+  const minibar=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);const sigs=lsGet(SIGNATORIES_KEY,DEFAULT_SIGNATORIES);
+  document.getElementById('minibarConfig').innerHTML=minibar.map((m,i)=>`<div class="item-row"><div class="fg"><label class="flbl">Item Name</label><input type="text" value="${esc(m.name)}" onchange="updateMinibar(${i},'name',this.value)" placeholder="Item name"/></div><div class="fg"><label class="flbl">Price (₱)</label><input type="number" value="${m.price}" onchange="updateMinibar(${i},'price',this.value)" placeholder="100" step="10"/></div><button class="item-del-btn" onclick="deleteMinibar(${i})">✕</button></div>`).join('');
+  document.getElementById('sig1Label').value=sigs[0]?.label||'Prepared by';document.getElementById('sig1Role').value=sigs[0]?.role||'Front Desk Officer';document.getElementById('sig2Label').value=sigs[1]?.label||'Reviewed by';document.getElementById('sig2Role').value=sigs[1]?.role||'Supervisor';document.getElementById('sig3Label').value=sigs[2]?.label||'Approved by';document.getElementById('sig3Role').value=sigs[2]?.role||'General Manager';
+}
+function updateMinibar(i,field,value){const mb=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);mb[i][field]=field==='price'?Number(value):value.toUpperCase();lsSet(MINIBAR_KEY,mb);}
+function deleteMinibar(i){if(!confirm('Delete this item?'))return;const mb=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);mb.splice(i,1);lsSet(MINIBAR_KEY,mb);renderSettings();}
+function addMinibarItem(){const mb=lsGet(MINIBAR_KEY,DEFAULT_MINIBAR);mb.push({name:'NEW ITEM',price:100});lsSet(MINIBAR_KEY,mb);renderSettings();}
+function resetSettings(){if(!confirm('Reset settings to defaults?'))return;lsSet(MINIBAR_KEY,DEFAULT_MINIBAR);lsSet(SIGNATORIES_KEY,DEFAULT_SIGNATORIES);renderSettings();showToast('Settings reset to defaults');}
+['sig1Label','sig1Role','sig2Label','sig2Role','sig3Label','sig3Role'].forEach(id=>{document.getElementById(id).addEventListener('change',()=>{lsSet(SIGNATORIES_KEY,[{label:document.getElementById('sig1Label').value,role:document.getElementById('sig1Role').value},{label:document.getElementById('sig2Label').value,role:document.getElementById('sig2Role').value},{label:document.getElementById('sig3Label').value,role:document.getElementById('sig3Role').value}]);});});
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+document.getElementById('dPrevDay').addEventListener('click',()=>{dailyDate.setDate(dailyDate.getDate()-1);renderDaily();});
+document.getElementById('dNextDay').addEventListener('click',()=>{dailyDate.setDate(dailyDate.getDate()+1);renderDaily();});
+document.getElementById('dTodayBtn').addEventListener('click',()=>{dailyDate=new Date(TODAY);renderDaily();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeCalendar();closeCatManager();closeEntryModal();}
+  if(e.key==='p'&&(e.ctrlKey||e.metaKey)){e.preventDefault();if(activeTab==='billing')bsPrint();else printDailyReport();}
+});
+
+/* ══════════════════════════════════════════════════════
+   AUTO MIGRATION
+══════════════════════════════════════════════════════ */
+function runMigration(){
+  const today=fmtDate(new Date());if(localStorage.getItem(LAST_MIG_KEY)===today)return;
+  const yest=fmtDate(new Date(Date.now()-86400000));const yEnts=getEntriesForDate(yest);
+  if(!yEnts.length){localStorage.setItem(LAST_MIG_KEY,today);return;}
+  const ledger=loadLedger();if(!ledger.find(l=>l.date===yest)){ledger.unshift({date:yest,entries:JSON.parse(JSON.stringify(yEnts)),totalNet:yEnts.reduce((s,e)=>s+(Number(e.net)||0),0),entryCount:yEnts.length,migratedAt:new Date().toISOString()});saveLedger(ledger);}
+  localStorage.setItem(LAST_MIG_KEY,today);
+}
+runMigration();
+setInterval(()=>{if(new Date().getHours()===0&&new Date().getMinutes()===0)runMigration();},60000);
+
+/* ── INIT ── */
+renderDaily(); renderSettings();
+</script>
+</body>
+</html>

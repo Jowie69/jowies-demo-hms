@@ -1,0 +1,942 @@
+<!-- events.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DEMO HMS — Events Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+   <link rel="shortcut icon" href="hiraya.png" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Full-height shell ── */
+    html, body { height:100%; overflow:hidden; }
+    #hms-main  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .ev-shell  { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+    /* ── Controls bar ── */
+    .ctrl-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+      padding:9px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .ctrl-grp  { display:flex; align-items:center; gap:6px; }
+    .ctrl-lbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .ctrl-sel, .ctrl-inp {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      color:var(--h-text); outline:none; cursor:pointer;
+    }
+    .ctrl-sel:focus,.ctrl-inp:focus { border-color:var(--h-red); }
+    .ctrl-btn {
+      display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:.05em;
+      cursor:pointer; white-space:nowrap; transition:background .15s, transform .1s;
+    }
+    .ctrl-btn:active { transform:translateY(1px); }
+    .btn-primary { background:var(--h-red); color:#fff; }
+    .btn-primary:hover { background:var(--h-red-dk); }
+    .btn-outline { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-outline:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .ctrl-sep  { width:1px; height:20px; background:var(--h-border); flex-shrink:0; }
+    .ctrl-fill { flex:1; min-width:8px; }
+    .nav-btn {
+      width:28px; height:28px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    }
+    .nav-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .month-lbl {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; min-width:148px; text-align:center;
+    }
+
+    /* ── Legend strip ── */
+    .legend-strip {
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex-shrink:0;
+      padding:7px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .lgd-lbl  { font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); margin-right:2px; }
+    .lgd-chip { display:flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .lgd-sw   { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+
+    /* ── Stats strip ── */
+    .stats-strip { display:flex; flex-shrink:0; border-bottom:1px solid var(--h-border); background:var(--h-panel); }
+    .stat-cell   { flex:1; padding:7px 12px; border-right:1px solid var(--h-border); text-align:center; }
+    .stat-cell:last-child { border-right:none; }
+    .stat-v { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); line-height:1; }
+    .stat-l { font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-top:2px; }
+
+    /* ── Calendar scroll container ── */
+    .cal-outer { flex:1; overflow:auto; padding:14px 18px 20px; min-height:0; }
+
+    /* ── Calendar grid ── */
+    .cal-grid {
+      display:grid; grid-template-columns:repeat(7,1fr);
+      gap:1px; background:var(--h-border);
+      border:1px solid var(--h-border); border-radius:4px; overflow:hidden;
+    }
+
+    /* DOW header row */
+    .cal-dow {
+      background:var(--h-panel2); text-align:center;
+      padding:7px 0; font-size:10px; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted);
+    }
+    .cal-dow.weekend { color:var(--h-red); opacity:.8; }
+
+    /* Day cells */
+    .cal-cell {
+      background:var(--h-panel); min-height:108px;
+      padding:5px; display:flex; flex-direction:column; gap:2px;
+      cursor:pointer; position:relative; transition:background .12s;
+    }
+    .cal-cell:hover { background:var(--h-hover-bg); }
+    .cal-cell.is-today { background:rgba(192,39,45,.055); }
+    .cal-cell.is-today .day-num {
+      background:var(--h-red); color:#fff !important;
+      border-radius:50%; width:20px; height:20px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px !important;
+    }
+    .cal-cell.other-mo  { background:var(--h-dark); pointer-events:none; }
+    .cal-cell.is-wknd   { background:rgba(255,255,255,.01); }
+    [data-theme="light"] .cal-cell.is-wknd { background:rgba(0,0,0,.015); }
+
+    .day-num {
+      font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+      color:var(--h-sub); line-height:1; margin-bottom:1px;
+    }
+    .day-rev {
+      font-size:8px; font-weight:700; color:#2ecc71; letter-spacing:.03em;
+      margin-bottom:2px;
+    }
+
+    /* Event pill */
+    .ev-pill {
+      display:flex; align-items:center; gap:3px;
+      padding:2px 5px; border-radius:2px;
+      font-size:9px; font-weight:600; cursor:pointer;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      color:#fff; max-width:100%; line-height:1.4;
+      transition:filter .12s, transform .1s;
+      box-shadow:0 1px 2px rgba(0,0,0,.3);
+    }
+    .ev-pill:hover    { filter:brightness(1.14); transform:scale(1.02); z-index:2; position:relative; }
+    .ev-pill-dot      { width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.7); flex-shrink:0; }
+    .ev-pill.tentative { opacity:.55; font-style:italic; }
+    .ev-pill.cancelled { opacity:.35; text-decoration:line-through; }
+
+    .ev-more {
+      font-size:9px; color:var(--h-muted); font-weight:600;
+      padding:1px 3px; cursor:pointer; letter-spacing:.03em;
+    }
+    .ev-more:hover { color:var(--h-red); }
+
+    /* Scrollbar */
+    .cal-outer::-webkit-scrollbar { width:6px; height:6px; }
+    .cal-outer::-webkit-scrollbar-track { background:var(--h-dark); }
+    .cal-outer::-webkit-scrollbar-thumb { background:var(--h-border); border-radius:3px; }
+
+    /* ══════════════════════════════════════════════════════════
+       EVENT MODAL
+    ══════════════════════════════════════════════════════════ */
+    #evModal {
+      position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.62);
+      backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #evModal.open { opacity:1; pointer-events:all; }
+    .ev-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:580px; max-width:96vw; box-shadow:var(--h-shadow);
+      transform:scale(.95) translateY(10px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+      overflow:hidden; max-height:94vh; display:flex; flex-direction:column;
+    }
+    #evModal.open .ev-card { transform:scale(1) translateY(0); }
+    .ev-accent { height:3px; flex-shrink:0; background:linear-gradient(90deg,transparent,#e91e8c,transparent); transition:background .2s; }
+    .ev-hd     { padding:15px 22px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .ev-ttl    { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .ev-sub    { font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .ev-body   { padding:16px 22px; display:grid; grid-template-columns:1fr 1fr; gap:11px; overflow-y:auto; }
+    .ev-full   { grid-column:1/-1; }
+    .ev-ft     { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+
+    /* Form elements */
+    .fg   { display:flex; flex-direction:column; gap:4px; }
+    .flbl { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .fctl {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text);
+      outline:none; width:100%; appearance:none;
+    }
+    .fctl::placeholder { color:var(--h-muted); }
+    .fctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    textarea.fctl { resize:vertical; min-height:56px; }
+
+    /* Status badge pills for modal */
+    .status-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .status-pill {
+      padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; cursor:pointer; border:2px solid transparent;
+      transition:all .15s; background:var(--h-input-bg); color:var(--h-muted);
+    }
+    .status-pill.active-confirmed { background:rgba(46,204,113,.15);  color:#2ecc71; border-color:#2ecc71; }
+    .status-pill.active-tentative { background:rgba(243,156,18,.15);  color:#f39c12; border-color:#f39c12; }
+    .status-pill.active-cancelled { background:rgba(149,165,166,.15); color:#95a5a6; border-color:#95a5a6; }
+
+    /* Color palette */
+    .color-row { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+    .c-sw {
+      width:22px; height:22px; border-radius:3px; cursor:pointer; flex-shrink:0;
+      border:2px solid transparent; transition:transform .1s, border-color .1s;
+    }
+    .c-sw:hover { transform:scale(1.18); }
+    .c-sw.sel   { border-color:#fff; box-shadow:0 0 0 2px var(--h-red); transform:scale(1.1); }
+
+    /* Alert / warning */
+    .ev-alert {
+      grid-column:1/-1; padding:9px 12px; border-radius:3px; font-size:12px; line-height:1.5;
+      display:none;
+    }
+    .ev-alert.error   { background:rgba(231,76,60,.1);  border:1px solid rgba(231,76,60,.25); color:#e74c3c; display:block; }
+    .ev-alert.warning { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.25); color:#f39c12; display:block; }
+
+    /* Venue conflict hint */
+    .venue-hint {
+      grid-column:1/-1; font-size:11px; color:var(--h-muted); padding:3px 0; display:none;
+    }
+    .venue-hint.show { display:block; }
+    .venue-hint.ok   { color:#2ecc71; }
+    .venue-hint.busy { color:#e74c3c; }
+    .venue-hint.warn { color:#f39c12; }
+
+    /* Buttons */
+    .btn-m    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-save { background:var(--h-red); color:#fff; }
+    .btn-save:hover { background:var(--h-red-dk); }
+    .btn-cncl { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-cncl:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-del  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del:hover { background:rgba(231,76,60,.22); }
+
+    /* ── Day detail panel (day-click shows all events) ── */
+    #dayPanel {
+      position:fixed; inset:0; z-index:8900; background:rgba(0,0,0,.55);
+      backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .18s;
+    }
+    #dayPanel.open { opacity:1; pointer-events:all; }
+    .dp-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:400px; max-width:96vw; max-height:80vh; overflow:hidden;
+      display:flex; flex-direction:column; box-shadow:var(--h-shadow);
+      transform:scale(.96) translateY(8px); transition:transform .2s cubic-bezier(.16,1,.3,1);
+    }
+    #dayPanel.open .dp-card { transform:scale(1) translateY(0); }
+    .dp-hd   { padding:14px 18px 10px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .dp-ttl  { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text); }
+    .dp-body { overflow-y:auto; flex:1; padding:10px 14px; }
+    .dp-ev   { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--h-border); cursor:pointer; }
+    .dp-ev:last-child { border-bottom:none; }
+    .dp-ev:hover .dp-ev-title { color:var(--h-red); }
+    .dp-ev-dot   { width:10px; height:10px; border-radius:2px; flex-shrink:0; margin-top:3px; }
+    .dp-ev-title { font-size:13px; font-weight:600; color:var(--h-text); }
+    .dp-ev-meta  { font-size:10px; color:var(--h-muted); margin-top:2px; }
+    .dp-ft       { padding:10px 14px; border-top:1px solid var(--h-border); flex-shrink:0; }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="ev-shell">
+
+    <!-- Controls -->
+    <div class="ctrl-bar">
+      <div class="ctrl-grp">
+        <button class="nav-btn" id="prevMo">&#8249;</button>
+        <span class="month-lbl" id="monthLbl">—</span>
+        <button class="nav-btn" id="nextMo">&#8250;</button>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Type</span>
+        <select class="ctrl-sel" id="fType">
+          <option value="all">All Types</option>
+          <option value="ev-wedding">Wedding</option>
+          <option value="ev-birthday">Birthday</option>
+          <option value="ev-corporate">Corporate</option>
+          <option value="ev-seminar">Seminar</option>
+          <option value="ev-debut">Debut</option>
+          <option value="ev-reunion">Reunion</option>
+          <option value="ev-reception">Reception</option>
+          <option value="ev-other">Other</option>
+        </select>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Venue</span>
+        <select class="ctrl-sel" id="fVenue">
+          <option value="all">All Venues</option>
+        </select>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Status</span>
+        <select class="ctrl-sel" id="fStatus">
+          <option value="all">All</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="tentative">Tentative</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="ctrl-fill"></div>
+      <button class="ctrl-btn btn-outline" id="todayBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Today
+      </button>
+      <button class="ctrl-btn btn-primary" id="newEvBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Event
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-strip">
+      <span class="lgd-lbl">Type:</span>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#e91e8c;"></div>Wedding</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;"></div>Birthday</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#2980b9;"></div>Corporate</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#8e44ad;"></div>Seminar</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#e74c3c;"></div>Debut</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#16a085;"></div>Reunion</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#27ae60;"></div>Reception</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;"></div>Other</div>
+      <div class="ctrl-sep" style="margin:0 4px;"></div>
+      <span class="lgd-lbl">Status:</span>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#2ecc71;border-radius:50%;"></div>Confirmed</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;border-radius:50%;opacity:.55;"></div>Tentative</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;border-radius:50%;opacity:.35;"></div>Cancelled</div>
+      <span style="flex:1;"></span>
+      <span style="font-size:9px;color:var(--h-muted);font-style:italic;">Click date → view all events &nbsp;|&nbsp; Click pill → edit &nbsp;|&nbsp; Revenue shown in green</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-cell"><div class="stat-v" id="s-ev">0</div><div class="stat-l">Events</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-px">0</div><div class="stat-l">Total PAX</div></div>
+      <div class="stat-cell"><div class="stat-v" style="color:#2ecc71;" id="s-rv">₱0</div><div class="stat-l">Est. Revenue</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-vn">—</div><div class="stat-l">Busiest Venue</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-bk">0</div><div class="stat-l">Ballroom Days</div></div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="cal-outer">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Day detail panel -->
+<div id="dayPanel">
+  <div class="dp-card">
+    <div class="dp-hd">
+      <div class="dp-ttl" id="dp-date">—</div>
+      <button onclick="closeDayPanel()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+    <div class="dp-ft">
+      <button class="ctrl-btn btn-primary" id="dp-add-btn" style="width:100%;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Event on This Date
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div id="evModal">
+  <div class="ev-card">
+    <div class="ev-accent" id="m-accent"></div>
+    <div class="ev-hd">
+      <div>
+        <div class="ev-ttl" id="m-ttl">New Event</div>
+        <div class="ev-sub" id="m-sub">Fill in event details</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ev-body">
+      <!-- Alert banner -->
+      <div class="ev-alert" id="m-alert"></div>
+      <!-- Venue conflict hint -->
+      <div class="venue-hint" id="m-venue-hint"></div>
+
+      <div class="fg ev-full">
+        <label class="flbl">Event Title</label>
+        <input class="fctl" type="text" id="f-title" placeholder="e.g. JUAN &amp; MARIA WEDDING RECEPTION" maxlength="150" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Event Type</label>
+        <select class="fctl" id="f-type" onchange="onTypeChange()">
+          <option value="ev-wedding">💒 Wedding</option>
+          <option value="ev-birthday">🎂 Birthday / Debut</option>
+          <option value="ev-corporate">🏢 Corporate</option>
+          <option value="ev-seminar">📋 Seminar</option>
+          <option value="ev-debut">👗 Debut</option>
+          <option value="ev-reunion">🤝 Reunion</option>
+          <option value="ev-reception">🥂 Reception</option>
+          <option value="ev-other">📌 Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Venue</label>
+        <select class="fctl" id="f-venue" onchange="checkVenueConflict()">
+          <!-- populated by JS -->
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Date</label>
+        <input class="fctl" type="date" id="f-date" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Time Start</label>
+        <input class="fctl" type="time" id="f-ts" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Time End</label>
+        <input class="fctl" type="time" id="f-te" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">PAX / Head Count</label>
+        <input class="fctl" type="number" id="f-pax" min="0" max="9999" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Event Rate (₱)</label>
+        <input class="fctl" type="number" id="f-rate" min="0" max="9999999" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Contact Person</label>
+        <input class="fctl" type="text" id="f-contact" placeholder="Name or phone number" maxlength="120"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Status</label>
+        <div class="status-row" id="statusRow">
+          <div class="status-pill" data-status="confirmed" onclick="setStatus('confirmed')">✅ Confirmed</div>
+          <div class="status-pill" data-status="tentative" onclick="setStatus('tentative')">⏳ Tentative</div>
+          <div class="status-pill" data-status="cancelled" onclick="setStatus('cancelled')">❌ Cancelled</div>
+        </div>
+      </div>
+      <div class="fg ev-full">
+        <label class="flbl">Theme / Color</label>
+        <div class="color-row" id="colorPicker"></div>
+      </div>
+      <div class="fg ev-full">
+        <label class="flbl">Notes / Special Instructions</label>
+        <textarea class="fctl" id="f-notes" placeholder="Theme, catering instructions, special requests, contact details…" maxlength="500"></textarea>
+      </div>
+    </div>
+    <div class="ev-ft">
+      <button class="btn-m btn-del" id="m-del" style="display:none;" onclick="deleteEvent()">Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script>window.HIRAYA_PAGE = 'events';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script src="activity-log.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+hirayaRenderTopbar('Events Calendar', 'Functions & Bookings');
+const DB = window.HirayaDB;
+
+/* Populate venue selects */
+const venSel    = document.getElementById('f-venue');
+const venFilter = document.getElementById('fVenue');
+DB.EVENT_VENUES.forEach(v => {
+  [venSel, venFilter].forEach(sel => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+});
+
+/* Color palette */
+const PALETTE = [
+  '#e91e8c','#C0272D','#e74c3c','#e67e22',
+  '#f39c12','#f1c40f','#27ae60','#1abc9c',
+  '#16a085','#2980b9','#3498db','#8e44ad',
+  '#9b59b6','#2c3e50','#7f8c8d','#95a5a6',
+];
+let selColor  = PALETTE[0];
+let selStatus = 'confirmed';
+let editId    = null;
+let dpDate    = null; // date string for day panel
+
+const cpRow = document.getElementById('colorPicker');
+PALETTE.forEach(c => {
+  const sw = document.createElement('div');
+  sw.className = 'c-sw' + (c === selColor ? ' sel' : '');
+  sw.style.background = c; sw.title = c;
+  sw.addEventListener('click', () => {
+    selColor = c;
+    document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === c));
+    updateAccent(c);
+  });
+  cpRow.appendChild(sw);
+});
+
+function updateAccent(c) {
+  document.getElementById('m-accent').style.background =
+    `linear-gradient(90deg,transparent,${c},transparent)`;
+}
+
+function setStatus(s) {
+  selStatus = s;
+  document.querySelectorAll('.status-pill').forEach(p => {
+    const t = p.dataset.status;
+    p.className = 'status-pill' + (t === s ? ` active-${t}` : '');
+  });
+}
+
+/* ── State ── */
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let viewYear  = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+let fType   = 'all';
+let fVenue  = 'all';
+let fStatus = 'all';
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function fmtDateLong(dateStr) {
+  return DB.parseDate(dateStr)?.toLocaleDateString('en-PH', {
+    weekday:'long', month:'long', day:'numeric', year:'numeric'
+  }) ?? dateStr;
+}
+
+function fmt12(timeStr) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  return `${h%12||12}:${pad2(m)} ${h<12?'AM':'PM'}`;
+}
+
+function getFilteredEvents(allEvents) {
+  return allEvents.filter(e => {
+    if (fType   !== 'all' && e.type   !== fType)   return false;
+    if (fVenue  !== 'all' && e.venue  !== fVenue)  return false;
+    if (fStatus !== 'all' && e.status !== fStatus) return false;
+    return true;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════ */
+function render() {
+  document.getElementById('monthLbl').textContent =
+    new Date(viewYear, viewMonth, 1)
+      .toLocaleDateString('en-PH', { month:'long', year:'numeric' });
+  renderCal();
+  updateStats();
+}
+
+function renderCal() {
+  const grid    = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const DOW_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  DOW_LABELS.forEach((lbl, i) => {
+    const h = document.createElement('div');
+    h.className = 'cal-dow' + (i===0||i===6?' weekend':'');
+    h.textContent = lbl.toUpperCase();
+    grid.appendChild(h);
+  });
+
+  const firstDow  = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMo  = new Date(viewYear, viewMonth+1, 0).getDate();
+  const prevDays  = new Date(viewYear, viewMonth, 0).getDate();
+  const totalCells = Math.ceil((firstDow + daysInMo) / 7) * 7;
+
+  const allEvents = DB.getEvents();
+
+  for (let i = 0; i < totalCells; i++) {
+    let cellDate, isOther = false;
+    if (i < firstDow) {
+      cellDate = new Date(viewYear, viewMonth-1, prevDays - firstDow + i + 1);
+      isOther  = true;
+    } else if (i >= firstDow + daysInMo) {
+      cellDate = new Date(viewYear, viewMonth+1, i - firstDow - daysInMo + 1);
+      isOther  = true;
+    } else {
+      cellDate = new Date(viewYear, viewMonth, i - firstDow + 1);
+    }
+
+    const dow     = cellDate.getDay();
+    const isToday = cellDate.toDateString() === TODAY.toDateString();
+    const dateStr = DB.fmtDate(cellDate);
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' +
+      (isOther  ? ' other-mo'  : '') +
+      (isToday  ? ' is-today'  : '') +
+      (dow===0||dow===6 ? ' is-wknd' : '');
+    cell.dataset.date = dateStr;
+
+    /* Day number */
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = cellDate.getDate();
+    cell.appendChild(num);
+
+    if (!isOther) {
+      /* Events for this day — sorted by time */
+      const dayEvs = DB.getEventsForDate(dateStr);
+      const filtered = getFilteredEvents(dayEvs);
+
+      /* Revenue tag */
+      const rev = filtered.reduce((s,e)=>s+(Number(e.rate)||0), 0);
+      if (rev > 0) {
+        const rt = document.createElement('div');
+        rt.className = 'day-rev';
+        rt.textContent = '₱' + rev.toLocaleString('en-PH');
+        cell.appendChild(rt);
+      }
+
+      /* Event pills (max 3 visible, rest in +N) */
+      const MAX = 3;
+      filtered.slice(0, MAX).forEach(ev => {
+        const pill = document.createElement('div');
+        const c = ev.color || DB.EVENT_COLORS[ev.type] || '#888';
+        pill.className = 'ev-pill' +
+          (ev.status==='tentative' ? ' tentative' : '') +
+          (ev.status==='cancelled' ? ' cancelled' : '');
+        pill.style.background = c;
+        pill.innerHTML =
+          `<div class="ev-pill-dot"></div>` +
+          `<span style="overflow:hidden;text-overflow:ellipsis;">${
+            ev.timeStart ? fmt12(ev.timeStart)+' ' : ''
+          }${DB.esc(ev.title)}</span>`;
+        pill.addEventListener('click', e => { e.stopPropagation(); openModal(ev.id); });
+        cell.appendChild(pill);
+      });
+
+      if (filtered.length > MAX) {
+        const more = document.createElement('div');
+        more.className = 'ev-more';
+        more.textContent = `+${filtered.length - MAX} more`;
+        more.addEventListener('click', e => { e.stopPropagation(); openDayPanel(dateStr, dayEvs); });
+        cell.appendChild(more);
+      }
+
+      /* Cell click → day panel if has events, else new event modal */
+      cell.addEventListener('click', () => {
+        const today_evs = DB.getEventsForDate(dateStr);
+        if (today_evs.length > 0) {
+          openDayPanel(dateStr, today_evs);
+        } else {
+          openModal(null, dateStr);
+        }
+      });
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const ms = new Date(viewYear, viewMonth, 1);
+  const me = new Date(viewYear, viewMonth+1, 0);
+
+  const monthEvs = DB.getEvents().filter(e => {
+    const d = DB.parseDate(e.date);
+    return d && d >= ms && d <= me;
+  });
+  const filtered = getFilteredEvents(monthEvs);
+
+  const totalPax = filtered.reduce((s,e)=>s+(Number(e.pax)||0), 0);
+  const totalRev = filtered.filter(e=>e.status!=='cancelled').reduce((s,e)=>s+(Number(e.rate)||0), 0);
+
+  const venueCounts = {};
+  filtered.filter(e=>e.status!=='cancelled').forEach(e => {
+    if (e.venue) venueCounts[e.venue] = (venueCounts[e.venue]||0) + 1;
+  });
+  const busiest = Object.entries(venueCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  // Count ballroom days (Ballroom A, B, or A&B used)
+  const ballroomDays = new Set(
+    filtered
+      .filter(e => e.status!=='cancelled' && e.venue && e.venue.includes('Ballroom'))
+      .map(e => e.date)
+  ).size;
+
+  document.getElementById('s-ev').textContent = filtered.filter(e=>e.status!=='cancelled').length;
+  document.getElementById('s-px').textContent = totalPax;
+  document.getElementById('s-rv').textContent = '₱' + totalRev.toLocaleString('en-PH');
+  document.getElementById('s-vn').textContent = busiest ? busiest[0].split(' ').slice(0,2).join(' ') : '—';
+  document.getElementById('s-bk').textContent = ballroomDays;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DAY PANEL
+═══════════════════════════════════════════════════════════ */
+function openDayPanel(dateStr, evs) {
+  dpDate = dateStr;
+  document.getElementById('dp-date').textContent = fmtDateLong(dateStr);
+
+  const body = document.getElementById('dp-body');
+  const sorted = [...evs].sort((a,b) => (a.timeStart||'').localeCompare(b.timeStart||''));
+
+  if (!sorted.length) {
+    body.innerHTML = `<div style="color:var(--h-muted);font-size:12px;padding:8px 0;">No events on this date.</div>`;
+  } else {
+    body.innerHTML = '';
+    sorted.forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'dp-ev';
+      const c = ev.color || DB.EVENT_COLORS[ev.type] || '#888';
+      const timeRange = ev.timeStart ? `${fmt12(ev.timeStart)}${ev.timeEnd?' – '+fmt12(ev.timeEnd):''}` : '';
+      row.innerHTML = `
+        <div class="dp-ev-dot" style="background:${c};"></div>
+        <div>
+          <div class="dp-ev-title">${DB.esc(ev.title)}</div>
+          <div class="dp-ev-meta">
+            ${ev.venue ? DB.esc(ev.venue) + (timeRange ? ' · ' : '') : ''}${timeRange}
+            ${ev.pax ? ' · ' + ev.pax + ' pax' : ''}
+            ${ev.rate ? ' · ₱' + Number(ev.rate).toLocaleString('en-PH') : ''}
+            ${ev.status !== 'confirmed' ? ` · <em>${ev.status}</em>` : ''}
+          </div>
+        </div>
+      `;
+      row.addEventListener('click', () => { closeDayPanel(); openModal(ev.id); });
+      body.appendChild(row);
+    });
+  }
+
+  document.getElementById('dp-add-btn').onclick = () => {
+    closeDayPanel();
+    openModal(null, dpDate);
+  };
+
+  document.getElementById('dayPanel').classList.add('open');
+}
+
+function closeDayPanel() {
+  document.getElementById('dayPanel').classList.remove('open');
+}
+
+document.getElementById('dayPanel').addEventListener('click', function(e) {
+  if (e.target === this) closeDayPanel();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   VENUE CONFLICT CHECK (real-time)
+═══════════════════════════════════════════════════════════ */
+function checkVenueConflict() {
+  const hint = document.getElementById('m-venue-hint');
+  const date  = document.getElementById('f-date').value;
+  const venue = document.getElementById('f-venue').value;
+  const ts    = document.getElementById('f-ts').value;
+  const te    = document.getElementById('f-te').value;
+  const status = selStatus;
+
+  if (!date || !venue || status === 'cancelled') {
+    hint.className = 'venue-hint'; return;
+  }
+
+  const result = DB.checkEventOverlap(
+    { date, venue, timeStart: ts, timeEnd: te, status },
+    editId
+  );
+
+  if (!result.conflict) {
+    if (ts && te) {
+      hint.textContent = `✅ ${venue} is available at this time`;
+      hint.className   = 'venue-hint show ok';
+    } else {
+      hint.textContent = `ℹ️ No time specified — set a time to check for conflicts`;
+      hint.className   = 'venue-hint show';
+    }
+  } else if (result.hard) {
+    hint.textContent = `⛔ ${result.message}`;
+    hint.className   = 'venue-hint show busy';
+  } else {
+    hint.textContent = `⚠️ ${result.message}`;
+    hint.className   = 'venue-hint show warn';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+function onTypeChange() {
+  const t = document.getElementById('f-type').value;
+  const c = DB.EVENT_TYPES[t]?.color || PALETTE[0];
+  selColor = c;
+  document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === c));
+  updateAccent(c);
+  checkVenueConflict();
+}
+
+function openModal(id, preDate) {
+  editId = id || null;
+  clearAlert();
+
+  if (id) {
+    const ev = DB.getEvents().find(e => e.id === id);
+    if (!ev) return;
+    document.getElementById('m-ttl').textContent = 'Edit Event';
+    document.getElementById('m-sub').textContent = fmtDateLong(ev.date);
+    document.getElementById('f-title').value   = ev.title;
+    document.getElementById('f-type').value    = ev.type;
+    document.getElementById('f-venue').value   = ev.venue  || '';
+    document.getElementById('f-date').value    = ev.date;
+    document.getElementById('f-ts').value      = ev.timeStart || '';
+    document.getElementById('f-te').value      = ev.timeEnd   || '';
+    document.getElementById('f-pax').value     = ev.pax  || '';
+    document.getElementById('f-rate').value    = ev.rate || '';
+    document.getElementById('f-contact').value = ev.contact || '';
+    document.getElementById('f-notes').value   = ev.notes || '';
+    selColor  = ev.color || DB.EVENT_TYPES[ev.type]?.color || PALETTE[0];
+    selStatus = ev.status || 'confirmed';
+    document.getElementById('m-del').style.display = 'block';
+  } else {
+    document.getElementById('m-ttl').textContent = 'New Event';
+    document.getElementById('m-sub').textContent = preDate ? fmtDateLong(preDate) : 'Fill in event details';
+    document.getElementById('f-title').value   = '';
+    document.getElementById('f-type').value    = 'ev-wedding';
+    document.getElementById('f-venue').value   = DB.EVENT_VENUES[0];
+    document.getElementById('f-date').value    = preDate || '';
+    document.getElementById('f-ts').value      = '';
+    document.getElementById('f-te').value      = '';
+    document.getElementById('f-pax').value     = '';
+    document.getElementById('f-rate').value    = '';
+    document.getElementById('f-contact').value = '';
+    document.getElementById('f-notes').value   = '';
+    selColor  = DB.EVENT_TYPES['ev-wedding'].color;
+    selStatus = 'confirmed';
+    document.getElementById('m-del').style.display = 'none';
+  }
+
+  // Sync color picker UI
+  document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === selColor));
+  updateAccent(selColor);
+  setStatus(selStatus);
+  document.getElementById('evModal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 80);
+  checkVenueConflict();
+}
+
+function closeModal() {
+  document.getElementById('evModal').classList.remove('open');
+  clearAlert();
+  editId = null;
+}
+
+function saveEvent() {
+  clearAlert();
+  const ev = {
+    id:        editId || DB.uid(),
+    title:     document.getElementById('f-title').value,
+    type:      document.getElementById('f-type').value,
+    venue:     document.getElementById('f-venue').value,
+    date:      document.getElementById('f-date').value,
+    timeStart: document.getElementById('f-ts').value,
+    timeEnd:   document.getElementById('f-te').value,
+    pax:       Number(document.getElementById('f-pax').value)  || 0,
+    rate:      Number(document.getElementById('f-rate').value) || 0,
+    contact:   document.getElementById('f-contact').value,
+    notes:     document.getElementById('f-notes').value,
+    color:     selColor,
+    status:    selStatus,
+  };
+
+  const result = DB.upsertEvent(ev);
+
+  if (!result.ok) {
+    showAlert(result.error, 'error');
+    return;
+  }
+  if (result.warning) {
+    // Soft warning — event was saved but show the warning
+    closeModal();
+    render();
+    // Brief toast-style notification
+    return;
+  }
+  closeModal();
+  render();
+}
+
+function deleteEvent() {
+  if (!editId) return;
+  const ev = DB.getEvents().find(e => e.id === editId);
+  const name = ev ? ev.title : 'this event';
+  if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+  DB.deleteEvent(editId);
+  closeModal();
+  render();
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('m-alert');
+  el.textContent = (type === 'error' ? '⛔ ' : '⚠️ ') + msg;
+  el.className   = 'ev-alert ' + type;
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function clearAlert() {
+  const el = document.getElementById('m-alert');
+  el.className = 'ev-alert'; el.textContent = '';
+  document.getElementById('m-venue-hint').className = 'venue-hint';
+}
+
+document.getElementById('evModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+
+/* ═══════════════════════════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════════════════════════ */
+document.getElementById('prevMo').addEventListener('click', () => {
+  if (--viewMonth < 0) { viewMonth = 11; viewYear--; } render();
+});
+document.getElementById('nextMo').addEventListener('click', () => {
+  if (++viewMonth > 11) { viewMonth = 0; viewYear++; } render();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  viewYear = TODAY.getFullYear(); viewMonth = TODAY.getMonth(); render();
+});
+document.getElementById('newEvBtn').addEventListener('click', () => openModal(null));
+document.getElementById('fType').addEventListener('change',   e => { fType   = e.target.value; render(); });
+document.getElementById('fVenue').addEventListener('change',  e => { fVenue  = e.target.value; render(); });
+document.getElementById('fStatus').addEventListener('change', e => { fStatus = e.target.value; render(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDayPanel(); }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CROSS-PAGE SYNC
+═══════════════════════════════════════════════════════════ */
+DB.onUpdate(key => {
+  if (key === DB.KEY.events) render();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+render();
+</script>
+<script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2026/04/04/11/20260404111502-YE029S7H.js" defer></script>
+</body>
+</html>

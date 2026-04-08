@@ -1,0 +1,3734 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Property Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .stat-card {
+      background: var(--h-panel); border: 1px solid var(--h-border);
+      border-radius: 4px; padding: 20px 22px; position: relative; overflow: hidden;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.28s;
+    }
+    .stat-card:hover { border-color: rgba(192,39,45,0.4); transform: translateY(-2px); box-shadow: var(--h-card-hover); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent,var(--h-border)); }
+    .stat-value { font-family:'Cinzel',serif; font-size:28px; font-weight:700; color:var(--h-text); line-height:1; margin-bottom:4px; }
+    .stat-label { font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); }
+    .stat-icon  { position:absolute; right:18px; top:50%; transform:translateY(-50%); opacity:.08; pointer-events:none; }
+
+    .section-hd {
+      font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+      letter-spacing:.14em; text-transform:uppercase; color:var(--h-sub);
+      margin-bottom:14px; display:flex; align-items:center; gap:10px;
+    }
+    .section-hd::after { content:''; flex:1; height:1px; background:var(--h-border); }
+
+    /* Legend panel */
+    .legend-panel {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:14px 18px; margin-bottom:20px;
+    }
+    .legend-grid { display:flex; flex-wrap:wrap; gap:8px 20px; }
+    .legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--h-sub); font-weight:500; }
+    .legend-dot  { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+    .legend-desc { font-size:10px; color:var(--h-muted); }
+
+    /* Room grid */
+    .room-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+    .room-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      padding:16px 14px; cursor:pointer; position:relative; overflow:hidden;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.28s;
+    }
+    .room-card:hover { border-color:rgba(192,39,45,0.4); transform:translateY(-2px); box-shadow:var(--h-card-hover); }
+    .room-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--sc,var(--h-border)); }
+    .room-num   { font-family:'Cinzel',serif; font-size:18px; font-weight:700; color:var(--h-text); margin-bottom:2px; }
+    .room-type  { font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-bottom:10px; }
+    .room-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      padding:3px 8px; border-radius:2px;
+      background:var(--sbg); color:var(--sc);
+    }
+    .room-dot { width:5px; height:5px; border-radius:50%; background:var(--sc); }
+    .room-guest { font-size:11px; color:var(--h-sub); margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .room-notes { font-size:10px; color:var(--h-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .live-badge {
+      position:absolute; top:6px; right:6px;
+      font-size:7px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      padding:2px 5px; border-radius:2px;
+      background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.2);
+    }
+
+    /* Upcoming events */
+    .ev-strip    { background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px; padding:0 16px; }
+    .ev-row      { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--h-border); font-size:12px; }
+    .ev-row:last-child { border-bottom:none; }
+    .ev-row-dot  { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+    .ev-row-date { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:var(--h-text); min-width:38px; }
+    .ev-row-name { color:var(--h-text); font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ev-row-meta { color:var(--h-muted); font-size:10px; white-space:nowrap; }
+
+    /* Sync dot */
+    .sync-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#2ecc71; box-shadow:0 0 5px rgba(46,204,113,.6); animation:pulse 2s ease-in-out infinite; margin-right:6px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* Modal */
+    #room-modal { position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); z-index:500; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+    #room-modal.open { opacity:1; pointer-events:all; }
+    .modal-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:400px; max-width:95vw; overflow:hidden;
+      transform:scale(.95) translateY(8px);
+      transition:transform .2s cubic-bezier(.16,1,.3,1); box-shadow:var(--h-shadow);
+    }
+    #room-modal.open .modal-card { transform:scale(1) translateY(0); }
+    .modal-accent { height:3px; background:linear-gradient(90deg,transparent,var(--h-red),transparent); }
+    .modal-hd  { padding:18px 22px 14px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; }
+    .modal-ttl { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); }
+    .modal-sub { font-size:11px; color:var(--h-muted); letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
+    .modal-body{ padding:18px 22px; }
+    .modal-ft  { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; }
+    .btn-sm    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-ghost { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-ghost:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-red   { background:#C0272D; color:#fff; }
+    .btn-red:hover { background:#961E23; }
+    .flabel { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-bottom:5px; display:block; }
+    .fctl {
+      width:100%; background:var(--h-input-bg); border:1px solid var(--h-border);
+      border-radius:3px; padding:9px 12px; font-family:'DM Sans',sans-serif;
+      font-size:13px; color:var(--h-text); outline:none; margin-bottom:12px; appearance:none;
+    }
+    .fctl:focus { border-color:#C0272D; box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .fctl::placeholder { color:var(--h-muted); }
+    .info-box {
+      background:rgba(192,39,45,.06); border:1px solid rgba(192,39,45,.18);
+      border-radius:3px; padding:9px 12px; margin-bottom:14px;
+      font-size:11px; color:var(--h-sub); line-height:1.5;
+    }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="hms-content">
+
+    <!-- Sync row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <span style="font-size:11px;color:var(--h-muted);display:flex;align-items:center;">
+        <span class="sync-dot"></span>Live — synced with Reservations &amp; Events
+      </span>
+      <span style="font-size:11px;color:var(--h-muted);" id="lastSync">—</span>
+    </div>
+
+    <!-- Stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="stat-card" style="--accent:#2ecc71;"><div class="stat-value" id="sv-vacant">0</div><div class="stat-label">Vacant</div><div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="#2ecc71"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></div></div>
+      <div class="stat-card" style="--accent:#C0272D;"><div class="stat-value" id="sv-occupied">0</div><div class="stat-label">Occupied</div><div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#C0272D" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div>
+      <div class="stat-card" style="--accent:#f39c12;"><div class="stat-value" id="sv-reserved">0</div><div class="stat-label">Reserved</div><div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+      <div class="stat-card" style="--accent:#3498db;"><div class="stat-value" id="sv-cleaning">0</div><div class="stat-label">Cleaning</div><div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="1.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div></div>
+      <div class="stat-card" style="--accent:#e74c3c;"><div class="stat-value" id="sv-maintenance">0</div><div class="stat-label">Maintenance</div><div class="stat-icon"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-panel">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--h-muted);margin-bottom:10px;">Room Status Legend</div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-dot" style="background:#2ecc71;"></div>Vacant <span class="legend-desc">— Clean &amp; available</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C0272D;"></div>Occupied <span class="legend-desc">— Guest checked in</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f39c12;"></div>Reserved <span class="legend-desc">— Future booking confirmed</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3498db;"></div>Cleaning <span class="legend-desc">— Housekeeping in progress</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div>Maintenance <span class="legend-desc">— Under repair / blocked</span></div>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--h-border);font-size:10px;color:var(--h-muted);font-style:italic;">
+        ℹ Room status auto-syncs from today's active bookings. <strong style="color:var(--h-sub);">Cleaning</strong> is a manual-only override.
+      </div>
+    </div>
+
+    <!-- Two-column: room grid + upcoming events -->
+    <div style="display:grid;grid-template-columns:1fr 272px;gap:20px;align-items:start;">
+
+      <div>
+        <div class="section-hd">Room Grid — 201 to 215</div>
+        <div class="room-grid" id="roomGrid"></div>
+      </div>
+
+      <div>
+        <div class="section-hd">Upcoming Events</div>
+        <div id="upcomingEvents" class="ev-strip"></div>
+        <a href="events.html" style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--h-red);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;margin-top:10px;">
+          View Full Calendar
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Room modal -->
+<div id="room-modal">
+  <div class="modal-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-ttl" id="m-room-ttl">Room 201</div>
+        <div class="modal-sub" id="m-room-sub">Standard Room</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box">Manual override. The Reservations Dashboard auto-sets status based on active bookings. <strong>Cleaning</strong> can only be set here.</div>
+      <label class="flabel">Status</label>
+      <select class="fctl" id="m-status">
+        <option value="vacant">🟢 Vacant</option>
+        <option value="occupied">🔴 Occupied</option>
+        <option value="reserved">🟡 Reserved</option>
+        <option value="cleaning">🔵 Cleaning</option>
+        <option value="maintenance">⚠️ Maintenance</option>
+      </select>
+      <label class="flabel">Guest Name</label>
+      <input class="fctl" type="text" id="m-guest" placeholder="e.g. Juan dela Cruz" maxlength="120"/>
+      <label class="flabel">Notes / Concerns</label>
+      <input class="fctl" type="text" id="m-notes" placeholder="e.g. Busted light, extra bed…" maxlength="200"/>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-sm btn-red" onclick="saveRoom()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>window.HIRAYA_PAGE='index';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script>
+hirayaRenderTopbar('Property Overview','Front Desk Hub');
+const DB = window.HirayaDB;
+
+/* ── Render room grid ─────────────────────────────────── */
+function renderGrid() {
+  const statuses = DB.syncRoomsFromBookings(); // computed, not persisted
+  const grid = document.getElementById('roomGrid');
+  const counts = { vacant:0, occupied:0, reserved:0, cleaning:0, maintenance:0 };
+
+  grid.innerHTML = '';
+  DB.ROOM_NUMBERS.forEach(r => {
+    const s    = statuses[r];
+    const meta = DB.ROOM_STATUS[s.status] || DB.ROOM_STATUS.vacant;
+    counts[s.status] = (counts[s.status] || 0) + 1;
+
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.style.setProperty('--sc',  meta.color);
+    card.style.setProperty('--sbg', meta.bg);
+    // Safe text content via textContent, not innerHTML injection
+    card.innerHTML = `
+      <div class="room-num">${r}</div>
+      <div class="room-type">${DB.esc(DB.ROOM_META[r]?.type||'')}</div>
+      <div class="room-badge"><div class="room-dot"></div>${DB.esc(meta.label)}</div>
+      ${s.guest ? `<div class="room-guest">${DB.esc(s.guest)}</div>` : ''}
+      ${s.notes ? `<div class="room-notes">⚠ ${DB.esc(s.notes)}</div>` : ''}
+      ${s._source==='booking' ? '<div class="live-badge">LIVE</div>' : ''}
+    `;
+    card.addEventListener('click', () => openModal(r, s));
+    grid.appendChild(card);
+  });
+
+  // Update stat cards
+  Object.entries(counts).forEach(([k,v]) => {
+    const el = document.getElementById('sv-'+k);
+    if (el) el.textContent = v || 0;
+  });
+
+  document.getElementById('lastSync').textContent =
+    'Synced ' + new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+/* ── Upcoming events ──────────────────────────────────── */
+function renderUpcoming() {
+  const todayStr = DB.fmtDate(new Date());
+  const upcoming = DB.getEvents()
+    .filter(e => e.date >= todayStr && e.status !== 'cancelled')
+    .sort((a,b) => a.date.localeCompare(b.date) || (a.timeStart||'').localeCompare(b.timeStart||''))
+    .slice(0, 7);
+
+  const strip = document.getElementById('upcomingEvents');
+  if (!upcoming.length) {
+    strip.innerHTML = '<div style="padding:14px 0;color:var(--h-muted);font-size:12px;">No upcoming events.</div>';
+    return;
+  }
+  strip.innerHTML = upcoming.map(ev => {
+    const d   = DB.parseDate(ev.date);
+    const lbl = d ? d.toLocaleDateString('en-PH',{month:'short',day:'numeric'}) : ev.date;
+    const color = ev.color || DB.EVENT_TYPES[ev.type]?.color || '#888';
+    return `
+      <div class="ev-row">
+        <div class="ev-row-dot" style="background:${DB.esc(color)};"></div>
+        <div class="ev-row-date">${DB.esc(lbl)}</div>
+        <div class="ev-row-name">${DB.esc(ev.title)}</div>
+        <div class="ev-row-meta">${DB.esc(ev.venue||'')}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Modal ────────────────────────────────────────────── */
+let activeRoom = null;
+function openModal(num, roomState) {
+  activeRoom = num;
+  document.getElementById('m-room-ttl').textContent = 'Room ' + num;
+  document.getElementById('m-room-sub').textContent = DB.ROOM_META[num]?.type || '';
+  document.getElementById('m-status').value = roomState.status;
+  document.getElementById('m-guest').value  = roomState.guest || '';
+  document.getElementById('m-notes').value  = roomState.notes || '';
+  document.getElementById('room-modal').classList.add('open');
+  setTimeout(() => document.getElementById('m-status').focus(), 80);
+}
+function closeModal() {
+  document.getElementById('room-modal').classList.remove('open');
+  activeRoom = null;
+}
+function saveRoom() {
+  if (!activeRoom) return;
+  DB.setRoom(activeRoom, {
+    status: document.getElementById('m-status').value,
+    guest:  document.getElementById('m-guest').value.trim().slice(0,120),
+    notes:  document.getElementById('m-notes').value.trim().slice(0,200),
+  });
+  closeModal();
+  renderGrid();
+}
+document.getElementById('room-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* ── Cross-page sync ──────────────────────────────────── */
+DB.onUpdate(key => {
+  if (key === DB.KEY.bookings || key === DB.KEY.rooms) renderGrid();
+  if (key === DB.KEY.events) renderUpcoming();
+});
+
+renderGrid();
+renderUpcoming();
+</script>
+</body>
+</html>
+
+
+<!-- events.html -->
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Events Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Full-height shell ── */
+    html, body { height:100%; overflow:hidden; }
+    #hms-main  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .ev-shell  { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+    /* ── Controls bar ── */
+    .ctrl-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+      padding:9px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .ctrl-grp  { display:flex; align-items:center; gap:6px; }
+    .ctrl-lbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .ctrl-sel, .ctrl-inp {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      color:var(--h-text); outline:none; cursor:pointer;
+    }
+    .ctrl-sel:focus,.ctrl-inp:focus { border-color:var(--h-red); }
+    .ctrl-btn {
+      display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:.05em;
+      cursor:pointer; white-space:nowrap; transition:background .15s, transform .1s;
+    }
+    .ctrl-btn:active { transform:translateY(1px); }
+    .btn-primary { background:var(--h-red); color:#fff; }
+    .btn-primary:hover { background:var(--h-red-dk); }
+    .btn-outline { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-outline:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .ctrl-sep  { width:1px; height:20px; background:var(--h-border); flex-shrink:0; }
+    .ctrl-fill { flex:1; min-width:8px; }
+    .nav-btn {
+      width:28px; height:28px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    }
+    .nav-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .month-lbl {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; min-width:148px; text-align:center;
+    }
+
+    /* ── Legend strip ── */
+    .legend-strip {
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex-shrink:0;
+      padding:7px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .lgd-lbl  { font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); margin-right:2px; }
+    .lgd-chip { display:flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .lgd-sw   { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+
+    /* ── Stats strip ── */
+    .stats-strip { display:flex; flex-shrink:0; border-bottom:1px solid var(--h-border); background:var(--h-panel); }
+    .stat-cell   { flex:1; padding:7px 12px; border-right:1px solid var(--h-border); text-align:center; }
+    .stat-cell:last-child { border-right:none; }
+    .stat-v { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); line-height:1; }
+    .stat-l { font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-top:2px; }
+
+    /* ── Calendar scroll container ── */
+    .cal-outer { flex:1; overflow:auto; padding:14px 18px 20px; min-height:0; }
+
+    /* ── Calendar grid ── */
+    .cal-grid {
+      display:grid; grid-template-columns:repeat(7,1fr);
+      gap:1px; background:var(--h-border);
+      border:1px solid var(--h-border); border-radius:4px; overflow:hidden;
+    }
+
+    /* DOW header row */
+    .cal-dow {
+      background:var(--h-panel2); text-align:center;
+      padding:7px 0; font-size:10px; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--h-muted);
+    }
+    .cal-dow.weekend { color:var(--h-red); opacity:.8; }
+
+    /* Day cells */
+    .cal-cell {
+      background:var(--h-panel); min-height:108px;
+      padding:5px; display:flex; flex-direction:column; gap:2px;
+      cursor:pointer; position:relative; transition:background .12s;
+    }
+    .cal-cell:hover { background:var(--h-hover-bg); }
+    .cal-cell.is-today { background:rgba(192,39,45,.055); }
+    .cal-cell.is-today .day-num {
+      background:var(--h-red); color:#fff !important;
+      border-radius:50%; width:20px; height:20px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px !important;
+    }
+    .cal-cell.other-mo  { background:var(--h-dark); pointer-events:none; }
+    .cal-cell.is-wknd   { background:rgba(255,255,255,.01); }
+    [data-theme="light"] .cal-cell.is-wknd { background:rgba(0,0,0,.015); }
+
+    .day-num {
+      font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+      color:var(--h-sub); line-height:1; margin-bottom:1px;
+    }
+    .day-rev {
+      font-size:8px; font-weight:700; color:#2ecc71; letter-spacing:.03em;
+      margin-bottom:2px;
+    }
+
+    /* Event pill */
+    .ev-pill {
+      display:flex; align-items:center; gap:3px;
+      padding:2px 5px; border-radius:2px;
+      font-size:9px; font-weight:600; cursor:pointer;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      color:#fff; max-width:100%; line-height:1.4;
+      transition:filter .12s, transform .1s;
+      box-shadow:0 1px 2px rgba(0,0,0,.3);
+    }
+    .ev-pill:hover    { filter:brightness(1.14); transform:scale(1.02); z-index:2; position:relative; }
+    .ev-pill-dot      { width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.7); flex-shrink:0; }
+    .ev-pill.tentative { opacity:.55; font-style:italic; }
+    .ev-pill.cancelled { opacity:.35; text-decoration:line-through; }
+
+    .ev-more {
+      font-size:9px; color:var(--h-muted); font-weight:600;
+      padding:1px 3px; cursor:pointer; letter-spacing:.03em;
+    }
+    .ev-more:hover { color:var(--h-red); }
+
+    /* Scrollbar */
+    .cal-outer::-webkit-scrollbar { width:6px; height:6px; }
+    .cal-outer::-webkit-scrollbar-track { background:var(--h-dark); }
+    .cal-outer::-webkit-scrollbar-thumb { background:var(--h-border); border-radius:3px; }
+
+    /* ══════════════════════════════════════════════════════════
+       EVENT MODAL
+    ══════════════════════════════════════════════════════════ */
+    #evModal {
+      position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.62);
+      backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #evModal.open { opacity:1; pointer-events:all; }
+    .ev-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:580px; max-width:96vw; box-shadow:var(--h-shadow);
+      transform:scale(.95) translateY(10px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+      overflow:hidden; max-height:94vh; display:flex; flex-direction:column;
+    }
+    #evModal.open .ev-card { transform:scale(1) translateY(0); }
+    .ev-accent { height:3px; flex-shrink:0; background:linear-gradient(90deg,transparent,#e91e8c,transparent); transition:background .2s; }
+    .ev-hd     { padding:15px 22px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .ev-ttl    { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .ev-sub    { font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .ev-body   { padding:16px 22px; display:grid; grid-template-columns:1fr 1fr; gap:11px; overflow-y:auto; }
+    .ev-full   { grid-column:1/-1; }
+    .ev-ft     { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+
+    /* Form elements */
+    .fg   { display:flex; flex-direction:column; gap:4px; }
+    .flbl { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .fctl {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text);
+      outline:none; width:100%; appearance:none;
+    }
+    .fctl::placeholder { color:var(--h-muted); }
+    .fctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    textarea.fctl { resize:vertical; min-height:56px; }
+
+    /* Status badge pills for modal */
+    .status-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .status-pill {
+      padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; cursor:pointer; border:2px solid transparent;
+      transition:all .15s; background:var(--h-input-bg); color:var(--h-muted);
+    }
+    .status-pill.active-confirmed { background:rgba(46,204,113,.15);  color:#2ecc71; border-color:#2ecc71; }
+    .status-pill.active-tentative { background:rgba(243,156,18,.15);  color:#f39c12; border-color:#f39c12; }
+    .status-pill.active-cancelled { background:rgba(149,165,166,.15); color:#95a5a6; border-color:#95a5a6; }
+
+    /* Color palette */
+    .color-row { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+    .c-sw {
+      width:22px; height:22px; border-radius:3px; cursor:pointer; flex-shrink:0;
+      border:2px solid transparent; transition:transform .1s, border-color .1s;
+    }
+    .c-sw:hover { transform:scale(1.18); }
+    .c-sw.sel   { border-color:#fff; box-shadow:0 0 0 2px var(--h-red); transform:scale(1.1); }
+
+    /* Alert / warning */
+    .ev-alert {
+      grid-column:1/-1; padding:9px 12px; border-radius:3px; font-size:12px; line-height:1.5;
+      display:none;
+    }
+    .ev-alert.error   { background:rgba(231,76,60,.1);  border:1px solid rgba(231,76,60,.25); color:#e74c3c; display:block; }
+    .ev-alert.warning { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.25); color:#f39c12; display:block; }
+
+    /* Venue conflict hint */
+    .venue-hint {
+      grid-column:1/-1; font-size:11px; color:var(--h-muted); padding:3px 0; display:none;
+    }
+    .venue-hint.show { display:block; }
+    .venue-hint.ok   { color:#2ecc71; }
+    .venue-hint.busy { color:#e74c3c; }
+    .venue-hint.warn { color:#f39c12; }
+
+    /* Buttons */
+    .btn-m    { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-save { background:var(--h-red); color:#fff; }
+    .btn-save:hover { background:var(--h-red-dk); }
+    .btn-cncl { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-cncl:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-del  { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del:hover { background:rgba(231,76,60,.22); }
+
+    /* ── Day detail panel (day-click shows all events) ── */
+    #dayPanel {
+      position:fixed; inset:0; z-index:8900; background:rgba(0,0,0,.55);
+      backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .18s;
+    }
+    #dayPanel.open { opacity:1; pointer-events:all; }
+    .dp-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:400px; max-width:96vw; max-height:80vh; overflow:hidden;
+      display:flex; flex-direction:column; box-shadow:var(--h-shadow);
+      transform:scale(.96) translateY(8px); transition:transform .2s cubic-bezier(.16,1,.3,1);
+    }
+    #dayPanel.open .dp-card { transform:scale(1) translateY(0); }
+    .dp-hd   { padding:14px 18px 10px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .dp-ttl  { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text); }
+    .dp-body { overflow-y:auto; flex:1; padding:10px 14px; }
+    .dp-ev   { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--h-border); cursor:pointer; }
+    .dp-ev:last-child { border-bottom:none; }
+    .dp-ev:hover .dp-ev-title { color:var(--h-red); }
+    .dp-ev-dot   { width:10px; height:10px; border-radius:2px; flex-shrink:0; margin-top:3px; }
+    .dp-ev-title { font-size:13px; font-weight:600; color:var(--h-text); }
+    .dp-ev-meta  { font-size:10px; color:var(--h-muted); margin-top:2px; }
+    .dp-ft       { padding:10px 14px; border-top:1px solid var(--h-border); flex-shrink:0; }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="ev-shell">
+
+    <!-- Controls -->
+    <div class="ctrl-bar">
+      <div class="ctrl-grp">
+        <button class="nav-btn" id="prevMo">&#8249;</button>
+        <span class="month-lbl" id="monthLbl">—</span>
+        <button class="nav-btn" id="nextMo">&#8250;</button>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Type</span>
+        <select class="ctrl-sel" id="fType">
+          <option value="all">All Types</option>
+          <option value="ev-wedding">Wedding</option>
+          <option value="ev-birthday">Birthday</option>
+          <option value="ev-corporate">Corporate</option>
+          <option value="ev-seminar">Seminar</option>
+          <option value="ev-debut">Debut</option>
+          <option value="ev-reunion">Reunion</option>
+          <option value="ev-reception">Reception</option>
+          <option value="ev-other">Other</option>
+        </select>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Venue</span>
+        <select class="ctrl-sel" id="fVenue">
+          <option value="all">All Venues</option>
+        </select>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Status</span>
+        <select class="ctrl-sel" id="fStatus">
+          <option value="all">All</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="tentative">Tentative</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="ctrl-fill"></div>
+      <button class="ctrl-btn btn-outline" id="todayBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Today
+      </button>
+      <button class="ctrl-btn btn-primary" id="newEvBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Event
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-strip">
+      <span class="lgd-lbl">Type:</span>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#e91e8c;"></div>Wedding</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;"></div>Birthday</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#2980b9;"></div>Corporate</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#8e44ad;"></div>Seminar</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#e74c3c;"></div>Debut</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#16a085;"></div>Reunion</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#27ae60;"></div>Reception</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;"></div>Other</div>
+      <div class="ctrl-sep" style="margin:0 4px;"></div>
+      <span class="lgd-lbl">Status:</span>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#2ecc71;border-radius:50%;"></div>Confirmed</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;border-radius:50%;opacity:.55;"></div>Tentative</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;border-radius:50%;opacity:.35;"></div>Cancelled</div>
+      <span style="flex:1;"></span>
+      <span style="font-size:9px;color:var(--h-muted);font-style:italic;">Click date → view all events &nbsp;|&nbsp; Click pill → edit &nbsp;|&nbsp; Revenue shown in green</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-cell"><div class="stat-v" id="s-ev">0</div><div class="stat-l">Events</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-px">0</div><div class="stat-l">Total PAX</div></div>
+      <div class="stat-cell"><div class="stat-v" style="color:#2ecc71;" id="s-rv">₱0</div><div class="stat-l">Est. Revenue</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-vn">—</div><div class="stat-l">Busiest Venue</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-bk">0</div><div class="stat-l">Ballroom Days</div></div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="cal-outer">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Day detail panel -->
+<div id="dayPanel">
+  <div class="dp-card">
+    <div class="dp-hd">
+      <div class="dp-ttl" id="dp-date">—</div>
+      <button onclick="closeDayPanel()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+    <div class="dp-ft">
+      <button class="ctrl-btn btn-primary" id="dp-add-btn" style="width:100%;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Event on This Date
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div id="evModal">
+  <div class="ev-card">
+    <div class="ev-accent" id="m-accent"></div>
+    <div class="ev-hd">
+      <div>
+        <div class="ev-ttl" id="m-ttl">New Event</div>
+        <div class="ev-sub" id="m-sub">Fill in event details</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ev-body">
+      <!-- Alert banner -->
+      <div class="ev-alert" id="m-alert"></div>
+      <!-- Venue conflict hint -->
+      <div class="venue-hint" id="m-venue-hint"></div>
+
+      <div class="fg ev-full">
+        <label class="flbl">Event Title</label>
+        <input class="fctl" type="text" id="f-title" placeholder="e.g. JUAN &amp; MARIA WEDDING RECEPTION" maxlength="150" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Event Type</label>
+        <select class="fctl" id="f-type" onchange="onTypeChange()">
+          <option value="ev-wedding">💒 Wedding</option>
+          <option value="ev-birthday">🎂 Birthday / Debut</option>
+          <option value="ev-corporate">🏢 Corporate</option>
+          <option value="ev-seminar">📋 Seminar</option>
+          <option value="ev-debut">👗 Debut</option>
+          <option value="ev-reunion">🤝 Reunion</option>
+          <option value="ev-reception">🥂 Reception</option>
+          <option value="ev-other">📌 Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Venue</label>
+        <select class="fctl" id="f-venue" onchange="checkVenueConflict()">
+          <!-- populated by JS -->
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Date</label>
+        <input class="fctl" type="date" id="f-date" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Time Start</label>
+        <input class="fctl" type="time" id="f-ts" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Time End</label>
+        <input class="fctl" type="time" id="f-te" onchange="checkVenueConflict()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">PAX / Head Count</label>
+        <input class="fctl" type="number" id="f-pax" min="0" max="9999" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Event Rate (₱)</label>
+        <input class="fctl" type="number" id="f-rate" min="0" max="9999999" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Contact Person</label>
+        <input class="fctl" type="text" id="f-contact" placeholder="Name or phone number" maxlength="120"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Status</label>
+        <div class="status-row" id="statusRow">
+          <div class="status-pill" data-status="confirmed" onclick="setStatus('confirmed')">✅ Confirmed</div>
+          <div class="status-pill" data-status="tentative" onclick="setStatus('tentative')">⏳ Tentative</div>
+          <div class="status-pill" data-status="cancelled" onclick="setStatus('cancelled')">❌ Cancelled</div>
+        </div>
+      </div>
+      <div class="fg ev-full">
+        <label class="flbl">Theme / Color</label>
+        <div class="color-row" id="colorPicker"></div>
+      </div>
+      <div class="fg ev-full">
+        <label class="flbl">Notes / Special Instructions</label>
+        <textarea class="fctl" id="f-notes" placeholder="Theme, catering instructions, special requests, contact details…" maxlength="500"></textarea>
+      </div>
+    </div>
+    <div class="ev-ft">
+      <button class="btn-m btn-del" id="m-del" style="display:none;" onclick="deleteEvent()">Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script>window.HIRAYA_PAGE = 'events';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+hirayaRenderTopbar('Events Calendar', 'Functions & Bookings');
+const DB = window.HirayaDB;
+
+/* Populate venue selects */
+const venSel    = document.getElementById('f-venue');
+const venFilter = document.getElementById('fVenue');
+DB.EVENT_VENUES.forEach(v => {
+  [venSel, venFilter].forEach(sel => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+});
+
+/* Color palette */
+const PALETTE = [
+  '#e91e8c','#C0272D','#e74c3c','#e67e22',
+  '#f39c12','#f1c40f','#27ae60','#1abc9c',
+  '#16a085','#2980b9','#3498db','#8e44ad',
+  '#9b59b6','#2c3e50','#7f8c8d','#95a5a6',
+];
+let selColor  = PALETTE[0];
+let selStatus = 'confirmed';
+let editId    = null;
+let dpDate    = null; // date string for day panel
+
+const cpRow = document.getElementById('colorPicker');
+PALETTE.forEach(c => {
+  const sw = document.createElement('div');
+  sw.className = 'c-sw' + (c === selColor ? ' sel' : '');
+  sw.style.background = c; sw.title = c;
+  sw.addEventListener('click', () => {
+    selColor = c;
+    document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === c));
+    updateAccent(c);
+  });
+  cpRow.appendChild(sw);
+});
+
+function updateAccent(c) {
+  document.getElementById('m-accent').style.background =
+    `linear-gradient(90deg,transparent,${c},transparent)`;
+}
+
+function setStatus(s) {
+  selStatus = s;
+  document.querySelectorAll('.status-pill').forEach(p => {
+    const t = p.dataset.status;
+    p.className = 'status-pill' + (t === s ? ` active-${t}` : '');
+  });
+}
+
+/* ── State ── */
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let viewYear  = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+let fType   = 'all';
+let fVenue  = 'all';
+let fStatus = 'all';
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function fmtDateLong(dateStr) {
+  return DB.parseDate(dateStr)?.toLocaleDateString('en-PH', {
+    weekday:'long', month:'long', day:'numeric', year:'numeric'
+  }) ?? dateStr;
+}
+
+function fmt12(timeStr) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  return `${h%12||12}:${pad2(m)} ${h<12?'AM':'PM'}`;
+}
+
+function getFilteredEvents(allEvents) {
+  return allEvents.filter(e => {
+    if (fType   !== 'all' && e.type   !== fType)   return false;
+    if (fVenue  !== 'all' && e.venue  !== fVenue)  return false;
+    if (fStatus !== 'all' && e.status !== fStatus) return false;
+    return true;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════ */
+function render() {
+  document.getElementById('monthLbl').textContent =
+    new Date(viewYear, viewMonth, 1)
+      .toLocaleDateString('en-PH', { month:'long', year:'numeric' });
+  renderCal();
+  updateStats();
+}
+
+function renderCal() {
+  const grid    = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const DOW_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  DOW_LABELS.forEach((lbl, i) => {
+    const h = document.createElement('div');
+    h.className = 'cal-dow' + (i===0||i===6?' weekend':'');
+    h.textContent = lbl.toUpperCase();
+    grid.appendChild(h);
+  });
+
+  const firstDow  = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMo  = new Date(viewYear, viewMonth+1, 0).getDate();
+  const prevDays  = new Date(viewYear, viewMonth, 0).getDate();
+  const totalCells = Math.ceil((firstDow + daysInMo) / 7) * 7;
+
+  const allEvents = DB.getEvents();
+
+  for (let i = 0; i < totalCells; i++) {
+    let cellDate, isOther = false;
+    if (i < firstDow) {
+      cellDate = new Date(viewYear, viewMonth-1, prevDays - firstDow + i + 1);
+      isOther  = true;
+    } else if (i >= firstDow + daysInMo) {
+      cellDate = new Date(viewYear, viewMonth+1, i - firstDow - daysInMo + 1);
+      isOther  = true;
+    } else {
+      cellDate = new Date(viewYear, viewMonth, i - firstDow + 1);
+    }
+
+    const dow     = cellDate.getDay();
+    const isToday = cellDate.toDateString() === TODAY.toDateString();
+    const dateStr = DB.fmtDate(cellDate);
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' +
+      (isOther  ? ' other-mo'  : '') +
+      (isToday  ? ' is-today'  : '') +
+      (dow===0||dow===6 ? ' is-wknd' : '');
+    cell.dataset.date = dateStr;
+
+    /* Day number */
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = cellDate.getDate();
+    cell.appendChild(num);
+
+    if (!isOther) {
+      /* Events for this day — sorted by time */
+      const dayEvs = DB.getEventsForDate(dateStr);
+      const filtered = getFilteredEvents(dayEvs);
+
+      /* Revenue tag */
+      const rev = filtered.reduce((s,e)=>s+(Number(e.rate)||0), 0);
+      if (rev > 0) {
+        const rt = document.createElement('div');
+        rt.className = 'day-rev';
+        rt.textContent = '₱' + rev.toLocaleString('en-PH');
+        cell.appendChild(rt);
+      }
+
+      /* Event pills (max 3 visible, rest in +N) */
+      const MAX = 3;
+      filtered.slice(0, MAX).forEach(ev => {
+        const pill = document.createElement('div');
+        const c = ev.color || DB.EVENT_COLORS[ev.type] || '#888';
+        pill.className = 'ev-pill' +
+          (ev.status==='tentative' ? ' tentative' : '') +
+          (ev.status==='cancelled' ? ' cancelled' : '');
+        pill.style.background = c;
+        pill.innerHTML =
+          `<div class="ev-pill-dot"></div>` +
+          `<span style="overflow:hidden;text-overflow:ellipsis;">${
+            ev.timeStart ? fmt12(ev.timeStart)+' ' : ''
+          }${DB.esc(ev.title)}</span>`;
+        pill.addEventListener('click', e => { e.stopPropagation(); openModal(ev.id); });
+        cell.appendChild(pill);
+      });
+
+      if (filtered.length > MAX) {
+        const more = document.createElement('div');
+        more.className = 'ev-more';
+        more.textContent = `+${filtered.length - MAX} more`;
+        more.addEventListener('click', e => { e.stopPropagation(); openDayPanel(dateStr, dayEvs); });
+        cell.appendChild(more);
+      }
+
+      /* Cell click → day panel if has events, else new event modal */
+      cell.addEventListener('click', () => {
+        const today_evs = DB.getEventsForDate(dateStr);
+        if (today_evs.length > 0) {
+          openDayPanel(dateStr, today_evs);
+        } else {
+          openModal(null, dateStr);
+        }
+      });
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const ms = new Date(viewYear, viewMonth, 1);
+  const me = new Date(viewYear, viewMonth+1, 0);
+
+  const monthEvs = DB.getEvents().filter(e => {
+    const d = DB.parseDate(e.date);
+    return d && d >= ms && d <= me;
+  });
+  const filtered = getFilteredEvents(monthEvs);
+
+  const totalPax = filtered.reduce((s,e)=>s+(Number(e.pax)||0), 0);
+  const totalRev = filtered.filter(e=>e.status!=='cancelled').reduce((s,e)=>s+(Number(e.rate)||0), 0);
+
+  const venueCounts = {};
+  filtered.filter(e=>e.status!=='cancelled').forEach(e => {
+    if (e.venue) venueCounts[e.venue] = (venueCounts[e.venue]||0) + 1;
+  });
+  const busiest = Object.entries(venueCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  // Count ballroom days (Ballroom A, B, or A&B used)
+  const ballroomDays = new Set(
+    filtered
+      .filter(e => e.status!=='cancelled' && e.venue && e.venue.includes('Ballroom'))
+      .map(e => e.date)
+  ).size;
+
+  document.getElementById('s-ev').textContent = filtered.filter(e=>e.status!=='cancelled').length;
+  document.getElementById('s-px').textContent = totalPax;
+  document.getElementById('s-rv').textContent = '₱' + totalRev.toLocaleString('en-PH');
+  document.getElementById('s-vn').textContent = busiest ? busiest[0].split(' ').slice(0,2).join(' ') : '—';
+  document.getElementById('s-bk').textContent = ballroomDays;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DAY PANEL
+═══════════════════════════════════════════════════════════ */
+function openDayPanel(dateStr, evs) {
+  dpDate = dateStr;
+  document.getElementById('dp-date').textContent = fmtDateLong(dateStr);
+
+  const body = document.getElementById('dp-body');
+  const sorted = [...evs].sort((a,b) => (a.timeStart||'').localeCompare(b.timeStart||''));
+
+  if (!sorted.length) {
+    body.innerHTML = `<div style="color:var(--h-muted);font-size:12px;padding:8px 0;">No events on this date.</div>`;
+  } else {
+    body.innerHTML = '';
+    sorted.forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'dp-ev';
+      const c = ev.color || DB.EVENT_COLORS[ev.type] || '#888';
+      const timeRange = ev.timeStart ? `${fmt12(ev.timeStart)}${ev.timeEnd?' – '+fmt12(ev.timeEnd):''}` : '';
+      row.innerHTML = `
+        <div class="dp-ev-dot" style="background:${c};"></div>
+        <div>
+          <div class="dp-ev-title">${DB.esc(ev.title)}</div>
+          <div class="dp-ev-meta">
+            ${ev.venue ? DB.esc(ev.venue) + (timeRange ? ' · ' : '') : ''}${timeRange}
+            ${ev.pax ? ' · ' + ev.pax + ' pax' : ''}
+            ${ev.rate ? ' · ₱' + Number(ev.rate).toLocaleString('en-PH') : ''}
+            ${ev.status !== 'confirmed' ? ` · <em>${ev.status}</em>` : ''}
+          </div>
+        </div>
+      `;
+      row.addEventListener('click', () => { closeDayPanel(); openModal(ev.id); });
+      body.appendChild(row);
+    });
+  }
+
+  document.getElementById('dp-add-btn').onclick = () => {
+    closeDayPanel();
+    openModal(null, dpDate);
+  };
+
+  document.getElementById('dayPanel').classList.add('open');
+}
+
+function closeDayPanel() {
+  document.getElementById('dayPanel').classList.remove('open');
+}
+
+document.getElementById('dayPanel').addEventListener('click', function(e) {
+  if (e.target === this) closeDayPanel();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   VENUE CONFLICT CHECK (real-time)
+═══════════════════════════════════════════════════════════ */
+function checkVenueConflict() {
+  const hint = document.getElementById('m-venue-hint');
+  const date  = document.getElementById('f-date').value;
+  const venue = document.getElementById('f-venue').value;
+  const ts    = document.getElementById('f-ts').value;
+  const te    = document.getElementById('f-te').value;
+  const status = selStatus;
+
+  if (!date || !venue || status === 'cancelled') {
+    hint.className = 'venue-hint'; return;
+  }
+
+  const result = DB.checkEventOverlap(
+    { date, venue, timeStart: ts, timeEnd: te, status },
+    editId
+  );
+
+  if (!result.conflict) {
+    if (ts && te) {
+      hint.textContent = `✅ ${venue} is available at this time`;
+      hint.className   = 'venue-hint show ok';
+    } else {
+      hint.textContent = `ℹ️ No time specified — set a time to check for conflicts`;
+      hint.className   = 'venue-hint show';
+    }
+  } else if (result.hard) {
+    hint.textContent = `⛔ ${result.message}`;
+    hint.className   = 'venue-hint show busy';
+  } else {
+    hint.textContent = `⚠️ ${result.message}`;
+    hint.className   = 'venue-hint show warn';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+function onTypeChange() {
+  const t = document.getElementById('f-type').value;
+  const c = DB.EVENT_TYPES[t]?.color || PALETTE[0];
+  selColor = c;
+  document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === c));
+  updateAccent(c);
+  checkVenueConflict();
+}
+
+function openModal(id, preDate) {
+  editId = id || null;
+  clearAlert();
+
+  if (id) {
+    const ev = DB.getEvents().find(e => e.id === id);
+    if (!ev) return;
+    document.getElementById('m-ttl').textContent = 'Edit Event';
+    document.getElementById('m-sub').textContent = fmtDateLong(ev.date);
+    document.getElementById('f-title').value   = ev.title;
+    document.getElementById('f-type').value    = ev.type;
+    document.getElementById('f-venue').value   = ev.venue  || '';
+    document.getElementById('f-date').value    = ev.date;
+    document.getElementById('f-ts').value      = ev.timeStart || '';
+    document.getElementById('f-te').value      = ev.timeEnd   || '';
+    document.getElementById('f-pax').value     = ev.pax  || '';
+    document.getElementById('f-rate').value    = ev.rate || '';
+    document.getElementById('f-contact').value = ev.contact || '';
+    document.getElementById('f-notes').value   = ev.notes || '';
+    selColor  = ev.color || DB.EVENT_TYPES[ev.type]?.color || PALETTE[0];
+    selStatus = ev.status || 'confirmed';
+    document.getElementById('m-del').style.display = 'block';
+  } else {
+    document.getElementById('m-ttl').textContent = 'New Event';
+    document.getElementById('m-sub').textContent = preDate ? fmtDateLong(preDate) : 'Fill in event details';
+    document.getElementById('f-title').value   = '';
+    document.getElementById('f-type').value    = 'ev-wedding';
+    document.getElementById('f-venue').value   = DB.EVENT_VENUES[0];
+    document.getElementById('f-date').value    = preDate || '';
+    document.getElementById('f-ts').value      = '';
+    document.getElementById('f-te').value      = '';
+    document.getElementById('f-pax').value     = '';
+    document.getElementById('f-rate').value    = '';
+    document.getElementById('f-contact').value = '';
+    document.getElementById('f-notes').value   = '';
+    selColor  = DB.EVENT_TYPES['ev-wedding'].color;
+    selStatus = 'confirmed';
+    document.getElementById('m-del').style.display = 'none';
+  }
+
+  // Sync color picker UI
+  document.querySelectorAll('.c-sw').forEach(s => s.classList.toggle('sel', s.title === selColor));
+  updateAccent(selColor);
+  setStatus(selStatus);
+  document.getElementById('evModal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 80);
+  checkVenueConflict();
+}
+
+function closeModal() {
+  document.getElementById('evModal').classList.remove('open');
+  clearAlert();
+  editId = null;
+}
+
+function saveEvent() {
+  clearAlert();
+  const ev = {
+    id:        editId || DB.uid(),
+    title:     document.getElementById('f-title').value,
+    type:      document.getElementById('f-type').value,
+    venue:     document.getElementById('f-venue').value,
+    date:      document.getElementById('f-date').value,
+    timeStart: document.getElementById('f-ts').value,
+    timeEnd:   document.getElementById('f-te').value,
+    pax:       Number(document.getElementById('f-pax').value)  || 0,
+    rate:      Number(document.getElementById('f-rate').value) || 0,
+    contact:   document.getElementById('f-contact').value,
+    notes:     document.getElementById('f-notes').value,
+    color:     selColor,
+    status:    selStatus,
+  };
+
+  const result = DB.upsertEvent(ev);
+
+  if (!result.ok) {
+    showAlert(result.error, 'error');
+    return;
+  }
+  if (result.warning) {
+    // Soft warning — event was saved but show the warning
+    closeModal();
+    render();
+    // Brief toast-style notification
+    return;
+  }
+  closeModal();
+  render();
+}
+
+function deleteEvent() {
+  if (!editId) return;
+  const ev = DB.getEvents().find(e => e.id === editId);
+  const name = ev ? ev.title : 'this event';
+  if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+  DB.deleteEvent(editId);
+  closeModal();
+  render();
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('m-alert');
+  el.textContent = (type === 'error' ? '⛔ ' : '⚠️ ') + msg;
+  el.className   = 'ev-alert ' + type;
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function clearAlert() {
+  const el = document.getElementById('m-alert');
+  el.className = 'ev-alert'; el.textContent = '';
+  document.getElementById('m-venue-hint').className = 'venue-hint';
+}
+
+document.getElementById('evModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+
+/* ═══════════════════════════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════════════════════════ */
+document.getElementById('prevMo').addEventListener('click', () => {
+  if (--viewMonth < 0) { viewMonth = 11; viewYear--; } render();
+});
+document.getElementById('nextMo').addEventListener('click', () => {
+  if (++viewMonth > 11) { viewMonth = 0; viewYear++; } render();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  viewYear = TODAY.getFullYear(); viewMonth = TODAY.getMonth(); render();
+});
+document.getElementById('newEvBtn').addEventListener('click', () => openModal(null));
+document.getElementById('fType').addEventListener('change',   e => { fType   = e.target.value; render(); });
+document.getElementById('fVenue').addEventListener('change',  e => { fVenue  = e.target.value; render(); });
+document.getElementById('fStatus').addEventListener('change', e => { fStatus = e.target.value; render(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDayPanel(); }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CROSS-PAGE SYNC
+═══════════════════════════════════════════════════════════ */
+DB.onUpdate(key => {
+  if (key === DB.KEY.events) render();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+render();
+</script>
+</body>
+</html>
+
+<!-- login.html -->
+ <!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Secure Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      /* Default: dark */
+      --h-red:       #C0272D;
+      --h-red-dk:    #961E23;
+      --h-dark:      #141416;
+      --h-panel:     #1C1C1F;
+      --h-border:    #2A2A2E;
+      --h-muted:     #5A5A62;
+      --h-text:      #E8E8EC;
+      --h-sub:       #9898A4;
+      --h-input-bg:  rgba(255,255,255,0.03);
+    }
+    [data-theme="light"] {
+      --h-dark:      #F0F0F4;
+      --h-panel:     #FFFFFF;
+      --h-border:    #E2E2EB;
+      --h-muted:     #8888A0;
+      --h-text:      #18181F;
+      --h-sub:       #50506A;
+      --h-input-bg:  rgba(0,0,0,0.03);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      transition: background-color 0.28s ease;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--h-dark);
+      color: var(--h-text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Grid bg — hidden in light mode */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(192,39,45,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(192,39,45,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridShift 20s linear infinite;
+    }
+    [data-theme="light"] .bg-grid { opacity: 0.4; }
+    @keyframes gridShift { 100% { background-position: 48px 48px; } }
+
+    .bg-vignette {
+      position: fixed; inset: 0; z-index: 1;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, var(--h-dark) 100%);
+    }
+    .bg-glow {
+      position: fixed; top: -120px; left: -120px; z-index: 0;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(192,39,45,0.12) 0%, transparent 70%);
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+    [data-theme="light"] .bg-glow { opacity: 0.5; }
+    @keyframes glowPulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+
+    /* Card */
+    .login-card {
+      position: relative; z-index: 10;
+      background: var(--h-panel);
+      border: 1px solid var(--h-border);
+      border-radius: 4px; width: 420px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 32px 80px rgba(0,0,0,0.4);
+      animation: cardReveal 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+      opacity: 0; transform: translateY(24px);
+      transition: background-color 0.28s ease, border-color 0.28s ease;
+    }
+    @keyframes cardReveal { to { opacity:1; transform:translateY(0); } }
+
+    .card-accent {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--h-red), transparent);
+      border-radius: 4px 4px 0 0;
+    }
+    .card-body { padding: 40px 40px 36px; }
+
+    .brand-emblem {
+      width: 52px; height: 52px; background: var(--h-red); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px; box-shadow: 0 4px 24px rgba(192,39,45,0.4);
+      position: relative; overflow: hidden;
+    }
+    .brand-emblem::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    }
+    .brand-emblem svg { position: relative; z-index: 1; }
+    .brand-name {
+      font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+      letter-spacing: 0.08em; color: var(--h-text); line-height: 1;
+    }
+    .brand-sub {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--h-muted); margin-top: 4px;
+    }
+    .divider { height: 1px; background: var(--h-border); margin: 28px 0; transition: background-color 0.28s ease; }
+
+    .field-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--h-muted); margin-bottom: 8px; display: block;
+    }
+    .field-wrap { position: relative; }
+    .field-input {
+      width: 100%; background: var(--h-input-bg); border: 1px solid var(--h-border);
+      border-radius: 3px; padding: 13px 44px 13px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--h-text);
+      outline: none; letter-spacing: 0.05em;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field-input::placeholder { color: var(--h-muted); }
+    .field-input:focus {
+      border-color: var(--h-red); background: rgba(192,39,45,0.04);
+      box-shadow: 0 0 0 3px rgba(192,39,45,0.12);
+    }
+    .field-input.error { border-color: #e55a5a; box-shadow: 0 0 0 3px rgba(229,90,90,0.12); }
+    .toggle-pw {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--h-muted);
+      transition: color 0.2s; padding: 4px; line-height: 0;
+    }
+    .toggle-pw:hover { color: var(--h-text); }
+
+    .error-msg {
+      font-size: 12px; color: #e55a5a; margin-top: 8px;
+      display: none; align-items: center; gap: 6px;
+    }
+    .error-msg.show { display: flex; }
+
+    .btn-login {
+      width: 100%; margin-top: 24px; padding: 14px;
+      background: var(--h-red); border: none; border-radius: 3px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #fff;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .btn-login::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    }
+    .btn-login:hover { background: var(--h-red-dk); box-shadow: 0 8px 28px rgba(192,39,45,0.4); transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-login .btn-text { position: relative; z-index: 1; }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 15%{transform:translateX(-8px)}
+      30%{transform:translateX(8px)} 45%{transform:translateX(-6px)}
+      60%{transform:translateX(6px)} 75%{transform:translateX(-3px)}
+      90%{transform:translateX(3px)}
+    }
+    .shake { animation: shake 0.5s ease; }
+
+    .card-footer {
+      padding: 16px 40px; border-top: 1px solid var(--h-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-badge { font-size: 11px; color: var(--h-muted); letter-spacing: 0.06em; }
+    .footer-status { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--h-muted); }
+    .footer-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.6);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Theme toggle on login page */
+    .theme-toggle-login {
+      position: fixed; top: 20px; right: 20px; z-index: 20;
+      width: 38px; height: 38px; border-radius: 3px;
+      border: 1px solid var(--h-border); background: var(--h-panel);
+      color: var(--h-sub); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .theme-toggle-login:hover { border-color: var(--h-red); color: var(--h-red); }
+
+    /* Transition overlay */
+    #transition-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--h-dark);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      pointer-events: none; opacity: 0; transition: opacity 0.35s ease;
+    }
+    #transition-overlay.active { opacity: 1; pointer-events: all; }
+    .loader-bar-wrap {
+      width: 200px; height: 2px; background: var(--h-border); border-radius: 2px; overflow: hidden;
+    }
+    .loader-bar { height: 100%; background: var(--h-red); border-radius: 2px; width: 0%; transition: width 0.05s linear; }
+    .loader-text {
+      font-family: 'Cinzel', serif; font-size: 12px;
+      letter-spacing: 0.2em; color: var(--h-muted); text-transform: uppercase;
+    }
+    .loader-emblem {
+      width: 40px; height: 40px; background: var(--h-red); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px; box-shadow: 0 0 24px rgba(192,39,45,0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-vignette"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Theme toggle (top-right corner) -->
+  <button class="theme-toggle-login" id="loginThemeToggle" title="Toggle theme">
+    <!-- icon filled by JS -->
+  </button>
+
+  <!-- Login Card -->
+  <div class="login-card" id="loginCard">
+    <div class="card-accent"></div>
+    <div class="card-body">
+      <div class="brand-emblem">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="4" y="4" width="6" height="20" fill="white"/>
+          <rect x="4" y="11" width="20" height="6" fill="white"/>
+          <rect x="18" y="4" width="6" height="20" fill="white"/>
+        </svg>
+      </div>
+      <div class="brand-name">HIRAYA</div>
+      <div class="brand-sub">Hotel &amp; Events Place — Admin Terminal</div>
+
+      <div class="divider"></div>
+
+      <label class="field-label" for="password">Access Passkey</label>
+      <div class="field-wrap">
+        <input class="field-input" type="password" id="password"
+               placeholder="Enter terminal passkey" autocomplete="current-password"/>
+        <button class="toggle-pw" id="togglePw" type="button">
+          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="error-msg" id="errorMsg">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Incorrect passkey. Access denied.
+      </div>
+      <button class="btn-login" id="loginBtn">
+        <span class="btn-text">Authenticate &amp; Enter</span>
+      </button>
+    </div>
+    <div class="card-footer">
+      <span class="footer-badge">HMS v1.0 · 2026</span>
+      <div class="footer-status">
+        <div class="footer-dot"></div>
+        <span>System Online</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transition Overlay -->
+  <div id="transition-overlay">
+    <div class="loader-emblem">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <rect x="4" y="4" width="5" height="20" fill="white"/>
+        <rect x="4" y="11" width="20" height="6" fill="white"/>
+        <rect x="19" y="4" width="5" height="20" fill="white"/>
+      </svg>
+    </div>
+    <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
+    <div class="loader-text">Authenticating</div>
+  </div>
+
+  <script>
+    const CORRECT = 'hiraya2026';
+    const TARGET  = 'index.html';
+
+    // ── Theme on login page ──────────────────────────────────────────────────
+    const ICON_SUN  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+    const ICON_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+    let currentTheme = localStorage.getItem('hiraya_theme') || 'dark';
+    const toggleBtn  = document.getElementById('loginThemeToggle');
+
+    function applyLoginTheme(mode) {
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('hiraya_theme', mode);
+      currentTheme = mode;
+      toggleBtn.innerHTML = mode === 'dark' ? ICON_SUN : ICON_MOON;
+      toggleBtn.title = mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+
+    applyLoginTheme(currentTheme); // apply on page load
+
+    toggleBtn.addEventListener('click', () => {
+      applyLoginTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    // ── Login Logic ──────────────────────────────────────────────────────────
+    const input    = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const card     = document.getElementById('loginCard');
+    const overlay  = document.getElementById('transition-overlay');
+    const bar      = document.getElementById('loaderBar');
+    const eyeIcon  = document.getElementById('eyeIcon');
+
+    document.getElementById('togglePw').addEventListener('click', () => {
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      eyeIcon.innerHTML = isHidden
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    });
+
+    function showError() {
+      input.classList.add('error');
+      errorMsg.classList.add('show');
+      card.classList.add('shake');
+      card.addEventListener('animationend', () => card.classList.remove('shake'), { once:true });
+    }
+
+    input.addEventListener('input', () => { input.classList.remove('error'); errorMsg.classList.remove('show'); });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+    loginBtn.addEventListener('click', attempt);
+
+    function attempt() {
+      if (input.value.trim() === CORRECT) {
+        loginBtn.disabled = true;
+        sessionStorage.setItem('hiraya_auth', '1');
+        overlay.classList.add('active');
+        // Animate loader bar
+        let p = 0;
+        const iv = setInterval(() => {
+          p += Math.random() * 20 + 8;
+          if (p >= 90) { p = 90; clearInterval(iv); }
+          bar.style.width = p + '%';
+        }, 80);
+        setTimeout(() => {
+          bar.style.width = '100%';
+          setTimeout(() => { window.location.href = TARGET; }, 220);
+        }, 900);
+      } else {
+        showError();
+        input.value = '';
+        input.focus();
+      }
+    }
+  </script>
+</body>
+</html>
+
+<!-- reservations.html -->
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hiraya HMS — Reservations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Full-height non-scrolling shell ── */
+    html, body { height:100%; overflow:hidden; }
+    #hms-main  { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .res-wrap  { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+    /* ── Controls bar ── */
+    .ctrl-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+      padding:9px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .ctrl-grp  { display:flex; align-items:center; gap:6px; }
+    .ctrl-lbl  { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .ctrl-sel, .ctrl-inp {
+      background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px;
+      padding:6px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      color:var(--h-text); outline:none; cursor:pointer;
+    }
+    .ctrl-sel:focus,.ctrl-inp:focus { border-color:var(--h-red); }
+    .ctrl-btn {
+      display:flex; align-items:center; gap:5px; padding:6px 13px; border-radius:3px; border:none;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:.05em;
+      cursor:pointer; white-space:nowrap; transition:background .15s, transform .1s;
+    }
+    .ctrl-btn:active { transform:translateY(1px); }
+    .btn-primary { background:var(--h-red); color:#fff; }
+    .btn-primary:hover { background:var(--h-red-dk); }
+    .btn-outline { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-outline:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .ctrl-sep  { width:1px; height:20px; background:var(--h-border); flex-shrink:0; }
+    .ctrl-fill { flex:1; min-width:8px; }
+    .nav-btn {
+      width:28px; height:28px; border-radius:3px; border:1px solid var(--h-border);
+      background:var(--h-input-bg); color:var(--h-sub); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+    }
+    .nav-btn:hover { background:var(--h-red); color:#fff; border-color:var(--h-red); }
+    .month-lbl {
+      font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--h-text);
+      letter-spacing:.06em; min-width:148px; text-align:center;
+    }
+
+    /* ── Legend strip ── */
+    .legend-strip {
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex-shrink:0;
+      padding:7px 20px; border-bottom:1px solid var(--h-border); background:var(--h-panel2);
+    }
+    .lgd-lbl   { font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-muted); margin-right:2px; }
+    .lgd-chip  { display:flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--h-muted); white-space:nowrap; }
+    .lgd-sw    { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      display:flex; flex-shrink:0; border-bottom:1px solid var(--h-border); background:var(--h-panel);
+    }
+    .stat-cell { flex:1; padding:7px 12px; border-right:1px solid var(--h-border); text-align:center; }
+    .stat-cell:last-child { border-right:none; }
+    .stat-v { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--h-text); line-height:1; }
+    .stat-l { font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); margin-top:2px; }
+
+    /* ═══ GANTT TABLE ═══════════════════════════════════════════ */
+    /*
+     * Layout contract:
+     * Each day column = COL_W px wide (set in JS).
+     * The two sticky left columns (catg=36px, room=46px) are fixed.
+     * Booking bars use left:1px, width = span*COL_W - 2px so they
+     * never bleed past the column borders on either side.
+     */
+    .gantt-wrap { flex:1; overflow:auto; min-height:0; }
+
+    .gantt-tbl {
+      border-collapse:collapse; table-layout:fixed;
+      /* width is set dynamically in JS */
+    }
+
+    /* sticky left columns */
+    .c-catg { width:36px; }
+    .c-room { width:46px; }
+    .c-day  { /* width set by JS */ }
+
+    /* thead month row */
+    .gantt-tbl thead tr.hdr-mo th {
+      background:var(--h-red); color:#fff;
+      font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; text-align:center; padding:6px 0;
+      position:sticky; z-index:30; border:1px solid rgba(255,255,255,.15);
+    }
+    /* thead DOW row */
+    .gantt-tbl thead tr.hdr-dow th {
+      background:var(--h-panel2); color:var(--h-sub);
+      font-size:9px; font-weight:700; text-align:center; padding:4px 0;
+      position:sticky; z-index:29; border:1px solid var(--h-border);
+    }
+    .gantt-tbl thead tr.hdr-dow th.col-today  { background:rgba(192,39,45,.18); color:var(--h-red); }
+    .gantt-tbl thead tr.hdr-dow th.col-wknd   { background:var(--h-dark); }
+    .dow-sub { font-size:8px; font-weight:500; color:var(--h-muted); display:block; letter-spacing:.04em; }
+
+    /* sticky left header cells */
+    .hdr-sticky-0  { position:sticky; left:0;   z-index:31 !important; }
+    .hdr-sticky-36 { position:sticky; left:36px; z-index:31 !important; }
+
+    /* body rows */
+    .gantt-tbl tbody tr            { height:34px; }
+    .gantt-tbl tbody tr:hover      { background:rgba(192,39,45,.04); }
+    .gantt-tbl tbody tr.row-div    { border-top:2px solid var(--h-border); }
+
+    /* sticky body cells */
+    .cell-catg {
+      background:var(--h-panel2); font-size:8px; font-weight:700; letter-spacing:.1em;
+      text-align:center; color:var(--h-muted); text-transform:uppercase;
+      border:1px solid var(--h-border); position:sticky; left:0; z-index:20;
+    }
+    .cell-room {
+      background:var(--h-panel); font-family:'Cinzel',serif; font-size:12px; font-weight:700;
+      color:var(--h-text); text-align:center;
+      border:1px solid var(--h-border); position:sticky; left:36px; z-index:20;
+    }
+
+    /* day cells */
+    .cell-day {
+      border:1px solid var(--h-border); padding:0; position:relative;
+      vertical-align:middle; cursor:pointer;
+    }
+    .cell-day.col-wknd { background:rgba(255,255,255,.012); }
+    [data-theme="light"] .cell-day.col-wknd { background:rgba(0,0,0,.018); }
+    .cell-day.col-today { background:rgba(192,39,45,.055); }
+    .cell-day:hover { background:rgba(192,39,45,.1) !important; }
+
+    /* today line */
+    .today-line {
+      position:absolute; top:0; bottom:0; left:50%; width:2px;
+      background:var(--h-red); opacity:.4; pointer-events:none; z-index:4;
+    }
+
+    /* ── BOOKING BAR ──
+     * IMPORTANT: position absolute, left:1px, width = (span * COL_W) - 2px
+     * This means it starts 1px in from the left border and stops 1px
+     * before the next column's border. Never bleeds.
+     */
+    .bk-bar {
+      position:absolute; top:3px; bottom:3px;
+      border-radius:2px; display:flex; align-items:center;
+      padding:0 6px; font-size:9px; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      cursor:pointer; z-index:5;
+      box-shadow:0 1px 4px rgba(0,0,0,.28);
+      transition:filter .12s, transform .1s;
+    }
+    .bk-bar:hover { filter:brightness(1.15); transform:scaleY(1.06); z-index:10; }
+    .bk-bar.bk-cancelled { opacity:.6; text-decoration:line-through; }
+
+    /* footer rows */
+    .gantt-tbl tfoot tr { height:24px; }
+    .cell-ft-lbl {
+      background:var(--h-panel2); font-size:8px; font-weight:700; letter-spacing:.1em;
+      text-align:center; color:var(--h-muted); text-transform:uppercase;
+      border:1px solid var(--h-border); position:sticky; left:0; z-index:20;
+    }
+    .cell-ft-lbl2 {
+      background:var(--h-panel2); font-size:8px; font-weight:700; color:var(--h-sub);
+      text-align:center; border:1px solid var(--h-border); position:sticky; left:36px; z-index:20;
+    }
+    .cell-ft {
+      border:1px solid var(--h-border); font-size:9px; font-weight:600;
+      text-align:center; color:var(--h-muted); padding:0 2px;
+    }
+    .cell-ft.fv  { color:var(--h-sub); }
+    .cell-ft.rev { color:#2ecc71; font-weight:700; font-size:8px; }
+    .cell-ft.pax { color:#3498db; }
+    .cell-ft.rmn { color:var(--h-text); }
+
+    /* scrollbar */
+    .gantt-wrap::-webkit-scrollbar { width:6px; height:6px; }
+    .gantt-wrap::-webkit-scrollbar-track { background:var(--h-dark); }
+    .gantt-wrap::-webkit-scrollbar-thumb { background:var(--h-border); border-radius:3px; }
+    .gantt-wrap::-webkit-scrollbar-thumb:hover { background:var(--h-muted); }
+
+    /* ── TOOLTIP ── */
+    #bkTip {
+      position:fixed; z-index:9990; background:var(--h-panel); border:1px solid var(--h-border);
+      border-radius:3px; padding:10px 14px; box-shadow:0 8px 28px rgba(0,0,0,.45);
+      pointer-events:none; opacity:0; transition:opacity .12s; min-width:210px; max-width:280px;
+    }
+    #bkTip.show { opacity:1; }
+    .tt-name { font-weight:700; font-size:13px; margin-bottom:5px; color:var(--h-text); }
+    .tt-row  { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .tt-val  { color:var(--h-sub); font-weight:600; text-align:right; }
+    .tt-hint { margin-top:7px; font-size:9px; color:var(--h-muted); letter-spacing:.06em; text-transform:uppercase; }
+
+    /* ── BOOKING MODAL ── */
+    #bkModal {
+      position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.62);
+      backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    #bkModal.open { opacity:1; pointer-events:all; }
+    .bk-card {
+      background:var(--h-panel); border:1px solid var(--h-border); border-radius:4px;
+      width:520px; max-width:96vw; box-shadow:var(--h-shadow);
+      transform:scale(.95) translateY(10px);
+      transition:transform .22s cubic-bezier(.16,1,.3,1);
+      overflow:hidden; max-height:94vh; display:flex; flex-direction:column;
+    }
+    #bkModal.open .bk-card { transform:scale(1) translateY(0); }
+    .bk-accent  { height:3px; background:linear-gradient(90deg,transparent,var(--h-red),transparent); flex-shrink:0; }
+    .bk-hd      { padding:15px 22px 12px; border-bottom:1px solid var(--h-border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .bk-ttl     { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--h-text); }
+    .bk-sub     { font-size:11px; color:var(--h-muted); margin-top:2px; }
+    .bk-body    { padding:18px 22px; display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow-y:auto; }
+    .bk-full    { grid-column:1/-1; }
+    .bk-ft      { padding:12px 22px; border-top:1px solid var(--h-border); display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+    .fg         { display:flex; flex-direction:column; gap:4px; }
+    .flbl       { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--h-muted); }
+    .fctl       { background:var(--h-input-bg); border:1px solid var(--h-border); border-radius:3px; padding:8px 12px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--h-text); outline:none; width:100%; appearance:none; }
+    .fctl::placeholder { color:var(--h-muted); }
+    .fctl:focus { border-color:var(--h-red); box-shadow:0 0 0 3px rgba(192,39,45,.1); }
+    .btn-m      { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 16px; border-radius:3px; border:none; cursor:pointer; }
+    .btn-save   { background:var(--h-red); color:#fff; }
+    .btn-save:hover { background:var(--h-red-dk); }
+    .btn-cncl   { background:var(--h-input-bg); color:var(--h-sub); border:1px solid var(--h-border); }
+    .btn-cncl:hover { background:var(--h-hover-bg); color:var(--h-text); }
+    .btn-del    { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.2); margin-right:auto; }
+    .btn-del:hover { background:rgba(231,76,60,.22); }
+
+    /* ── Error / warning banner ── */
+    .bk-alert {
+      grid-column:1/-1; padding:9px 12px; border-radius:3px; font-size:12px; line-height:1.5;
+      display:none;
+    }
+    .bk-alert.error   { background:rgba(231,76,60,.1);  border:1px solid rgba(231,76,60,.25); color:#e74c3c; display:block; }
+    .bk-alert.warning { background:rgba(243,156,18,.1); border:1px solid rgba(243,156,18,.25); color:#f39c12; display:block; }
+
+    /* ── Availability hint ── */
+    .avail-hint {
+      grid-column:1/-1; font-size:11px; color:var(--h-muted); padding:4px 0;
+      display:none;
+    }
+    .avail-hint.show { display:block; }
+    .avail-hint.ok   { color:#2ecc71; }
+    .avail-hint.busy { color:#e74c3c; }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="res-wrap">
+
+    <!-- Controls -->
+    <div class="ctrl-bar">
+      <div class="ctrl-grp">
+        <button class="nav-btn" id="prevMo">&#8249;</button>
+        <span class="month-lbl" id="monthLbl">—</span>
+        <button class="nav-btn" id="nextMo">&#8250;</button>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Type</span>
+        <select class="ctrl-sel" id="fType">
+          <option value="all">All Types</option>
+          <option value="bk-confirmed">Confirmed</option>
+          <option value="bk-reserved">Reserved</option>
+          <option value="bk-blocked">Blocked</option>
+          <option value="bk-walkin">Walk-in</option>
+          <option value="bk-comp">Complimentary</option>
+          <option value="bk-cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Search</span>
+        <input class="ctrl-inp" id="fSearch" type="text" placeholder="Guest name…" style="width:140px;" maxlength="80"/>
+      </div>
+      <div class="ctrl-fill"></div>
+      <button class="ctrl-btn btn-outline" id="todayBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Today
+      </button>
+      <button class="ctrl-btn btn-primary" id="newBkBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Booking
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-strip">
+      <span class="lgd-lbl">Booking Type:</span>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#27ae60;"></div>Confirmed</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#f39c12;"></div>Reserved</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#2980b9;"></div>Blocked</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#8e44ad;"></div>Walk-in</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#16a085;"></div>Comp</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:#95a5a6;"></div>Cancelled</div>
+      <div class="lgd-chip" style="margin-left:6px;"><div class="lgd-sw" style="background:rgba(192,39,45,.35);border:1px solid var(--h-red);"></div>Today</div>
+      <div class="lgd-chip"><div class="lgd-sw" style="background:rgba(255,255,255,.012);border:1px solid var(--h-border);"></div>Weekend</div>
+      <span style="flex:1;"></span>
+      <span style="font-size:9px;color:var(--h-muted);font-style:italic;">Click empty cell → new booking &nbsp;|&nbsp; Click bar → edit</span>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stat-cell"><div class="stat-v" id="s-bk">0</div><div class="stat-l">Bookings</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-rn">0</div><div class="stat-l">Room-Nights</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-px">0</div><div class="stat-l">PAX</div></div>
+      <div class="stat-cell"><div class="stat-v" style="color:#2ecc71;" id="s-rv">₱0</div><div class="stat-l">Revenue</div></div>
+      <div class="stat-cell"><div class="stat-v" id="s-oc">0%</div><div class="stat-l">Occupancy</div></div>
+    </div>
+
+    <!-- Gantt -->
+    <div class="gantt-wrap" id="ganttWrap">
+      <table class="gantt-tbl" id="ganttTbl">
+        <thead id="ganttHead"></thead>
+        <tbody id="ganttBody"></tbody>
+        <tfoot id="ganttFoot"></tfoot>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="bkTip"></div>
+
+<!-- Booking Modal -->
+<div id="bkModal">
+  <div class="bk-card">
+    <div class="bk-accent"></div>
+    <div class="bk-hd">
+      <div>
+        <div class="bk-ttl" id="m-ttl">New Booking</div>
+        <div class="bk-sub" id="m-sub">Fill in reservation details</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;line-height:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bk-body">
+      <!-- Alert / warning banner renders inside grid -->
+      <div class="bk-alert" id="m-alert"></div>
+      <div class="avail-hint" id="m-avail"></div>
+
+      <div class="fg bk-full">
+        <label class="flbl">Guest / Group Name</label>
+        <input class="fctl" type="text" id="f-guest" placeholder="e.g. JUAN DELA CRUZ" maxlength="120" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Room</label>
+        <select class="fctl" id="f-room" onchange="checkAvailability()"></select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Booking Type</label>
+        <select class="fctl" id="f-type" onchange="checkAvailability()">
+          <option value="bk-confirmed">✅ Confirmed</option>
+          <option value="bk-reserved">⏳ Reserved / Pending</option>
+          <option value="bk-blocked">🔒 Blocked</option>
+          <option value="bk-walkin">🚶 Walk-in</option>
+          <option value="bk-comp">🎁 Complimentary</option>
+          <option value="bk-cancelled">❌ Cancelled</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="flbl">Check-in Date</label>
+        <input class="fctl" type="date" id="f-cin" onchange="checkAvailability()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Check-out Date</label>
+        <input class="fctl" type="date" id="f-cout" onchange="checkAvailability()"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">PAX (Guests)</label>
+        <input class="fctl" type="number" id="f-pax" min="0" max="50" placeholder="1"/>
+      </div>
+      <div class="fg">
+        <label class="flbl">Rate / Night (₱)</label>
+        <input class="fctl" type="number" id="f-rate" min="0" max="999999" placeholder="0"/>
+      </div>
+      <div class="fg bk-full">
+        <label class="flbl">Notes / Concerns</label>
+        <input class="fctl" type="text" id="f-notes" placeholder="e.g. Extra bed, early check-in…" maxlength="300"/>
+      </div>
+    </div>
+    <div class="bk-ft">
+      <button class="btn-m btn-del" id="m-del" style="display:none;" onclick="deleteBooking()">Delete</button>
+      <button class="btn-m btn-cncl" onclick="closeModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveBooking()">Save Booking</button>
+    </div>
+  </div>
+</div>
+
+<script>window.HIRAYA_PAGE='reservations';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTS & STATE
+═══════════════════════════════════════════════════════════ */
+hirayaRenderTopbar('Reservations Dashboard','Room Blocking & Reservation');
+const DB = window.HirayaDB;
+
+// Column width in px — single source of truth for all geometry
+const COL_W  = 52;
+const ROWS   = DB.ROOM_NUMBERS.map(n => ({ num: n, catg: DB.ROOM_META[n].catg }));
+const TODAY  = new Date(); TODAY.setHours(0,0,0,0);
+const DOW    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+let viewYear  = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+let editId    = null;
+let fType     = 'all';
+let fSearch   = '';
+
+// Populate room select in modal (once)
+const roomSel = document.getElementById('f-room');
+ROWS.forEach(r => {
+  const o = document.createElement('option');
+  o.value = r.num;
+  o.textContent = `Room ${r.num} — ${DB.ROOM_META[r.num].type} (${r.catg})`;
+  roomSel.appendChild(o);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+function isToday(d) {
+  return viewYear === TODAY.getFullYear() &&
+         viewMonth === TODAY.getMonth()   &&
+         d === TODAY.getDate();
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function fmt12(mins) {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return `${h % 12 || 12}:${pad2(m)} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════ */
+function render() {
+  document.getElementById('monthLbl').textContent =
+    new Date(viewYear, viewMonth, 1)
+      .toLocaleDateString('en-PH', { month:'long', year:'numeric' });
+  renderGantt();
+  updateStats();
+}
+
+function renderGantt() {
+  const days = daysInMonth(viewYear, viewMonth);
+  const head = document.getElementById('ganttHead');
+  const body = document.getElementById('ganttBody');
+  const foot = document.getElementById('ganttFoot');
+
+  // Set table width so horizontal scroll works correctly
+  document.getElementById('ganttTbl').style.width =
+    (36 + 46 + days * COL_W) + 'px';
+
+  head.innerHTML = '';
+  body.innerHTML = '';
+  foot.innerHTML = '';
+
+  /* ── Header row 1: month label ── */
+  const trMo = document.createElement('tr');
+  trMo.className = 'hdr-mo';
+  trMo.appendChild(_stickyTh('CAT', 36, 0,  0,  30));
+  trMo.appendChild(_stickyTh('RM',  46, 36, 0,  30));
+  for (let d = 1; d <= days; d++) {
+    const dow = new Date(viewYear, viewMonth, d).getDay();
+    const th  = document.createElement('th');
+    th.style.width = COL_W + 'px';
+    th.style.top   = '0';
+    th.textContent = d;
+    if (isToday(d))           th.style.background = 'rgba(255,255,255,.22)';
+    else if (dow===0||dow===6) th.style.background = 'rgba(0,0,0,.18)';
+    trMo.appendChild(th);
+  }
+  head.appendChild(trMo);
+
+  /* ── Header row 2: DOW ── */
+  const trDow = document.createElement('tr');
+  trDow.className = 'hdr-dow';
+  const dA = _stickyTh('CAT', 36, 0,  30, 29);
+  dA.style.fontSize = '8px';
+  trDow.appendChild(dA);
+  const dB = _stickyTh('ROOM',46, 36, 30, 29);
+  dB.style.fontSize = '8px';
+  trDow.appendChild(dB);
+  for (let d = 1; d <= days; d++) {
+    const dow = new Date(viewYear, viewMonth, d).getDay();
+    const th  = document.createElement('th');
+    th.style.width = COL_W + 'px';
+    th.style.top   = '30px';
+    th.classList.toggle('col-today', isToday(d));
+    th.classList.toggle('col-wknd',  dow===0||dow===6);
+    th.innerHTML = `<span class="dow-sub">${DOW[dow]}</span>`;
+    trDow.appendChild(th);
+  }
+  head.appendChild(trDow);
+
+  /* ── Body rows ── */
+  const monthStart = new Date(viewYear, viewMonth, 1);
+  const monthEnd   = new Date(viewYear, viewMonth, days + 1); // exclusive
+
+  ROWS.forEach((room, idx) => {
+    const tr = document.createElement('tr');
+    if (idx > 0 && ROWS[idx-1].catg !== room.catg) tr.classList.add('row-div');
+
+    const tc = document.createElement('td'); tc.className = 'cell-catg'; tc.textContent = room.catg; tr.appendChild(tc);
+    const tr2 = document.createElement('td'); tr2.className = 'cell-room'; tr2.textContent = room.num; tr.appendChild(tr2);
+
+    for (let d = 1; d <= days; d++) {
+      const dow   = new Date(viewYear, viewMonth, d).getDay();
+      const td    = document.createElement('td');
+      td.className = 'cell-day' +
+        (isToday(d)         ? ' col-today' : '') +
+        (dow===0||dow===6   ? ' col-wknd'  : '');
+      td.style.width = COL_W + 'px';
+      // Store data for bar injection
+      td.dataset.room = room.num;
+      td.dataset.day  = d;
+      if (isToday(d)) { const ln = document.createElement('div'); ln.className='today-line'; td.appendChild(ln); }
+      td.addEventListener('click', () => openModal(null, room.num, d));
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  });
+
+  /* ── Place booking bars ──
+   * We use DB.getBookingsInRange to get only relevant bookings (already filtered by month).
+   * For each booking, we calculate:
+   *   startDay = first visible day in this month (1 if booking started in a prior month)
+   *   endDay   = last visible OCCUPIED day (checkout date's previous day, capped at month end)
+   *   span     = endDay - startDay + 1
+   * Bar width  = span * COL_W - 2  (1px inset each side from borders)
+   * Bar left   = 1px (inside the starting cell's left border)
+   */
+  const rangeStart = DB.fmtDate(new Date(viewYear, viewMonth, 1));
+  const rangeEnd   = DB.fmtDate(new Date(viewYear, viewMonth + 1, 1));
+  const allBks     = DB.getBookingsInRange(rangeStart, rangeEnd);
+
+  allBks.forEach(bk => {
+    // Apply UI filters
+    if (fType !== 'all' && bk.type !== fType) return;
+    if (fSearch) {
+      const q = fSearch.toLowerCase();
+      if (!bk.guest.toLowerCase().includes(q) &&
+          !String(bk.room).includes(q)) return;
+    }
+
+    const cin  = DB.parseDate(bk.checkin);
+    const cout = DB.parseDate(bk.checkout);
+
+    // Clamp to visible month window
+    const startDay = cin < monthStart
+      ? 1
+      : (cin >= monthEnd ? null : cin.getDate());
+    if (startDay === null) return;
+
+    // Last occupied day = checkout - 1 day; if checkout is before month start, skip
+    const lastOccupied = new Date(cout.getTime() - 86400000); // cout minus 1 day
+    if (lastOccupied < monthStart) return;
+    const endDay = lastOccupied >= monthEnd
+      ? days
+      : lastOccupied.getDate();
+    if (endDay < startDay) return;
+
+    const span = endDay - startDay + 1;
+
+    const startTd = body.querySelector(`td[data-room="${bk.room}"][data-day="${startDay}"]`);
+    if (!startTd) return;
+
+    const bar = document.createElement('div');
+    bar.className = 'bk-bar' + (bk.type === 'bk-cancelled' ? ' bk-cancelled' : '');
+    // Precise width: span columns minus 2px (1px left inset + 1px right gap from next border)
+    bar.style.cssText = `left:1px;width:${span * COL_W - 2}px;color:#fff;background:${DB.BOOKING_COLORS[bk.type]||'#888'};`;
+    // Safely set text — no innerHTML
+    bar.textContent = bk.guest;
+    bar.dataset.id  = bk.id;
+
+    bar.addEventListener('mouseenter', e => showTip(e, bk));
+    bar.addEventListener('mousemove',  moveTip);
+    bar.addEventListener('mouseleave', hideTip);
+    bar.addEventListener('click', e => { e.stopPropagation(); openModal(bk.id); });
+
+    startTd.style.overflow = 'visible'; // allow bar to extend right
+    startTd.appendChild(bar);
+  });
+
+  /* ── Footer rows ──
+   * We pass `viewYear` and `viewMonth` explicitly to occOn so it
+   * never captures stale closure state.
+   */
+  addFootRow(foot, allBks, days, 'REV', (bks, d) => {
+    const t = bks
+      .filter(b => b.type !== 'bk-cancelled' && occOnDay(b, viewYear, viewMonth, d))
+      .reduce((s, b) => s + (Number(b.rate) || 0), 0);
+    return t ? '₱' + t.toLocaleString('en-PH') : '';
+  }, 'rev');
+
+  addFootRow(foot, allBks, days, 'RMN', (bks, d) =>
+    bks.filter(b => b.type !== 'bk-cancelled' && occOnDay(b, viewYear, viewMonth, d)).length || ''
+  , 'rmn');
+
+  addFootRow(foot, allBks, days, 'PAX', (bks, d) => {
+    const t = bks
+      .filter(b => b.type !== 'bk-cancelled' && occOnDay(b, viewYear, viewMonth, d))
+      .reduce((s, b) => s + (Number(b.pax) || 0), 0);
+    return t || '';
+  }, 'pax');
+}
+
+/* ── Utility: sticky header cell ── */
+function _stickyTh(text, width, left, top, zIdx) {
+  const th = document.createElement('th');
+  th.style.cssText = `width:${width}px;position:sticky;left:${left}px;top:${top}px;z-index:${zIdx};`;
+  if (top === 0) th.style.background = 'var(--h-red)';
+  else           th.style.background = 'var(--h-panel2)';
+  th.textContent = text;
+  return th;
+}
+
+/* ── occupancy test: does booking bk occupy year/month/day? ── */
+function occOnDay(bk, y, m, d) {
+  const cin  = DB.parseDate(bk.checkin);
+  const cout = DB.parseDate(bk.checkout);
+  const cell = new Date(y, m, d);
+  return cin <= cell && cell < cout;
+}
+
+/* ── Footer row builder ── */
+function addFootRow(foot, bks, days, label, fn, cls) {
+  const tr  = document.createElement('tr');
+  const td0 = document.createElement('td'); td0.className = 'cell-ft-lbl';  td0.textContent = label; tr.appendChild(td0);
+  const td1 = document.createElement('td'); td1.className = 'cell-ft-lbl2'; td1.textContent = '—'; tr.appendChild(td1);
+  for (let d = 1; d <= days; d++) {
+    const td  = document.createElement('td');
+    const val = fn(bks, d);
+    td.className = 'cell-ft' + (val ? ' fv ' + cls : '');
+    td.textContent = val !== '' ? val : '';
+    tr.appendChild(td);
+  }
+  foot.appendChild(tr);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS (month-scoped, type-filter aware)
+═══════════════════════════════════════════════════════════ */
+function updateStats() {
+  const days  = daysInMonth(viewYear, viewMonth);
+  const ms    = new Date(viewYear, viewMonth, 1);
+  const me    = new Date(viewYear, viewMonth, days + 1);
+  const bks   = DB.getBookings().filter(b => {
+    if (b.type === 'bk-cancelled') return false;
+    const cin  = DB.parseDate(b.checkin);
+    const cout = DB.parseDate(b.checkout);
+    return cin < me && cout > ms;
+  });
+
+  let nights = 0, pax = 0, rev = 0;
+  bks.forEach(b => {
+    const cin  = DB.parseDate(b.checkin);
+    const cout = DB.parseDate(b.checkout);
+    const s    = cin  < ms ? ms : cin;
+    const e    = cout > me ? me : cout;
+    const n    = Math.max(0, Math.round((e - s) / 86400000));
+    nights += n;
+    pax    += Number(b.pax)  || 0;
+    rev    += n * (Number(b.rate) || 0);
+  });
+
+  const occ = ROWS.length * days
+    ? Math.round((nights / (ROWS.length * days)) * 100)
+    : 0;
+
+  document.getElementById('s-bk').textContent = bks.length;
+  document.getElementById('s-rn').textContent = nights;
+  document.getElementById('s-px').textContent = pax;
+  document.getElementById('s-rv').textContent = '₱' + rev.toLocaleString('en-PH');
+  document.getElementById('s-oc').textContent = occ + '%';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+function openModal(id, preRoom, preDay) {
+  editId = id || null;
+  clearAlert();
+
+  const delBtn = document.getElementById('m-del');
+
+  if (id) {
+    const bk = DB.getBookings().find(b => b.id === id);
+    if (!bk) return;
+    document.getElementById('m-ttl').textContent  = 'Edit Booking';
+    document.getElementById('m-sub').textContent  = `Room ${bk.room} · ${bk.guest}`;
+    document.getElementById('f-guest').value      = bk.guest;
+    document.getElementById('f-room').value       = bk.room;
+    document.getElementById('f-type').value       = bk.type;
+    document.getElementById('f-cin').value        = bk.checkin;
+    document.getElementById('f-cout').value       = bk.checkout;
+    document.getElementById('f-pax').value        = bk.pax;
+    document.getElementById('f-rate').value       = bk.rate;
+    document.getElementById('f-notes').value      = bk.notes;
+    delBtn.style.display = 'block';
+  } else {
+    document.getElementById('m-ttl').textContent  = 'New Booking';
+    document.getElementById('m-sub').textContent  = 'Fill in reservation details';
+    document.getElementById('f-guest').value      = '';
+    document.getElementById('f-room').value       = preRoom || ROWS[0].num;
+    document.getElementById('f-type').value       = 'bk-confirmed';
+    const y = viewYear, m = viewMonth + 1, d = preDay || 1;
+    document.getElementById('f-cin').value        = `${y}-${pad2(m)}-${pad2(d)}`;
+    const co = new Date(viewYear, viewMonth, (preDay || 1) + 1);
+    document.getElementById('f-cout').value       = DB.fmtDate(co);
+    document.getElementById('f-pax').value        = 1;
+    document.getElementById('f-rate').value       = 2800;
+    document.getElementById('f-notes').value      = '';
+    delBtn.style.display = 'none';
+  }
+
+  document.getElementById('bkModal').classList.add('open');
+  setTimeout(() => document.getElementById('f-guest').focus(), 80);
+  checkAvailability();
+}
+
+function closeModal() {
+  document.getElementById('bkModal').classList.remove('open');
+  clearAlert();
+  editId = null;
+}
+
+/* Real-time availability hint as user changes room/dates */
+function checkAvailability() {
+  const room   = Number(document.getElementById('f-room').value);
+  const cin    = document.getElementById('f-cin').value;
+  const cout   = document.getElementById('f-cout').value;
+  const type   = document.getElementById('f-type').value;
+  const hint   = document.getElementById('m-avail');
+
+  if (!room || !cin || !cout || type === 'bk-cancelled') {
+    hint.className = 'avail-hint'; return;
+  }
+
+  const check = DB.checkBookingOverlap({ room, checkin: cin, checkout: cout, type }, editId);
+  if (check.conflict) {
+    const cb = check.conflictingBooking;
+    hint.textContent = `⛔ Unavailable — overlaps with "${cb ? cb.guest : '?'}"`;
+    hint.className   = 'avail-hint show busy';
+  } else {
+    const cinD  = DB.parseDate(cin);
+    const coutD = DB.parseDate(cout);
+    if (!cinD || !coutD || coutD <= cinD) { hint.className = 'avail-hint'; return; }
+    const nights = Math.round((coutD - cinD) / 86400000);
+    hint.textContent = `✅ Room ${room} is available — ${nights} night${nights!==1?'s':''}`;
+    hint.className   = 'avail-hint show ok';
+  }
+}
+
+function saveBooking() {
+  clearAlert();
+  const bk = {
+    id:       editId || DB.uid(),
+    room:     Number(document.getElementById('f-room').value),
+    guest:    document.getElementById('f-guest').value.trim().toUpperCase(),
+    type:     document.getElementById('f-type').value,
+    checkin:  document.getElementById('f-cin').value,
+    checkout: document.getElementById('f-cout').value,
+    pax:      Number(document.getElementById('f-pax').value) || 0,
+    rate:     Number(document.getElementById('f-rate').value) || 0,
+    notes:    document.getElementById('f-notes').value.trim(),
+  };
+
+  const result = DB.upsertBooking(bk);
+
+  if (!result.ok) {
+    showAlert(result.error, 'error');
+    return;
+  }
+  closeModal();
+  render();
+}
+
+function deleteBooking() {
+  if (!editId) return;
+  const bk = DB.getBookings().find(b => b.id === editId);
+  const name = bk ? bk.guest : 'this booking';
+  if (!confirm(`Delete booking for "${name}"?\nThis cannot be undone.`)) return;
+  DB.deleteBooking(editId);
+  closeModal();
+  render();
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('m-alert');
+  el.textContent = (type === 'error' ? '⛔ ' : '⚠️ ') + msg;
+  el.className = 'bk-alert ' + type;
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function clearAlert() {
+  const el = document.getElementById('m-alert');
+  el.className = 'bk-alert';
+  el.textContent = '';
+  document.getElementById('m-avail').className = 'avail-hint';
+}
+
+document.getElementById('bkModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+/* ═══════════════════════════════════════════════════════════
+   TOOLTIP
+═══════════════════════════════════════════════════════════ */
+const tip = document.getElementById('bkTip');
+
+function showTip(e, bk) {
+  const cin    = DB.parseDate(bk.checkin);
+  const cout   = DB.parseDate(bk.checkout);
+  const nights = Math.round((cout - cin) / 86400000);
+  const fmt    = d => d.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+  const total  = nights * (Number(bk.rate) || 0);
+
+  tip.innerHTML = `
+    <div class="tt-name">${DB.esc(bk.guest)}</div>
+    <div class="tt-row"><span>Room</span><span class="tt-val">${DB.esc(String(bk.room))} — ${DB.esc(DB.ROOM_META[bk.room]?.type||'')}</span></div>
+    <div class="tt-row"><span>Type</span><span class="tt-val" style="color:${DB.BOOKING_COLORS[bk.type]||'#888'}">${DB.esc(DB.BOOKING_LABELS[bk.type]||bk.type)}</span></div>
+    <div class="tt-row"><span>Check-in</span><span class="tt-val">${DB.esc(fmt(cin))}</span></div>
+    <div class="tt-row"><span>Check-out</span><span class="tt-val">${DB.esc(fmt(cout))}</span></div>
+    <div class="tt-row"><span>Nights</span><span class="tt-val">${nights}</span></div>
+    <div class="tt-row"><span>PAX</span><span class="tt-val">${DB.esc(String(bk.pax||0))}</span></div>
+    ${bk.rate ? `<div class="tt-row"><span>Rate/Night</span><span class="tt-val" style="color:#2ecc71;">₱${Number(bk.rate).toLocaleString('en-PH')}</span></div>` : ''}
+    ${total   ? `<div class="tt-row"><span>Total</span><span class="tt-val" style="color:#2ecc71;">₱${total.toLocaleString('en-PH')}</span></div>` : ''}
+    ${bk.notes? `<div class="tt-row"><span>Notes</span><span class="tt-val" style="color:#f39c12;">${DB.esc(bk.notes)}</span></div>` : ''}
+    <div class="tt-hint">Click to edit</div>
+  `;
+  moveTip(e);
+  tip.classList.add('show');
+}
+
+function moveTip(e) {
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 290 > window.innerWidth)  x = e.clientX - 294;
+  if (y + 220 > window.innerHeight) y = e.clientY - 224;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+function hideTip() { tip.classList.remove('show'); }
+
+/* ═══════════════════════════════════════════════════════════
+   CONTROLS
+═══════════════════════════════════════════════════════════ */
+document.getElementById('prevMo').addEventListener('click', () => {
+  if (--viewMonth < 0) { viewMonth = 11; viewYear--; } render();
+});
+document.getElementById('nextMo').addEventListener('click', () => {
+  if (++viewMonth > 11) { viewMonth = 0; viewYear++; } render();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  viewYear  = TODAY.getFullYear();
+  viewMonth = TODAY.getMonth();
+  render();
+  // Scroll today column into view using the ganttWrap (not window)
+  requestAnimationFrame(() => {
+    const wrap = document.getElementById('ganttWrap');
+    const td   = wrap.querySelector(`td[data-day="${TODAY.getDate()}"]`);
+    if (td) td.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  });
+});
+document.getElementById('newBkBtn').addEventListener('click', () => openModal(null));
+document.getElementById('fType').addEventListener('change',   e => { fType   = e.target.value; render(); });
+document.getElementById('fSearch').addEventListener('input',  e => { fSearch = e.target.value.trim(); render(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ═══════════════════════════════════════════════════════════
+   CROSS-PAGE SYNC
+═══════════════════════════════════════════════════════════ */
+DB.onUpdate(key => {
+  if (key === DB.KEY.bookings) render();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+render();
+
+// Scroll to today on load (scoped to ganttWrap)
+requestAnimationFrame(() => {
+  if (viewYear === TODAY.getFullYear() && viewMonth === TODAY.getMonth()) {
+    const wrap = document.getElementById('ganttWrap');
+    const td   = wrap.querySelector(`td[data-day="${TODAY.getDate()}"]`);
+    if (td) td.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  }
+});
+</script>
+</body>
+</html>
+
+<!-- sidebar.js -->
+ /**
+ * Hiraya HMS — Shared Sidebar, Theme Engine & Loading System
+ * ─────────────────────────────────────────────────────────────
+ * Include on every protected page BEFORE closing </body>.
+ * Requirements per page:
+ *   1. <div id="hms-sidebar"></div>
+ *   2. <div id="hms-main"> wrapping all page content
+ *   3. window.HIRAYA_PAGE = 'pageName'  (set BEFORE this script)
+ */
+
+(function () {
+  'use strict';
+
+  // ─── Auth Guard ──────────────────────────────────────────────────────────────
+  if (!sessionStorage.getItem('hiraya_auth')) {
+    window.location.replace('login.html');
+    return;
+  }
+
+  // ─── Nav Items ───────────────────────────────────────────────────────────────
+  const NAV_ITEMS = [
+    {
+      id: 'index', label: 'Property Overview', href: 'index.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
+    },
+    {
+      id: 'reservations', label: 'Reservations', href: 'reservations.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>`
+    },
+    {
+      id: 'inventory', label: 'Inventory', href: 'inventory.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`
+    },
+    {
+      id: 'revenue', label: 'Revenue & Reports', href: 'revenue.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
+    },
+    {
+      id: 'staffing', label: 'Staffing', href: 'staffing.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+    },
+    {
+      id: 'events', label: 'Events', href: 'events.html',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
+    },
+  ];
+
+  // ─── Theme Token Maps ─────────────────────────────────────────────────────────
+  const THEMES = {
+    dark: {
+      '--h-red':        '#C0272D',
+      '--h-red-dk':     '#961E23',
+      '--h-dark':       '#141416',
+      '--h-panel':      '#1C1C1F',
+      '--h-panel2':     '#212125',
+      '--h-border':     '#2A2A2E',
+      '--h-muted':      '#5A5A62',
+      '--h-text':       '#E8E8EC',
+      '--h-sub':        '#9898A4',
+      '--h-topbar-bg':  'rgba(28,28,31,0.92)',
+      '--h-loader-bg':  '#141416',
+      '--h-input-bg':   'rgba(255,255,255,0.04)',
+      '--h-hover-bg':   'rgba(255,255,255,0.04)',
+      '--h-active-bg':  'rgba(192,39,45,0.12)',
+      '--h-shadow':     '0 8px 32px rgba(0,0,0,0.45)',
+      '--h-card-hover': '0 12px 32px rgba(0,0,0,0.5)',
+    },
+    light: {
+      '--h-red':        '#C0272D',
+      '--h-red-dk':     '#961E23',
+      '--h-dark':       '#F0F0F4',
+      '--h-panel':      '#FFFFFF',
+      '--h-panel2':     '#F7F7FA',
+      '--h-border':     '#E2E2EB',
+      '--h-muted':      '#8888A0',
+      '--h-text':       '#18181F',
+      '--h-sub':        '#50506A',
+      '--h-topbar-bg':  'rgba(255,255,255,0.92)',
+      '--h-loader-bg':  '#F0F0F4',
+      '--h-input-bg':   'rgba(0,0,0,0.03)',
+      '--h-hover-bg':   'rgba(0,0,0,0.04)',
+      '--h-active-bg':  'rgba(192,39,45,0.07)',
+      '--h-shadow':     '0 8px 32px rgba(0,0,0,0.09)',
+      '--h-card-hover': '0 12px 32px rgba(0,0,0,0.12)',
+    }
+  };
+
+  const ICON_SUN  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+  const ICON_MOON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+  // Read saved preference
+  const savedTheme = localStorage.getItem('hiraya_theme') || 'dark';
+
+  // ─── Inject Global CSS ────────────────────────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    :root {
+      --h-red:       #C0272D;
+      --h-red-dk:    #961E23;
+      --h-dark:      #141416;
+      --h-panel:     #1C1C1F;
+      --h-panel2:    #212125;
+      --h-border:    #2A2A2E;
+      --h-muted:     #5A5A62;
+      --h-text:      #E8E8EC;
+      --h-sub:       #9898A4;
+      --h-topbar-bg: rgba(28,28,31,0.92);
+      --h-loader-bg: #141416;
+      --h-input-bg:  rgba(255,255,255,0.04);
+      --h-hover-bg:  rgba(255,255,255,0.04);
+      --h-active-bg: rgba(192,39,45,0.12);
+      --h-shadow:    0 8px 32px rgba(0,0,0,0.45);
+      --sidebar-w:   240px;
+    }
+
+    /* Smooth theme transitions on all elements */
+    html { transition: background-color 0.28s ease; }
+    body, #hms-sidebar, .hms-topbar, .stat-card, .room-card, .modal-card,
+    .form-select, .form-input, .sb-item, .theme-pill, .theme-pill-btn {
+      transition:
+        background-color 0.28s ease,
+        border-color 0.28s ease,
+        color 0.28s ease,
+        box-shadow 0.28s ease !important;
+    }
+    /* Exclude things that shouldn't transition */
+    .hms-loader-bar { transition: width 0.05s linear !important; }
+    svg * { transition: none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--h-dark);
+      color: var(--h-text);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ══ SIDEBAR ══════════════════════════════════════════════ */
+    #hms-sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--h-panel);
+      border-right: 1px solid var(--h-border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; z-index: 100;
+    }
+
+    .sb-brand {
+      padding: 22px 20px 20px;
+      border-bottom: 1px solid var(--h-border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sb-emblem {
+      width: 36px; height: 36px;
+      background: var(--h-red); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; position: relative; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(192,39,45,0.35);
+    }
+    .sb-emblem::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    }
+    .sb-emblem svg { position: relative; z-index: 1; }
+    .sb-brand-name {
+      font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+      letter-spacing: 0.08em; color: var(--h-text);
+    }
+    .sb-brand-sub {
+      font-size: 9px; font-weight: 500; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--h-muted); margin-top: 3px;
+    }
+
+    .sb-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--h-muted); padding: 20px 20px 8px;
+    }
+    .sb-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+    .sb-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 20px; font-size: 13px; font-weight: 500;
+      color: var(--h-sub); text-decoration: none; cursor: pointer;
+      border-left: 2px solid transparent; margin: 1px 0;
+    }
+    .sb-item:hover { color: var(--h-text); background: var(--h-hover-bg); }
+    .sb-item.active {
+      color: var(--h-text); background: var(--h-active-bg);
+      border-left-color: var(--h-red); font-weight: 600;
+    }
+    .sb-item.active .sb-icon { color: var(--h-red); }
+    .sb-icon { flex-shrink: 0; }
+    .sb-divider { height: 1px; background: var(--h-border); margin: 10px 20px; }
+
+    /* ── Theme Pill ── */
+    .sb-theme-wrap { padding: 0 20px 14px; }
+    .sb-theme-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--h-muted); margin-bottom: 8px; display: block;
+    }
+    .theme-pill {
+      display: flex; gap: 3px; padding: 3px;
+      background: var(--h-panel2); border: 1px solid var(--h-border); border-radius: 3px;
+    }
+    .theme-pill-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 7px 0; font-family: 'DM Sans', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      border: none; border-radius: 2px; cursor: pointer;
+      color: var(--h-muted); background: transparent;
+    }
+    .theme-pill-btn.active-pill {
+      background: var(--h-red); color: #fff;
+      box-shadow: 0 2px 8px rgba(192,39,45,0.3);
+    }
+    .theme-pill-btn:not(.active-pill):hover {
+      background: var(--h-hover-bg); color: var(--h-text);
+    }
+
+    .sb-footer { padding: 14px 20px; border-top: 1px solid var(--h-border); }
+    .sb-date { font-size: 11px; color: var(--h-muted); margin-bottom: 12px; letter-spacing: 0.04em; }
+    .sb-logout {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--h-muted); cursor: pointer; padding: 8px 0;
+      background: none; border: none; font-family: 'DM Sans', sans-serif;
+    }
+    .sb-logout:hover { color: #e55a5a; }
+
+    /* ══ MAIN AREA ════════════════════════════════════════════ */
+    #hms-main {
+      margin-left: var(--sidebar-w); flex: 1;
+      display: flex; flex-direction: column; min-height: 100vh;
+      background: var(--h-dark);
+    }
+
+    /* ── Topbar ── */
+    .hms-topbar {
+      height: 56px; border-bottom: 1px solid var(--h-border);
+      display: flex; align-items: center; padding: 0 28px; gap: 16px;
+      position: sticky; top: 0; background: var(--h-topbar-bg);
+      backdrop-filter: blur(12px); z-index: 50;
+    }
+    .topbar-page-title {
+      font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.1em;
+      color: var(--h-text); font-weight: 600;
+    }
+    .topbar-sep { width: 1px; height: 16px; background: var(--h-border); }
+    .topbar-breadcrumb { font-size: 12px; color: var(--h-muted); letter-spacing: 0.04em; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-clock {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+      color: var(--h-muted); font-variant-numeric: tabular-nums;
+    }
+    .topbar-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--h-muted); }
+    .topbar-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.5);
+      animation: topDotBlink 2.5s ease-in-out infinite;
+    }
+    @keyframes topDotBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Topbar icon-only theme toggle */
+    #hms-theme-toggle {
+      width: 32px; height: 32px; border-radius: 3px;
+      border: 1px solid var(--h-border); background: var(--h-input-bg);
+      color: var(--h-sub); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #hms-theme-toggle:hover {
+      background: var(--h-active-bg); border-color: var(--h-red); color: var(--h-red);
+    }
+
+    /* ── Page content ── */
+    .hms-content { flex: 1; padding: 28px; }
+
+    /* ══ LOADER ═══════════════════════════════════════════════ */
+    #hms-loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--h-loader-bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      pointer-events: none; opacity: 0; transition: opacity 0.3s ease !important;
+    }
+    #hms-loader.active { opacity: 1; pointer-events: all; }
+    .hms-loader-bar-wrap { width: 200px; height: 2px; background: var(--h-border); border-radius: 2px; overflow: hidden; }
+    .hms-loader-bar { height: 100%; background: var(--h-red); border-radius: 2px; width: 0%; }
+    .hms-loader-label {
+      font-family: 'Cinzel', serif; font-size: 11px;
+      letter-spacing: 0.2em; color: var(--h-muted); text-transform: uppercase;
+    }
+    .hms-loader-emblem {
+      width: 40px; height: 40px; background: var(--h-red); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 8px; box-shadow: 0 0 24px rgba(192,39,45,0.35);
+    }
+
+    /* ══ MOBILE ═══════════════════════════════════════════════ */
+    #hms-mob-toggle {
+      display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+      background: var(--h-red); border: none; border-radius: 2px;
+      width: 36px; height: 36px; cursor: pointer;
+      align-items: center; justify-content: center; color: #fff;
+    }
+    @media (max-width: 768px) {
+      #hms-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
+      #hms-sidebar.open { transform: translateX(0); }
+      #hms-main { margin-left: 0; }
+      #hms-mob-toggle { display: flex; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ─── Google Fonts ─────────────────────────────────────────────────────────────
+  if (!document.querySelector('link[href*="Cinzel"]')) {
+    const font = document.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap';
+    document.head.prepend(font);
+  }
+
+  // ─── Active page ──────────────────────────────────────────────────────────────
+  const currentPage = window.HIRAYA_PAGE ||
+    location.pathname.split('/').pop().replace('.html','') || 'index';
+  const activeItem = NAV_ITEMS.find(n => n.id === currentPage) || NAV_ITEMS[0];
+
+  // ─── Build Sidebar HTML ───────────────────────────────────────────────────────
+  const sidebarEl = document.getElementById('hms-sidebar');
+  if (!sidebarEl) { console.warn('[Hiraya HMS] No #hms-sidebar found.'); return; }
+
+  sidebarEl.innerHTML = `
+    <div class="sb-brand">
+      <div class="sb-emblem">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+          <rect x="4" y="4" width="5" height="20" fill="white"/>
+          <rect x="4" y="11" width="20" height="6" fill="white"/>
+          <rect x="19" y="4" width="5" height="20" fill="white"/>
+        </svg>
+      </div>
+      <div>
+        <div class="sb-brand-name">HIRAYA</div>
+        <div class="sb-brand-sub">HMS Admin Terminal</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Navigation</div>
+      ${NAV_ITEMS.map(item => `
+        <a class="sb-item${item.id === currentPage ? ' active' : ''}"
+           href="${item.href}" data-page="${item.id}">
+          <span class="sb-icon">${item.icon}</span>
+          <span>${item.label}</span>
+        </a>
+      `).join('')}
+      <div class="sb-divider"></div>
+    </nav>
+
+    <div class="sb-theme-wrap">
+      <span class="sb-theme-label">Appearance</span>
+      <div class="theme-pill" role="group" aria-label="Theme selector">
+        <button class="theme-pill-btn" id="pill-dark"
+                onclick="window.hirayaSetTheme('dark')" title="Dark Mode">
+          ${ICON_MOON} Dark
+        </button>
+        <button class="theme-pill-btn" id="pill-light"
+                onclick="window.hirayaSetTheme('light')" title="Light Mode">
+          ${ICON_SUN} Light
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-date" id="sb-date-display"></div>
+      <button class="sb-logout" id="hms-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+  `;
+
+  // ─── Theme Engine ─────────────────────────────────────────────────────────────
+  function applyTheme(mode) {
+    const tokens = THEMES[mode] || THEMES.dark;
+    const root = document.documentElement;
+    Object.entries(tokens).forEach(([k, v]) => root.style.setProperty(k, v));
+    root.setAttribute('data-theme', mode);
+    localStorage.setItem('hiraya_theme', mode);
+
+    // Sync pill buttons
+    const pd = document.getElementById('pill-dark');
+    const pl = document.getElementById('pill-light');
+    if (pd) pd.classList.toggle('active-pill', mode === 'dark');
+    if (pl) pl.classList.toggle('active-pill', mode === 'light');
+
+    // Sync topbar icon toggle button
+    const tb = document.getElementById('hms-theme-toggle');
+    if (tb) tb.innerHTML = mode === 'dark' ? ICON_SUN : ICON_MOON;
+  }
+
+  window.hirayaSetTheme = function(mode) { applyTheme(mode); };
+
+  // Apply immediately (before first paint to avoid flash)
+  applyTheme(savedTheme);
+
+  // ─── Loader ───────────────────────────────────────────────────────────────────
+  let loaderEl = document.getElementById('hms-loader');
+  if (!loaderEl) {
+    loaderEl = document.createElement('div');
+    loaderEl.id = 'hms-loader';
+    loaderEl.innerHTML = `
+      <div class="hms-loader-emblem">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+          <rect x="4" y="4" width="5" height="20" fill="white"/>
+          <rect x="4" y="11" width="20" height="6" fill="white"/>
+          <rect x="19" y="4" width="5" height="20" fill="white"/>
+        </svg>
+      </div>
+      <div class="hms-loader-bar-wrap">
+        <div class="hms-loader-bar" id="hms-loader-bar"></div>
+      </div>
+      <div class="hms-loader-label">Loading Module</div>
+    `;
+    document.body.appendChild(loaderEl);
+  }
+
+  // ─── Mobile toggle ────────────────────────────────────────────────────────────
+  let mobToggle = document.getElementById('hms-mob-toggle');
+  if (!mobToggle) {
+    mobToggle = document.createElement('button');
+    mobToggle.id = 'hms-mob-toggle';
+    mobToggle.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
+    document.body.appendChild(mobToggle);
+    mobToggle.addEventListener('click', () => sidebarEl.classList.toggle('open'));
+  }
+
+  // ─── Navigation with loader ───────────────────────────────────────────────────
+  function navigateTo(href) {
+    const bar = document.getElementById('hms-loader-bar');
+    loaderEl.classList.add('active');
+    let progress = 0;
+    const iv = setInterval(() => {
+      progress += Math.random() * 18 + 8;
+      if (progress >= 90) { progress = 90; clearInterval(iv); }
+      bar.style.width = progress + '%';
+    }, 80);
+    setTimeout(() => {
+      bar.style.width = '100%';
+      setTimeout(() => { window.location.href = href; }, 200);
+    }, 700);
+  }
+
+  document.querySelectorAll('.sb-item[data-page]').forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (href && href !== location.pathname.split('/').pop()) {
+        e.preventDefault();
+        navigateTo(href);
+      }
+    });
+  });
+
+  // ─── Logout ───────────────────────────────────────────────────────────────────
+  document.getElementById('hms-logout').addEventListener('click', () => {
+    sessionStorage.removeItem('hiraya_auth');
+    navigateTo('login.html');
+  });
+
+  // ─── Live clock ───────────────────────────────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    const el = document.getElementById('sb-date-display');
+    if (el) el.textContent = now.toLocaleDateString('en-PH', {
+      weekday:'short', month:'short', day:'numeric', year:'numeric'
+    });
+    const cl = document.getElementById('hms-topbar-clock');
+    if (cl) cl.textContent = now.toLocaleTimeString('en-PH', {
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ─── Topbar helper ────────────────────────────────────────────────────────────
+  window.hirayaRenderTopbar = function(title, breadcrumb) {
+    const main = document.getElementById('hms-main');
+    if (!main) return;
+    const existing = document.getElementById('hms-topbar');
+    if (existing) existing.remove();
+
+    const bar = document.createElement('div');
+    bar.className = 'hms-topbar';
+    bar.id = 'hms-topbar';
+    const curTheme = localStorage.getItem('hiraya_theme') || 'dark';
+    bar.innerHTML = `
+      <span class="topbar-page-title">${title || activeItem.label}</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-breadcrumb">${breadcrumb || 'Hiraya HMS'}</span>
+      <div class="topbar-right">
+        <span class="topbar-clock" id="hms-topbar-clock"></span>
+        <button id="hms-theme-toggle" title="Toggle Dark / Light Mode">
+          ${curTheme === 'dark' ? ICON_SUN : ICON_MOON}
+        </button>
+        <div class="topbar-status">
+          <div class="topbar-dot"></div>
+          <span>Live</span>
+        </div>
+      </div>
+    `;
+    main.prepend(bar);
+
+    document.getElementById('hms-theme-toggle').addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      window.hirayaSetTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+
+    updateClock();
+  };
+
+  // ─── Fade-in on load ──────────────────────────────────────────────────────────
+  document.body.style.opacity = '0';
+  document.body.style.transition = 'opacity 0.4s ease';
+  window.addEventListener('load', () => {
+    setTimeout(() => { document.body.style.opacity = '1'; }, 50);
+  });
+
+})();
+
+<!-- hiraya-db.js -->
+ /**
+ * Hiraya HMS — Core Data Layer  v2.0
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Single source of truth for all HMS data.
+ * All reads/writes go through this module.
+ * Cross-tab sync via native "storage" event + same-page via CustomEvent.
+ *
+ * Public API exposed on window.HirayaDB
+ */
+
+window.HirayaDB = (function () {
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     STORAGE KEYS
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const KEY = {
+    rooms:    'hiraya_rooms',
+    bookings: 'hiraya_bookings',
+    events:   'hiraya_events',
+  };
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     UTILITIES
+  ═══════════════════════════════════════════════════════════════════════════ */
+
+  /** Generate a collision-resistant UID. */
+  function uid() {
+    return Date.now().toString(36) + '-' +
+           Math.random().toString(36).slice(2, 9) + '-' +
+           Math.random().toString(36).slice(2, 6);
+  }
+
+  /** Parse a yyyy-mm-dd string to a local midnight Date (no timezone shift). */
+  function parseDate(str) {
+    if (!str) return null;
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  /** Format a Date to yyyy-mm-dd. */
+  function fmtDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  /** Parse "HH:MM" to total minutes since midnight. Returns null if invalid. */
+  function parseTime(str) {
+    if (!str || !/^\d{2}:\d{2}$/.test(str)) return null;
+    const [h, m] = str.split(':').map(Number);
+    if (h > 23 || m > 59) return null;
+    return h * 60 + m;
+  }
+
+  /** Sanitize a string for safe injection into innerHTML. */
+  function esc(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* ── localStorage wrappers ── */
+  function load(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn('[HirayaDB] Failed to load', key, e);
+      return null;
+    }
+  }
+
+  function persist(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      // Notify same-page listeners
+      window.dispatchEvent(new CustomEvent('hiraya:update', { detail: { key } }));
+    } catch (e) {
+      console.error('[HirayaDB] Failed to persist', key, e);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     CONSTANTS — ROOMS
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const ROOM_NUMBERS = [201,202,203,204,205,206,207,208,209,210,211,212,213,214,215];
+
+  const ROOM_META = {
+    201: { type: 'Standard Room', catg: 'DS' },
+    202: { type: 'Standard Room', catg: 'DS' },
+    203: { type: 'Deluxe Room',   catg: 'DK' },
+    204: { type: 'Deluxe Room',   catg: 'DK' },
+    205: { type: 'Deluxe Room',   catg: 'DK' },
+    206: { type: 'Superior Room', catg: 'DK' },
+    207: { type: 'Superior Room', catg: 'DS' },
+    208: { type: 'Superior Room', catg: 'DS' },
+    209: { type: 'Suite',         catg: 'BR' },
+    210: { type: 'Suite',         catg: 'JFS'},
+    211: { type: 'Standard Room', catg: 'DS' },
+    212: { type: 'Standard Room', catg: 'FS' },
+    213: { type: 'Deluxe Room',   catg: 'DS' },
+    214: { type: 'Deluxe Room',   catg: 'FS' },
+    215: { type: 'Family Room',   catg: 'JFS'},
+  };
+
+  // Legacy compatibility alias
+  const ROOM_TYPES = Object.fromEntries(
+    Object.entries(ROOM_META).map(([k, v]) => [k, v.type])
+  );
+
+  const ROOM_STATUS = {
+    vacant:      { label: 'Vacant',      color: '#2ecc71', bg: 'rgba(46,204,113,0.10)' },
+    occupied:    { label: 'Occupied',    color: '#C0272D', bg: 'rgba(192,39,45,0.12)'  },
+    reserved:    { label: 'Reserved',    color: '#f39c12', bg: 'rgba(243,156,18,0.10)' },
+    cleaning:    { label: 'Cleaning',    color: '#3498db', bg: 'rgba(52,152,219,0.10)' },
+    maintenance: { label: 'Maintenance', color: '#e74c3c', bg: 'rgba(231,76,60,0.10)'  },
+  };
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     CONSTANTS — BOOKINGS
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const BOOKING_TYPES = {
+    'bk-confirmed': { label: 'Confirmed',         color: '#27ae60' },
+    'bk-reserved':  { label: 'Reserved / Pending', color: '#f39c12' },
+    'bk-blocked':   { label: 'Blocked',            color: '#2980b9' },
+    'bk-walkin':    { label: 'Walk-in',            color: '#8e44ad' },
+    'bk-comp':      { label: 'Complimentary',      color: '#16a085' },
+    'bk-cancelled': { label: 'Cancelled',          color: '#95a5a6' },
+  };
+
+  // Legacy flat maps for backward compat
+  const BOOKING_COLORS = Object.fromEntries(
+    Object.entries(BOOKING_TYPES).map(([k, v]) => [k, v.color])
+  );
+  const BOOKING_LABELS = Object.fromEntries(
+    Object.entries(BOOKING_TYPES).map(([k, v]) => [k, v.label])
+  );
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     CONSTANTS — EVENTS
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const EVENT_TYPES = {
+    'ev-wedding':   { label: 'Wedding',    color: '#e91e8c' },
+    'ev-birthday':  { label: 'Birthday',   color: '#f39c12' },
+    'ev-corporate': { label: 'Corporate',  color: '#2980b9' },
+    'ev-seminar':   { label: 'Seminar',    color: '#8e44ad' },
+    'ev-debut':     { label: 'Debut',      color: '#e74c3c' },
+    'ev-reunion':   { label: 'Reunion',    color: '#16a085' },
+    'ev-reception': { label: 'Reception',  color: '#27ae60' },
+    'ev-other':     { label: 'Other',      color: '#95a5a6' },
+  };
+
+  const EVENT_COLORS = Object.fromEntries(
+    Object.entries(EVENT_TYPES).map(([k, v]) => [k, v.color])
+  );
+  const EVENT_LABELS = Object.fromEntries(
+    Object.entries(EVENT_TYPES).map(([k, v]) => [k, v.label])
+  );
+
+  const EVENT_VENUES = [
+    'Ballroom A', 'Ballroom B', 'Ballroom A & B',
+    'Function Hall', 'Garden', 'Pool Area', 'VIP Room', 'Full Venue',
+  ];
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     ROOMS
+  ═══════════════════════════════════════════════════════════════════════════ */
+  function _defaultRooms() {
+    const d = {};
+    ROOM_NUMBERS.forEach(r => { d[r] = { status: 'vacant', guest: '', notes: '' }; });
+    // Seed a couple for demo only when first loaded
+    d[203].status = 'occupied'; d[203].guest = 'Maria Santos';
+    d[206].status = 'reserved'; d[206].guest = 'Pedro Reyes';
+    d[209].status = 'cleaning';
+    d[214].status = 'maintenance'; d[214].notes = 'Busted light';
+    return d;
+  }
+
+  function getRooms() {
+    const stored = load(KEY.rooms);
+    if (stored !== null) return stored;
+    const seed = _defaultRooms();
+    try { localStorage.setItem(KEY.rooms, JSON.stringify(seed)); } catch(e) {}
+    return seed;
+  }
+
+  function setRooms(data) { persist(KEY.rooms, data); }
+
+  function setRoom(num, patch) {
+    const rooms = getRooms();
+    if (!rooms[num]) return;
+    rooms[num] = { ...rooms[num], ...patch };
+    setRooms(rooms);
+  }
+
+  /**
+   * Derive today's live room status from active bookings.
+   * Does NOT write to storage — returns a computed map.
+   */
+  function computeRoomStatuses() {
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const bookings = getBookings();
+    const manual   = getRooms();
+    const result   = {};
+
+    ROOM_NUMBERS.forEach(r => {
+      // Start from manual state
+      result[r] = { ...manual[r], _source: 'manual' };
+
+      // Find any active booking for today (cin <= today < cout), non-cancelled
+      const active = bookings.find(b => {
+        if (b.room !== r || b.type === 'bk-cancelled') return false;
+        const cin  = parseDate(b.checkin);
+        const cout = parseDate(b.checkout);
+        return cin <= todayMidnight && todayMidnight < cout;
+      });
+
+      if (active) {
+        let status = 'occupied';
+        if (active.type === 'bk-blocked')  status = 'maintenance';
+        if (active.type === 'bk-reserved') status = 'reserved';
+        // walkin, confirmed, comp → occupied
+        result[r].status  = status;
+        result[r].guest   = active.guest || manual[r].guest;
+        result[r]._source = 'booking';
+        result[r]._bookingId = active.id;
+      }
+
+      // Manual cleaning override always wins (housekeeping trumps booking status)
+      if (manual[r].status === 'cleaning') {
+        result[r].status  = 'cleaning';
+        result[r]._source = 'manual';
+      }
+    });
+
+    return result;
+  }
+
+
+  // Backward-compat alias
+  const syncRoomsFromBookings = computeRoomStatuses;
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     BOOKINGS
+  ═══════════════════════════════════════════════════════════════════════════ */
+
+  function _defaultBookings() {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const d = (day) => fmtDate(new Date(y, m, day));
+    return [
+      { id: uid(), room:201, guest:'MARIA SANTOS',       type:'bk-confirmed', checkin:d(3),  checkout:d(7),  pax:2, rate:2800, notes:'' },
+      { id: uid(), room:201, guest:'JUAN DELA CRUZ',     type:'bk-reserved',  checkin:d(12), checkout:d(15), pax:1, rate:2800, notes:'' },
+      { id: uid(), room:202, guest:'PEDRO REYES',        type:'bk-confirmed', checkin:d(1),  checkout:d(5),  pax:3, rate:3200, notes:'Extra bed' },
+      { id: uid(), room:203, guest:'ANGELA GARCIA',      type:'bk-walkin',    checkin:d(8),  checkout:d(10), pax:2, rate:3600, notes:'' },
+      { id: uid(), room:204, guest:'ROBINSON BIGON',     type:'bk-blocked',   checkin:d(5),  checkout:d(9),  pax:0, rate:0,    notes:'Maintenance' },
+      { id: uid(), room:205, guest:'KIMBERLY OLIVOS',    type:'bk-confirmed', checkin:d(14), checkout:d(18), pax:2, rate:3200, notes:'' },
+      { id: uid(), room:206, guest:'ROMMEL TIGCAL',      type:'bk-reserved',  checkin:d(6),  checkout:d(11), pax:4, rate:3200, notes:'Birthday' },
+      { id: uid(), room:207, guest:'BRIGADA DELA CRUZ',  type:'bk-confirmed', checkin:d(2),  checkout:d(6),  pax:2, rate:2800, notes:'' },
+      { id: uid(), room:208, guest:'NENA ENRIQUEZ',      type:'bk-comp',      checkin:d(15), checkout:d(17), pax:2, rate:0,    notes:'Part of package' },
+      { id: uid(), room:209, guest:'ALMIRA VELASCO',     type:'bk-confirmed', checkin:d(3),  checkout:d(8),  pax:3, rate:4200, notes:'' },
+      { id: uid(), room:210, guest:'CHUCK AUTO',         type:'bk-walkin',    checkin:d(11), checkout:d(13), pax:1, rate:2600, notes:'' },
+      { id: uid(), room:211, guest:'ANGELICA ODI',       type:'bk-confirmed', checkin:d(7),  checkout:d(12), pax:2, rate:2800, notes:'' },
+      { id: uid(), room:212, guest:'DIANA REYES',        type:'bk-reserved',  checkin:d(18), checkout:d(22), pax:2, rate:2800, notes:'' },
+      { id: uid(), room:213, guest:'FRANCISCO ENRIQUEZ', type:'bk-confirmed', checkin:d(1),  checkout:d(4),  pax:2, rate:3600, notes:'' },
+      { id: uid(), room:214, guest:'MAINTENANCE BLOCK',  type:'bk-blocked',   checkin:d(10), checkout:d(14), pax:0, rate:0,    notes:'Room 214 busted light' },
+      { id: uid(), room:215, guest:'STEPHEN AVOCADO',    type:'bk-confirmed', checkin:d(5),  checkout:d(9),  pax:4, rate:2600, notes:'' },
+    ];
+  }
+
+  function getBookings() {
+    const stored = load(KEY.bookings);
+    if (stored !== null) return stored;
+    // First-run only: seed defaults & persist so IDs are stable
+    const seed = _defaultBookings();
+    try { localStorage.setItem(KEY.bookings, JSON.stringify(seed)); } catch(e) {}
+    return seed;
+  }
+
+  function setBookings(data) { persist(KEY.bookings, data); }
+
+  /**
+   * Overlap check for room bookings.
+   *
+   * Rule: Two bookings for the SAME room overlap if their NIGHT ranges intersect.
+   * A booking occupies nights from checkin (inclusive) to checkout (exclusive).
+   * So checkout on day N means the room is FREE from day N onwards.
+   * → Overlap exists when: cinA < coutB  AND  cinB < coutA
+   *
+   * Exception: if both bookings are 'bk-cancelled' they don't conflict.
+   * excludeId: the booking being edited (skip self-comparison).
+   *
+   * Returns { conflict: bool, conflictingBooking: object|null, message: string }
+   */
+  function checkBookingOverlap(newBk, excludeId = null) {
+    const cin  = parseDate(newBk.checkin);
+    const cout = parseDate(newBk.checkout);
+
+    if (!cin || !cout || cout <= cin) {
+      return { conflict: true, conflictingBooking: null,
+               message: 'Check-out must be after check-in.' };
+    }
+
+    const existing = getBookings().filter(b =>
+      b.room === newBk.room &&
+      b.id !== excludeId &&
+      b.type !== 'bk-cancelled'
+    );
+
+    for (const b of existing) {
+      const bCin  = parseDate(b.checkin);
+      const bCout = parseDate(b.checkout);
+      // Interval overlap: cin < bCout AND bCin < cout
+      if (cin < bCout && bCin < cout) {
+        const fmt = s => parseDate(s)?.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' }) ?? s;
+        return {
+          conflict: true,
+          conflictingBooking: b,
+          message: `Room ${newBk.room} is already booked for "${b.guest}" from ${fmt(b.checkin)} to ${fmt(b.checkout)}. Dates cannot overlap.`,
+        };
+      }
+    }
+    return { conflict: false, conflictingBooking: null, message: '' };
+  }
+
+  /**
+   * Validate and save a booking.
+   * Returns { ok: bool, error: string }
+   */
+  function upsertBooking(bk) {
+    // ── Field validation ──
+    if (!bk.guest?.trim())   return { ok: false, error: 'Guest name is required.' };
+    if (!bk.checkin)         return { ok: false, error: 'Check-in date is required.' };
+    if (!bk.checkout)        return { ok: false, error: 'Check-out date is required.' };
+    if (!ROOM_NUMBERS.includes(Number(bk.room)))
+      return { ok: false, error: `Room ${bk.room} is not a valid room number.` };
+    if (!BOOKING_TYPES[bk.type])
+      return { ok: false, error: `Unknown booking type: ${bk.type}` };
+
+    const cin  = parseDate(bk.checkin);
+    const cout = parseDate(bk.checkout);
+    if (!cin)        return { ok: false, error: 'Invalid check-in date.' };
+    if (!cout)       return { ok: false, error: 'Invalid check-out date.' };
+    if (cout <= cin) return { ok: false, error: 'Check-out must be after check-in.' };
+
+    const nights = Math.round((cout - cin) / 86400000);
+    if (nights > 365) return { ok: false, error: 'Booking cannot exceed 365 nights.' };
+
+    // ── Overlap check (skip for cancelled) ──
+    if (bk.type !== 'bk-cancelled') {
+      const overlap = checkBookingOverlap(bk, bk.id);
+      if (overlap.conflict) return { ok: false, error: overlap.message };
+    }
+
+    // ── Persist ──
+    const bookings = getBookings();
+    const idx = bookings.findIndex(b => b.id === bk.id);
+    const record = {
+      id:       bk.id || uid(),
+      room:     Number(bk.room),
+      guest:    String(bk.guest).trim().toUpperCase(),
+      type:     bk.type,
+      checkin:  bk.checkin,
+      checkout: bk.checkout,
+      pax:      Math.max(0, Number(bk.pax) || 0),
+      rate:     Math.max(0, Number(bk.rate) || 0),
+      notes:    String(bk.notes || '').trim(),
+      createdAt: bk.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (idx >= 0) {
+      bookings[idx] = record;
+    } else {
+      bookings.push(record);
+    }
+    setBookings(bookings);
+    return { ok: true, error: '', booking: record };
+  }
+
+  function deleteBooking(id) {
+    setBookings(getBookings().filter(b => b.id !== id));
+  }
+
+  /**
+   * Get bookings that occupy a specific calendar date for a specific room.
+   * A booking occupies a date if: cin <= date < cout
+   */
+  function getBookingsForDate(roomNum, dateStr) {
+    const date = parseDate(dateStr);
+    if (!date) return [];
+    return getBookings().filter(b => {
+      if (b.room !== roomNum || b.type === 'bk-cancelled') return false;
+      const cin  = parseDate(b.checkin);
+      const cout = parseDate(b.checkout);
+      return cin <= date && date < cout;
+    });
+  }
+
+  /**
+   * Get all bookings that touch a date range [startStr, endStr) for any room.
+   * Used for the Gantt rendering optimisation.
+   */
+  function getBookingsInRange(startStr, endStr) {
+    const start = parseDate(startStr);
+    const end   = parseDate(endStr);
+    if (!start || !end) return [];
+    return getBookings().filter(b => {
+      const cin  = parseDate(b.checkin);
+      const cout = parseDate(b.checkout);
+      return cin < end && cout > start;
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     EVENTS
+  ═══════════════════════════════════════════════════════════════════════════ */
+
+  function _defaultEvents() {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const d = (day) => fmtDate(new Date(y, m, day));
+    return [
+      { id:uid(), title:'RUDEN AND ABBY RECEPTION',    date:d(5),  timeStart:'10:00', timeEnd:'14:00', venue:'Ballroom A',     type:'ev-reception', pax:120, rate:45000, contact:'',             color:'#27ae60', notes:'BEIGE/BROWN theme',              status:'confirmed' },
+      { id:uid(), title:'JEREMY SABEROLA WEDDING',     date:d(12), timeStart:'09:00', timeEnd:'18:00', venue:'Ballroom A & B', type:'ev-wedding',   pax:60,  rate:38000, contact:'9456617248',   color:'#e91e8c', notes:'',                               status:'confirmed' },
+      { id:uid(), title:'COCOY BAPTISM',               date:d(22), timeStart:'10:30', timeEnd:'14:00', venue:'Function Hall',  type:'ev-birthday',  pax:100, rate:22800, contact:'9924933871',   color:'#f39c12', notes:'BLUE theme. Contact: MARK FRANCO PURA', status:'confirmed' },
+      { id:uid(), title:'EAGLES BANTAYOG BAGWIS',      date:d(24), timeStart:'20:00', timeEnd:'23:00', venue:'Ballroom A',     type:'ev-corporate', pax:30,  rate:8000,  contact:'',             color:'#2980b9', notes:'Bronze Set A',                    status:'confirmed' },
+      { id:uid(), title:'FRIDAY BARAYLE',              date:d(23), timeStart:'18:00', timeEnd:'22:00', venue:'Garden',        type:'ev-other',     pax:0,   rate:0,     contact:'',             color:'#95a5a6', notes:'',                               status:'tentative' },
+      { id:uid(), title:'CENTRO DEPT STORE XMAS PARTY',date:d(15), timeStart:'21:00', timeEnd:'01:00', venue:'Ballroom A & B', type:'ev-corporate', pax:55,  rate:16500, contact:'Mam Myra',     color:'#2980b9', notes:'Bronze A / Candy Land theme',    status:'confirmed' },
+    ];
+  }
+
+  function getEvents() {
+    const stored = load(KEY.events);
+    if (stored !== null) return stored;
+    const seed = _defaultEvents();
+    try { localStorage.setItem(KEY.events, JSON.stringify(seed)); } catch(e) {}
+    return seed;
+  }
+
+  function setEvents(data) { persist(KEY.events, data); }
+
+  /**
+   * Venue time-overlap check for events.
+   *
+   * Two events on the SAME date at the SAME venue overlap if their time windows
+   * intersect: startA < endB AND startB < endA.
+   *
+   * Special cases:
+   *  - If either event has no time, we flag as a soft warning (not hard block).
+   *  - 'Full Venue' conflicts with ALL venues on the same date.
+   *  - Midnight-crossing events (timeEnd < timeStart) are handled by wrapping end to +24h.
+   *
+   * Returns { conflict: bool, hard: bool, conflictingEvent: obj|null, message: string }
+   */
+  function checkEventOverlap(newEv, excludeId = null) {
+    const newStart = parseTime(newEv.timeStart);
+    const rawEnd   = parseTime(newEv.timeEnd);
+
+    // Wrap midnight-crossing end time
+    let newEnd = rawEnd;
+    if (newStart !== null && rawEnd !== null && rawEnd <= newStart) {
+      newEnd = rawEnd + 1440; // +24 hours
+    }
+
+    const existing = getEvents().filter(e =>
+      e.id !== excludeId &&
+      e.date === newEv.date &&
+      e.status !== 'cancelled'
+    );
+
+    // Check venue clash
+    for (const ev of existing) {
+      const venueClash =
+        ev.venue === newEv.venue ||
+        ev.venue === 'Full Venue' ||
+        newEv.venue === 'Full Venue' ||
+        // Ballroom A & B conflicts with individual A or B
+        (newEv.venue === 'Ballroom A & B' && (ev.venue === 'Ballroom A' || ev.venue === 'Ballroom B')) ||
+        (ev.venue === 'Ballroom A & B'    && (newEv.venue === 'Ballroom A' || newEv.venue === 'Ballroom B'));
+
+      if (!venueClash) continue;
+
+      const evStart = parseTime(ev.timeStart);
+      let   evEnd   = parseTime(ev.timeEnd);
+      if (evStart !== null && evEnd !== null && evEnd <= evStart) evEnd += 1440;
+
+      // If either side lacks time info → soft warning
+      if (newStart === null || newEnd === null || evStart === null || evEnd === null) {
+        return {
+          conflict: true, hard: false,
+          conflictingEvent: ev,
+          message: `"${ev.title}" is also booked at ${ev.venue} on this date. No times are specified so overlap cannot be confirmed — proceed with caution.`,
+        };
+      }
+
+      // Hard time overlap: newStart < evEnd AND evStart < newEnd
+      if (newStart < evEnd && evStart < newEnd) {
+        const fmt12 = m => { const h = Math.floor((m % 1440) / 60), mn = m % 60; return `${h % 12 || 12}:${String(mn).padStart(2,'0')} ${h < 12 ? 'AM' : 'PM'}`; };
+        return {
+          conflict: true, hard: true,
+          conflictingEvent: ev,
+          message: `Venue conflict: "${ev.title}" uses ${ev.venue} from ${fmt12(evStart)}–${fmt12(evEnd)} on this date. Your event (${fmt12(newStart)}–${fmt12(newEnd)}) overlaps.`,
+        };
+      }
+    }
+    return { conflict: false, hard: false, conflictingEvent: null, message: '' };
+  }
+
+  /**
+   * Validate and save an event.
+   * Returns { ok: bool, warning: string, error: string }
+   */
+  function upsertEvent(ev) {
+    // ── Field validation ──
+    if (!ev.title?.trim()) return { ok: false, error: 'Event title is required.' };
+    if (!ev.date)          return { ok: false, error: 'Event date is required.' };
+    if (!parseDate(ev.date)) return { ok: false, error: 'Invalid event date.' };
+    if (!EVENT_TYPES[ev.type]) return { ok: false, error: `Unknown event type: ${ev.type}` };
+    if (ev.venue && !EVENT_VENUES.includes(ev.venue))
+      return { ok: false, error: `Unknown venue: ${ev.venue}` };
+
+    if (ev.timeStart && !parseTime(ev.timeStart))
+      return { ok: false, error: 'Invalid start time format. Use HH:MM.' };
+    if (ev.timeEnd && !parseTime(ev.timeEnd))
+      return { ok: false, error: 'Invalid end time format. Use HH:MM.' };
+
+    // ── Overlap check ──
+    let warning = '';
+    if (ev.status !== 'cancelled') {
+      const overlap = checkEventOverlap(ev, ev.id);
+      if (overlap.conflict) {
+        if (overlap.hard) return { ok: false, error: overlap.message };
+        warning = overlap.message; // soft warning — allow save
+      }
+    }
+
+    // ── Persist ──
+    const events = getEvents();
+    const idx = events.findIndex(e => e.id === ev.id);
+    const record = {
+      id:        ev.id || uid(),
+      title:     String(ev.title).trim().toUpperCase(),
+      date:      ev.date,
+      timeStart: ev.timeStart || '',
+      timeEnd:   ev.timeEnd   || '',
+      venue:     ev.venue     || '',
+      type:      ev.type,
+      pax:       Math.max(0, Number(ev.pax)  || 0),
+      rate:      Math.max(0, Number(ev.rate) || 0),
+      contact:   String(ev.contact || '').trim(),
+      color:     ev.color || EVENT_TYPES[ev.type]?.color || '#888',
+      notes:     String(ev.notes || '').trim(),
+      status:    ev.status || 'confirmed',
+      createdAt: ev.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (idx >= 0) {
+      events[idx] = record;
+    } else {
+      events.push(record);
+    }
+    setEvents(events);
+    return { ok: true, warning, error: '', event: record };
+  }
+
+  function deleteEvent(id) {
+    setEvents(getEvents().filter(e => e.id !== id));
+  }
+
+  function getEventsForDate(dateStr) {
+    return getEvents()
+      .filter(e => e.date === dateStr)
+      .sort((a, b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     CROSS-PAGE SYNC
+  ═══════════════════════════════════════════════════════════════════════════ */
+
+  const _listeners = [];
+
+  /**
+   * Register a callback that fires when any HMS data changes.
+   * Works both same-tab (CustomEvent) and cross-tab (storage event).
+   * Returns an unsubscribe function.
+   */
+  function onUpdate(cb) {
+    function handleCustom(e) { cb(e.detail.key); }
+    function handleStorage(e) {
+      if (e.key && Object.values(KEY).includes(e.key)) cb(e.key);
+    }
+    window.addEventListener('hiraya:update', handleCustom);
+    window.addEventListener('storage', handleStorage);
+    _listeners.push({ handleCustom, handleStorage });
+
+    // Return unsubscribe
+    return function unsubscribe() {
+      window.removeEventListener('hiraya:update', handleCustom);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     PUBLIC API
+  ═══════════════════════════════════════════════════════════════════════════ */
+  return Object.freeze({
+    // Utilities
+    uid,
+    parseDate,
+    fmtDate,
+    parseTime,
+    esc,
+
+    // Constants
+    ROOM_NUMBERS,
+    ROOM_META,
+    ROOM_TYPES,       // legacy
+    ROOM_STATUS,
+    BOOKING_TYPES,
+    BOOKING_COLORS,   // legacy
+    BOOKING_LABELS,   // legacy
+    EVENT_TYPES,
+    EVENT_COLORS,     // legacy
+    EVENT_LABELS,     // legacy
+    EVENT_VENUES,
+
+    // Rooms
+    getRooms,
+    setRooms,
+    setRoom,
+    computeRoomStatuses,
+    syncRoomsFromBookings,     // alias
+
+    // Bookings
+    getBookings,
+    setBookings,
+    upsertBooking,
+    deleteBooking,
+    checkBookingOverlap,
+    getBookingsForDate,
+    getBookingsInRange,
+
+    // Events
+    getEvents,
+    setEvents,
+    upsertEvent,
+    deleteEvent,
+    checkEventOverlap,
+    getEventsForDate,
+
+    // Sync
+    onUpdate,
+
+    // Storage keys (read-only reference)
+    KEY: Object.freeze({ ...KEY }),
+  });
+
+})();

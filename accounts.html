@@ -1,0 +1,520 @@
+<!-- accounts.html — Hiraya HMS · Account Management (Super Admin only) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DEMO HMS — Account Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="hiraya.png" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    #hms-main  { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .acc-shell { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+    .acc-scroll { flex: 1; overflow-y: auto; padding: 24px 28px 48px; }
+
+    .section-hd {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--h-sub);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-hd::after { content: ''; flex: 1; height: 1px; background: var(--h-border); }
+
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 2px;
+      font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .role-superadmin { background: rgba(155,89,182,.15); color: #9b59b6; border: 1px solid rgba(155,89,182,.3); }
+    .role-admin      { background: rgba(52,152,219,.12); color: #3498db; border: 1px solid rgba(52,152,219,.3); }
+    .role-fo         { background: rgba(46,204,113,.12); color: #2ecc71; border: 1px solid rgba(46,204,113,.3); }
+    .role-dot        { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    .acc-card { background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .acc-card-hd {
+      padding: 12px 18px; border-bottom: 1px solid var(--h-border);
+      display: flex; align-items: center; justify-content: space-between; background: var(--h-panel2);
+    }
+    .acc-card-ttl { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--h-sub); }
+    .acc-table { width: 100%; border-collapse: collapse; }
+    .acc-table thead th {
+      font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--h-muted); padding: 10px 16px; text-align: left;
+      border-bottom: 1px solid var(--h-border); background: var(--h-panel2); white-space: nowrap;
+    }
+    .acc-table tbody td { padding: 12px 16px; font-size: 12px; color: var(--h-sub); border-bottom: 1px solid var(--h-border); }
+    .acc-table tbody tr:last-child td { border-bottom: none; }
+    .acc-table tbody tr:hover td { background: var(--h-hover-bg); }
+    .acc-name { font-weight: 700; color: var(--h-text) !important; }
+    .acc-username { font-family: 'Cinzel', serif; font-size: 11px; color: var(--h-sub); }
+    .acc-status-active   { color: #2ecc71; font-weight: 700; font-size: 10px; }
+    .acc-status-inactive { color: #e74c3c; font-weight: 700; font-size: 10px; }
+
+    .acc-action-btns { display: flex; gap: 6px; }
+    .acc-btn {
+      background: none; border: 1px solid var(--h-border); border-radius: 3px;
+      padding: 4px 10px; font-size: 10px; font-family: 'DM Sans', sans-serif;
+      font-weight: 700; color: var(--h-muted); cursor: pointer; transition: all .12s; white-space: nowrap;
+    }
+    .acc-btn:hover { background: var(--h-hover-bg); color: var(--h-text); }
+    .acc-btn-edit:hover   { border-color: #3498db; color: #3498db; background: rgba(52,152,219,.08); }
+    .acc-btn-del:hover    { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,.08); }
+    .acc-btn-toggle:hover { border-color: #f39c12; color: #f39c12; background: rgba(243,156,18,.08); }
+
+    .acc-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 10px; margin-bottom: 20px; }
+    .acc-kpi { background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px; padding: 14px 16px; position: relative; overflow: hidden; }
+    .acc-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--kc, var(--h-border)); }
+    .acc-kpi-val { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--h-text); line-height: 1; margin-bottom: 3px; }
+    .acc-kpi-lbl { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--h-muted); }
+
+    .access-matrix { background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .access-matrix-hd { padding: 12px 18px; border-bottom: 1px solid var(--h-border); background: var(--h-panel2); }
+    .access-matrix-ttl { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--h-sub); }
+    .access-table { width: 100%; border-collapse: collapse; }
+    .access-table thead th {
+      font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--h-muted); padding: 10px 14px; text-align: center;
+      border-bottom: 1px solid var(--h-border); background: var(--h-panel2);
+    }
+    .access-table thead th:first-child { text-align: left; }
+    .access-table tbody td { padding: 10px 14px; font-size: 12px; color: var(--h-sub); border-bottom: 1px solid var(--h-border); text-align: center; }
+    .access-table tbody td:first-child { text-align: left; font-weight: 600; color: var(--h-text); }
+    .access-table tbody tr:last-child td { border-bottom: none; }
+    .check-yes     { color: #2ecc71; font-size: 16px; }
+    .check-no      { color: var(--h-muted); font-size: 14px; opacity: .4; }
+    .check-partial { color: #f39c12; font-size: 14px; }
+
+    #accModal {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.62); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    #accModal.open { opacity: 1; pointer-events: all; }
+    .acc-modal-card {
+      background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px;
+      width: 480px; max-width: 96vw; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      transform: scale(.95) translateY(10px);
+      transition: transform .22s cubic-bezier(.16,1,.3,1);
+    }
+    #accModal.open .acc-modal-card { transform: scale(1) translateY(0); }
+    .modal-accent { height: 3px; background: linear-gradient(90deg,transparent,var(--h-red),transparent); }
+    .modal-hd { padding: 16px 22px 14px; border-bottom: 1px solid var(--h-border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-ttl { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: var(--h-text); }
+    .modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+    .modal-ft   { padding: 12px 22px; border-top: 1px solid var(--h-border); display: flex; gap: 10px; justify-content: flex-end; }
+    .fg   { display: flex; flex-direction: column; gap: 4px; }
+    .fg2  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .flbl { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--h-muted); }
+    .fctl {
+      background: var(--h-input-bg); border: 1px solid var(--h-border); border-radius: 3px;
+      padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--h-text);
+      outline: none; width: 100%; appearance: none;
+    }
+    .fctl::placeholder { color: var(--h-muted); }
+    .fctl:focus { border-color: var(--h-red); box-shadow: 0 0 0 3px rgba(192,39,45,.1); }
+    .btn-m    { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 8px 16px; border-radius: 3px; border: none; cursor: pointer; }
+    .btn-save { background: var(--h-red); color: #fff; }
+    .btn-save:hover { background: var(--h-red-dk); }
+    .btn-cncl { background: var(--h-input-bg); color: var(--h-sub); border: 1px solid var(--h-border); }
+    .btn-cncl:hover { background: var(--h-hover-bg); }
+    .btn-del  { background: rgba(231,76,60,.1); color: #e74c3c; border: 1px solid rgba(231,76,60,.2); margin-right: auto; }
+    .btn-del:hover { background: rgba(231,76,60,.22); }
+    .pw-hint { font-size: 10px; color: var(--h-muted); margin-top: 2px; }
+
+    #confirmModal {
+      position: fixed; inset: 0; z-index: 9100;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    #confirmModal.open { opacity: 1; pointer-events: all; }
+    .confirm-card {
+      background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px;
+      width: 380px; max-width: 96vw; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      transform: scale(.95) translateY(10px);
+      transition: transform .22s cubic-bezier(.16,1,.3,1);
+    }
+    #confirmModal.open .confirm-card { transform: scale(1) translateY(0); }
+    .confirm-body { padding: 18px 22px; font-size: 12px; color: var(--h-sub); line-height: 1.6; }
+
+    #acc-toast {
+      position: fixed; bottom: 22px; right: 22px; z-index: 9999;
+      background: var(--h-panel); border: 1px solid var(--h-border); border-radius: 4px;
+      padding: 10px 16px; font-size: 12px; color: var(--h-text);
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      transform: translateY(20px); opacity: 0; pointer-events: none; transition: all .25s; min-width: 220px;
+    }
+    #acc-toast.show    { transform: translateY(0); opacity: 1; }
+    #acc-toast.success { border-color: rgba(46,204,113,.4); color: #2ecc71; }
+    #acc-toast.error   { border-color: rgba(231,76,60,.4);  color: #e74c3c; }
+  </style>
+</head>
+<body>
+<div id="hms-sidebar"></div>
+<div id="hms-main">
+  <div class="acc-shell">
+
+    <!-- Ctrl bar -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;padding:9px 20px;border-bottom:1px solid var(--h-border);background:var(--h-panel);">
+      <span style="font-size:11px;color:var(--h-muted);">Manage system accounts and role-based access.</span>
+      <div style="flex:1;"></div>
+      <button onclick="openAccModal(null)" style="display:flex;align-items:center;gap:5px;padding:6px 14px;background:var(--h-red);color:#fff;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Account
+      </button>
+    </div>
+
+    <div class="acc-scroll">
+
+      <!-- KPIs -->
+      <div class="acc-kpi-grid" id="accKpis"></div>
+
+      <!-- Accounts table -->
+      <div class="section-hd">System Accounts</div>
+      <div class="acc-card">
+        <div class="acc-card-hd">
+          <span class="acc-card-ttl">All User Accounts</span>
+          <span style="font-size:11px;color:var(--h-muted);" id="accCount">—</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="acc-table" id="accTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style="text-align:right;padding-right:18px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Role Access Matrix -->
+      <div class="section-hd">Role Access Matrix</div>
+      <div class="access-matrix">
+        <div class="access-matrix-hd">
+          <div class="access-matrix-ttl">Page &amp; Feature Permissions by Role</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="access-table">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Page / Feature</th>
+                <th style="min-width:110px;"><span class="role-badge role-superadmin">Super Admin</span></th>
+                <th style="min-width:100px;"><span class="role-badge role-admin">Admin</span></th>
+                <th style="min-width:100px;"><span class="role-badge role-fo">Front Office</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Property Overview</td>              <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td></tr>
+              <tr><td>Reservations</td>                   <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td></tr>
+              <tr><td>Reservations — Delete Booking</td>  <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td></tr>
+              <tr><td>Revenue &amp; Reports</td>          <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-partial">View Only</span></td></tr>
+              <tr><td>Revenue — Delete Entry</td>         <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td></tr>
+              <tr><td>Inventory</td>                      <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td></tr>
+              <tr><td>Staffing</td>                       <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td></tr>
+              <tr><td>Events</td>                         <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-partial">View Only</span></td></tr>
+              <tr><td>Account Management</td>             <td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td><td><span class="check-no">✗</span></td></tr>
+              <tr><td>Data Backup &amp; Restore</td>      <td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td><td><span class="check-no">✗</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ ACTIVITY LOG ══════════════════════════════════════ -->
+      <!-- [ADDITION 1] Section header + mount point              -->
+      <!-- activity-log.js injects the full panel into this div  -->
+      <div class="section-hd">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Activity Log
+      </div>
+      <div id="hms-activity-log-mount"></div>
+
+    </div><!-- /acc-scroll -->
+  </div><!-- /acc-shell -->
+</div><!-- /hms-main -->
+
+<!-- ACCOUNT MODAL -->
+<div id="accModal">
+  <div class="acc-modal-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div class="modal-ttl" id="acc-modal-ttl">Add Account</div>
+      <button onclick="closeAccModal()" style="background:none;border:none;cursor:pointer;color:var(--h-muted);padding:4px;font-size:20px;line-height:1;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg">
+        <label class="flbl">Full Name</label>
+        <input class="fctl" type="text" id="acc-name" placeholder="e.g. Maria Santos" maxlength="80"/>
+      </div>
+      <div class="fg2">
+        <div class="fg">
+          <label class="flbl">Username</label>
+          <input class="fctl" type="text" id="acc-username" placeholder="e.g. maria" maxlength="40" autocomplete="off"/>
+        </div>
+        <div class="fg">
+          <label class="flbl">Role</label>
+          <select class="fctl" id="acc-role">
+            <option value="superadmin">👑 Super Admin</option>
+            <option value="admin">🔑 Admin</option>
+            <option value="fo" selected>🧑‍💼 Front Office</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="flbl">Password</label>
+        <input class="fctl" type="password" id="acc-password" placeholder="Set password…" maxlength="80" autocomplete="new-password"/>
+        <span class="pw-hint" id="acc-pw-hint">Leave blank to keep current password (edit mode)</span>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-m btn-del" id="acc-del-btn" style="display:none;" onclick="deleteAccount()">Delete Account</button>
+      <button class="btn-m btn-cncl" onclick="closeAccModal()">Cancel</button>
+      <button class="btn-m btn-save" onclick="saveAccount()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal">
+  <div class="confirm-card">
+    <div class="modal-accent"></div>
+    <div class="modal-hd">
+      <div class="modal-ttl" id="cf-title">Confirm</div>
+    </div>
+    <div class="confirm-body" id="cf-msg"></div>
+    <div class="modal-ft">
+      <button class="btn-m btn-cncl" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-m btn-save" id="cf-ok" style="background:#e74c3c;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="acc-toast"></div>
+
+<script>window.HIRAYA_PAGE = 'accounts';</script>
+<script src="hiraya-db.js"></script>
+<script src="sidebar.js"></script>
+<!-- [ADDITION 2] Shared activity log module -->
+<script src="activity-log.js"></script>
+<script>
+if (typeof hirayaRenderTopbar === 'function')
+  hirayaRenderTopbar('Account Management', 'User Roles & Access Control');
+
+/* ── Guard: super admin only ── */
+const _sessionRole = sessionStorage.getItem('hiraya_role');
+if (_sessionRole !== 'superadmin') {
+  document.querySelector('.acc-shell').innerHTML = `
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--h-muted);">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.1em;text-transform:uppercase;">Access Denied</div>
+      <div style="font-size:12px;">Account Management is restricted to Super Admin only.</div>
+    </div>`;
+}
+
+const ACCOUNTS_KEY = 'hiraya_accounts_v1';
+let editAccountId  = null;
+let confirmCb      = null;
+
+const ROLE_LABELS = { superadmin: 'Super Admin', admin: 'Admin', fo: 'Front Office' };
+const ROLE_CLS    = { superadmin: 'role-superadmin', admin: 'role-admin', fo: 'role-fo' };
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid()  { return 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7); }
+
+function loadAccounts() {
+  try { const r = localStorage.getItem(ACCOUNTS_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+}
+function saveAccounts(arr) { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(arr)); }
+
+let _toastT;
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('acc-toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(_toastT); _toastT = setTimeout(() => el.className = '', 3000);
+}
+
+function renderKpis() {
+  const a = loadAccounts();
+  document.getElementById('accKpis').innerHTML = [
+    { val: a.length,                                       label: 'Total Accounts', kc: '#3498db' },
+    { val: a.filter(x => x.active !== false).length,       label: 'Active',         kc: '#2ecc71' },
+    { val: a.filter(x => x.role === 'superadmin').length,  label: 'Super Admins',   kc: '#9b59b6' },
+    { val: a.filter(x => x.role === 'admin').length,       label: 'Admins',         kc: '#3498db' },
+    { val: a.filter(x => x.role === 'fo').length,          label: 'Front Office',   kc: '#2ecc71' },
+  ].map(k => `<div class="acc-kpi" style="--kc:${k.kc};"><div class="acc-kpi-val">${k.val}</div><div class="acc-kpi-lbl">${k.label}</div></div>`).join('');
+}
+
+function renderTable() {
+  const accounts    = loadAccounts();
+  const tbody       = document.getElementById('accTableBody');
+  const currentUser = JSON.parse(sessionStorage.getItem('hiraya_user') || '{}');
+  document.getElementById('accCount').textContent = accounts.length + ' account' + (accounts.length !== 1 ? 's' : '');
+
+  if (!accounts.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--h-muted);font-size:12px;">No accounts found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = accounts.map(a => {
+    const isMe   = a.id === currentUser.id;
+    const active = a.active !== false;
+    const created = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    return `<tr>
+      <td class="acc-name">${esc(a.name)} ${isMe ? '<span style="font-size:9px;color:var(--h-muted);font-weight:400;">(you)</span>' : ''}</td>
+      <td><span class="acc-username">${esc(a.username)}</span></td>
+      <td><span class="role-badge ${ROLE_CLS[a.role]||'role-fo'}"><span class="role-dot"></span>${esc(ROLE_LABELS[a.role]||a.role)}</span></td>
+      <td><span class="${active?'acc-status-active':'acc-status-inactive'}">${active?'● Active':'○ Inactive'}</span></td>
+      <td style="font-size:11px;color:var(--h-muted);">${created}</td>
+      <td style="text-align:right;padding-right:18px;">
+        <div class="acc-action-btns" style="justify-content:flex-end;">
+          <button class="acc-btn acc-btn-edit" onclick="openAccModal('${a.id}')">✏ Edit</button>
+          <button class="acc-btn acc-btn-toggle" onclick="toggleActive('${a.id}')" ${isMe?'disabled title="Cannot deactivate yourself"':''}>
+            ${active ? '⏸ Deactivate' : '▶ Activate'}
+          </button>
+          ${!isMe ? `<button class="acc-btn acc-btn-del" onclick="triggerDelete('${a.id}','${esc(a.name)}','${esc(a.username)}','${esc(a.role)}')">🗑 Delete</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function render() { renderKpis(); renderTable(); }
+
+/* ── Modal ── */
+function openAccModal(id) {
+  editAccountId = id || null;
+  const accounts = loadAccounts();
+  const a = id ? accounts.find(x => x.id === id) : null;
+  document.getElementById('acc-modal-ttl').textContent = id ? 'Edit Account' : 'Add Account';
+  document.getElementById('acc-del-btn').style.display = id ? 'block' : 'none';
+  document.getElementById('acc-pw-hint').textContent   = id ? 'Leave blank to keep current password' : 'Required for new accounts';
+  document.getElementById('acc-name').value     = a ? a.name     : '';
+  document.getElementById('acc-username').value = a ? a.username : '';
+  document.getElementById('acc-role').value     = a ? a.role     : 'fo';
+  document.getElementById('acc-password').value = '';
+  document.getElementById('accModal').classList.add('open');
+  setTimeout(() => document.getElementById('acc-name').focus(), 80);
+}
+function closeAccModal() { document.getElementById('accModal').classList.remove('open'); editAccountId = null; }
+document.getElementById('accModal').addEventListener('click', e => { if (e.target === document.getElementById('accModal')) closeAccModal(); });
+
+/* ── Save ── */
+function saveAccount() {
+  const name     = document.getElementById('acc-name').value.trim();
+  const username = document.getElementById('acc-username').value.trim().toLowerCase().replace(/\s+/g,'');
+  const role     = document.getElementById('acc-role').value;
+  const password = document.getElementById('acc-password').value;
+
+  if (!name)     { showToast('Name is required','error'); return; }
+  if (!username) { showToast('Username is required','error'); return; }
+  if (!editAccountId && !password) { showToast('Password is required for new accounts','error'); return; }
+
+  const accounts  = loadAccounts();
+  const duplicate = accounts.find(a => a.username.toLowerCase() === username && a.id !== editAccountId);
+  if (duplicate)  { showToast(`Username "${username}" is already taken`,'error'); return; }
+
+  const isEdit = !!editAccountId;
+
+  if (isEdit) {
+    const idx = accounts.findIndex(a => a.id === editAccountId);
+    if (idx < 0) return;
+    const prev        = accounts[idx];
+    const roleChanged = prev.role !== role;
+    accounts[idx] = { ...prev, name, username, role, ...(password ? { password } : {}), updatedAt: new Date().toISOString() };
+    saveAccounts(accounts);
+    /* [ADDITION 3a] activity log */
+    window.actLog({
+      cat: 'account', action: 'Account Edited',
+      message: `Edited account "${name}" (@${username})` +
+               (roleChanged ? ` — role changed from ${ROLE_LABELS[prev.role]||prev.role} to ${ROLE_LABELS[role]||role}` : '') +
+               (password ? ' — password updated' : ''),
+      detail: { Username:username, Role:ROLE_LABELS[role]||role,
+                ...(roleChanged?{'Prev Role':ROLE_LABELS[prev.role]||prev.role}:{}),
+                ...(password?{Password:'updated'}:{}) },
+    });
+    showToast(`✓ "${name}" updated`);
+  } else {
+    const newAcc = { id:uid(), name, username, password, role, active:true, createdAt:new Date().toISOString() };
+    accounts.push(newAcc);
+    saveAccounts(accounts);
+    /* [ADDITION 3b] activity log */
+    window.actLog({
+      cat: 'account', action: 'Account Created',
+      message: `Created account "${name}" (@${username}) — ${ROLE_LABELS[role]||role}`,
+      detail: { Username:username, Role:ROLE_LABELS[role]||role },
+    });
+    showToast(`✓ "${name}" account created`);
+  }
+
+  closeAccModal(); render();
+}
+
+/* ── Toggle active ── */
+function toggleActive(id) {
+  const accounts = loadAccounts();
+  const a = accounts.find(x => x.id === id);
+  if (!a) return;
+  a.active = (a.active === false);  /* flip */
+  saveAccounts(accounts);
+  render();
+  /* [ADDITION 3c] activity log */
+  window.actLog({
+    cat: 'account', action: a.active ? 'Account Activated' : 'Account Deactivated',
+    message: `${a.active ? 'Activated' : 'Deactivated'} account "${a.name}" (@${a.username})`,
+    detail: { Username:a.username, Role:ROLE_LABELS[a.role]||a.role, Status:a.active?'Active':'Inactive' },
+  });
+  showToast(`${a.name} ${a.active ? 'activated' : 'deactivated'}`);
+}
+
+/* ── Delete ── */
+function deleteAccount() {
+  if (!editAccountId) return;
+  const a = loadAccounts().find(x => x.id === editAccountId);
+  closeAccModal();
+  triggerDelete(editAccountId, a?.name||'', a?.username||'', a?.role||'');
+}
+
+function triggerDelete(id, name, username, role) {
+  showConfirm('Delete Account?', `Permanently delete <strong>${esc(name)}</strong>? This cannot be undone.`, () => {
+    saveAccounts(loadAccounts().filter(a => a.id !== id));
+    /* [ADDITION 3d] activity log */
+    window.actLog({
+      cat: 'account', action: 'Account Deleted',
+      message: `Deleted account "${name}"${username ? ` (@${username})` : ''}`,
+      detail: { Username:username||undefined, Role:role?(ROLE_LABELS[role]||role):undefined },
+    });
+    render();
+    showToast(`🗑 "${name}" deleted`, 'error');
+  });
+}
+
+/* ── Confirm ── */
+function showConfirm(title, msg, onOk) {
+  document.getElementById('cf-title').textContent = title;
+  document.getElementById('cf-msg').innerHTML     = msg;
+  confirmCb = onOk;
+  document.getElementById('confirmModal').classList.add('open');
+  document.getElementById('cf-ok').onclick = () => { const cb = confirmCb; closeConfirm(); if (cb) cb(); };
+}
+function closeConfirm() { document.getElementById('confirmModal').classList.remove('open'); confirmCb = null; }
+document.getElementById('confirmModal').addEventListener('click', e => { if (e.target === document.getElementById('confirmModal')) closeConfirm(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAccModal(); closeConfirm(); } });
+
+render();
+</script>
+<script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2026/04/04/11/20260404111502-YE029S7H.js" defer></script>
+</body>
+</html>
